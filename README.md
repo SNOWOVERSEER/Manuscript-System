@@ -35,7 +35,15 @@ This project aims to develop an Online Manuscript Submission and Peer Review Pla
 | Yizhi Liao            | yizliao@student.unimelb.edu.au               |
 
 # Environment
-1. C# programming language
+1. React: is a popular JavaScript library for building user interfaces. It will be used to create dynamic and responsive UI components for the submission and review platform.
+2. TypeScript: is a statically typed superset of JavaScript, providing enhanced tooling and type safety. It will help catch errors early in the development process and improve code maintainability.
+3. C#: is a robust and versatile programming language, well-suited for building scalable and performant backend systems. It will be used to implement the server-side logic and data management for the submission and review platform.
+4. Dot Net: is a cross-platform framework for building various types of applications, including web applications. It provides libraries and tools for rapid development and deployment of backend services.
+
+## Additional Tools:
+1. Version Control: Git
+2. Hosting Service: AWS
+3. Database: MySQL
 
 <!-- ## Instruction 
 (this file must be updated at all times. please, make sure explain the github structure here and generate changelogs for each sprint before you tag it)
