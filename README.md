@@ -34,7 +34,8 @@ This project aims to develop an Online Manuscript Submission and Peer Review Pla
 | Yuxuan Zeng            | yuxuzeng@student.unimelb.edu.au               |
 | Yizhi Liao            | yizliao@student.unimelb.edu.au               |
 
-
+# Environment
+1. C# programming language
 
 ## Instruction 
 (this file must be updated at all times. please, make sure explain the github structure here and generate changelogs for each sprint before you tag it)
