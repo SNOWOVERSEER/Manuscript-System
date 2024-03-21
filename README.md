@@ -8,8 +8,9 @@ Welcome to our website repository! This repo is the implementation of the projec
 2. src: the src folder serves as the primary container for our project's codebase, including both the client-side and server-side components.
 
 # Updates
-13/03/2024
-(Sprint 1) Establish the repository's framework and update the ReadMe file.
+13/03/2024 (Sprint 1)
+
+Establish the repository's framework and update the ReadMe file.
 
 # Introduction
 This project aims to develop an Online Manuscript Submission and Peer Review Platform for the Studies in Language Assessment (SiLA) journal, operated by the Association for Language Testing and Assessment of Australia and New Zealand (ALTAANZ). The envisioned platform will replace the current email-based manuscript submission and review process with a comprehensive, streamlined, online system. This initiative seeks to enhance the efficiency of manuscript handling, review assignments, editorial decision-making, and communication among authors, reviewers, and editors.
