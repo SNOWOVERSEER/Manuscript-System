@@ -8,7 +8,7 @@ Welcome to our website repository! This repo is the implementation of the projec
 2. src: the src folder serves as the primary container for our project's codebase, including both the client-side and server-side components.
 
 # Updates
-13/03/2024 (Sprint 1)
+*13/03/2024 (Sprint 1)*
 
 1. Establish the repository's framework. 
 2. update the ReadMe file.
