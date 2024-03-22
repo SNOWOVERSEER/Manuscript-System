@@ -48,6 +48,10 @@ This project aims to develop an Online Manuscript Submission and Peer Review Pla
 1. Version Control: Git
 2. Hosting Service: AWS
 3. Database: MySQL
+4. Coonfluence: https://comp90082-2024-si-wombat.atlassian.net/wiki/spaces/comp900822/overview
+5. Jira: https://wombat123.atlassian.net/jira/software/projects/SW/boards/1/backlog
+6. Figma: https://www.figma.com/file/oMbonlnlEyznX9mb0iavh5/Untitled?type=design&node-id=0-1&mode=design&t=eSZnYcrKjV4Nbkrb-0
+7. Slack: https://app.slack.com/client/T06MRJ4TK5J/C06MGFE9FHC
 
 # Workflow
 - master: The `master` branch is the primary branch where the source code reflects the production-ready state of this project. It is the definitive branch where code is fully tested, stable, and ready to be relseaed to end-users.
