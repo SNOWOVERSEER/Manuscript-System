@@ -45,6 +45,14 @@ This project aims to develop an Online Manuscript Submission and Peer Review Pla
 2. Hosting Service: AWS
 3. Database: MySQL
 
+# Workflow
+- master: The `master` branch is the primary branch where the source code reflects the production-ready state of this project. It is the definitive branch where code is fully tested, stable, and ready to be relseaed to end-users.
+- dev: The `dev` branch serves as the active development branch where new features and fixes are integrated and tested. The beanch contains the latest ongooing work and once stable, changes are merged into the `master` branch for release.
+
+## Branch Naming Cnventions
+- Task Branches: Prefix with `task/` followed by a brief description of the feature, e.g., "task/login".
+- Bug Fixes Branches: Use `bugfix/` along with the a short description, like bugfix/fix-login-error.
+
 <!-- ## Instruction 
 (this file must be updated at all times. please, make sure explain the github structure here and generate changelogs for each sprint before you tag it)
 
