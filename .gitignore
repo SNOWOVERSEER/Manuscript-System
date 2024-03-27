@@ -11,3 +11,4 @@ src/back_end/SiLA-Backend/SiLA-Backend/obj
 *.csproj.docstates
 *.idea/
 
+/src/back_end/SiLA-Backend/SiLA-Backend.sln
