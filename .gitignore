@@ -1,0 +1,13 @@
+# 默认忽略编译生成的文件
+src/back_end/SiLA-Backend/SiLA-Backend/bin
+src/back_end/SiLA-Backend/SiLA-Backend/obj
+
+
+.vs/
+*.user
+*.userosscache
+*.suo
+*.cache
+*.csproj.docstates
+*.idea/
+
