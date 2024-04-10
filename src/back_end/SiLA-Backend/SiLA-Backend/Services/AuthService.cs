@@ -9,11 +9,11 @@ namespace SiLA_Backend.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly ApplicationDbContext _context;
 
-        public AuthService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AuthService(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
-            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
         }
@@ -42,8 +42,12 @@ namespace SiLA_Backend.Services
                 await _userManager.AddToRoleAsync(user, "Author");
                 return (true, "User registered successfully!");
             }
-
-            return (false, "User registration failed!");
+            else
+            {
+                var errors = result.Errors.Select(e => e.Description);
+                Console.WriteLine(string.Join("\n", errors));
+                return (false, $"User registration failed! Errors: {string.Join(", ", errors)}");
+            }
         }
 
         public async Task<(bool IsSuccess, string Message)> LoginAsync(LoginModel model)
@@ -66,6 +70,11 @@ namespace SiLA_Backend.Services
                         // if user does not have the selected role, return failure message
                         return (false, "Login failed. The user does not have the selected role.");
                     }
+                }
+                else
+                {
+                    // if password is incorrect, return failure message
+                    return (false, "Invalid login attempt.");
                 }
             }
 
