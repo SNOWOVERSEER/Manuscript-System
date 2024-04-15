@@ -17,15 +17,18 @@ namespace SiLA_Backend.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly ITokenManager _tokenManager;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ITokenManager tokenManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _tokenManager = tokenManager;
 
         }
 
@@ -60,7 +63,7 @@ namespace SiLA_Backend.Services
             }
         }
 
-        public async Task<(bool IsSuccess, string Message, string? Token)> LoginAsync(LoginModel model)
+        public async Task<(bool IsSuccess, string Message, string? Token, string? Id)> LoginAsync(LoginModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user != null)
@@ -72,16 +75,29 @@ namespace SiLA_Backend.Services
                     if (hasRole)
                     {
                         var token = GenerateJwtToken(user);
-                        return (true, $"Logged in successfully as {model.Role}.", token);
+                        return (true, $"Logged in successfully as {model.Role}.", token, user.Id);
                     }
                     else
                     {
-                        return (false, "Login failed. The user does not have the selected role.", null);
+                        return (false, "Login failed. The user does not have the selected role.", null, null);
                     }
                 }
             }
 
-            return (false, "Invalid login attempt.", null);
+            return (false, "Invalid login attempt.", null, null);
+        }
+
+        public async Task<(bool IsSuccess, string Message)> LogoutAsync(string id, string token)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user != null)
+            {
+                await _signInManager.SignOutAsync();
+                await _tokenManager.DeactivateTokenAsync(token);
+                return (true, "User logged out successfully!");
+            }
+
+            return (false, "User not found!");
         }
 
 
