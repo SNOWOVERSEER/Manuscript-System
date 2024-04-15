@@ -18,7 +18,7 @@ const {set_token} = userStore.actions
 const fetch_login = (data)=>{
     return async (dispatch)=>{
         try{
-            const res = await http.post('/login_failed', data)
+            const res = await http.post('/Auth/login', data)
             dispatch(set_token(res.data.token))
             return res
         } catch (error) {

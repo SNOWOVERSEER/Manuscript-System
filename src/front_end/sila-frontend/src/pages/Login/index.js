@@ -29,7 +29,7 @@ const Login = ()=>{
             <Card className="login-container">
                 <img className="login-logo" src={logo} alt=""/>
 
-                <Form validateTrigger="onBlur" onFinish={on_finish} initialValues={{ role: '0' }}>
+                <Form validateTrigger="onBlur" onFinish={on_finish} initialValues={{ role: 'Author' }}>
                     <Form.Item name="email"
                         rules={[
                             {required: true, message: "please enter the email"}
@@ -46,9 +46,9 @@ const Login = ()=>{
 
                     <Form.Item name="role">
                         <Radio.Group buttonStyle="solid">
-                            <Radio.Button value="0">Author</Radio.Button>
-                            <Radio.Button value="1">Reviewer</Radio.Button>
-                            <Radio.Button value="2">Editor</Radio.Button>
+                            <Radio.Button value="Author">Author</Radio.Button>
+                            <Radio.Button value="Reviewer">Reviewer</Radio.Button>
+                            <Radio.Button value="Editor">Editor</Radio.Button>
                         </Radio.Group>
                     </Form.Item>
 
