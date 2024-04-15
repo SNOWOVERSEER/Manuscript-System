@@ -11,6 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // 配置数据库上下文使用内存数据库
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("MyDatabase"));
@@ -38,6 +48,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
+
 builder.Services.AddControllers();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -57,6 +69,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // Use CORS policy
+    app.UseCors();
 }
 
 app.UseHttpsRedirection();
