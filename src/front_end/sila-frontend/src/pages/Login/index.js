@@ -13,10 +13,10 @@ const Login = ()=>{
     const navigate = useNavigate()
     
     const on_finish = async (values)=>{
-        console.log(values)
+        // console.log(values)
         const res = await dispatch(fetch_login(values))
         if (res.state === "success"){
-            console.log(res.data)
+            // console.log(res.data)
             navigate("/")
             message.success("sign in success !!!")
         }else{
@@ -32,7 +32,8 @@ const Login = ()=>{
                 <Form validateTrigger="onBlur" onFinish={on_finish} initialValues={{ role: 'Author' }}>
                     <Form.Item name="email"
                         rules={[
-                            {required: true, message: "please enter the email"}
+                            {required: true, message: "please enter the email"},
+                            {type: 'email', message: 'Please enter a valid email!'}
                         ]}>
                         <Input size="large" placeholder="Email" />
                     </Form.Item>
@@ -57,7 +58,7 @@ const Login = ()=>{
                     </Form.Item>
 
                     <Form.Item>
-                        <Link to="/">Create an account</Link>
+                        <Link to="/register">Create an account</Link>
                     </Form.Item>
 
                 </Form>
