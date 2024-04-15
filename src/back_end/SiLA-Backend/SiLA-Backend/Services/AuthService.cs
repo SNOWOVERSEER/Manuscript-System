@@ -1,6 +1,13 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using SiLA_Backend.Data;
 using SiLA_Backend.Models;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SiLA_Backend.Services
@@ -9,14 +16,20 @@ namespace SiLA_Backend.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IConfiguration _configuration;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _configuration = configuration;
+
         }
+
+
 
         public async Task<(bool IsSuccess, string Message)> RegisterAsync(RegisterModel model)
         {
@@ -25,7 +38,6 @@ namespace SiLA_Backend.Services
             {
                 return (false, "User already exists!");
             }
-            Console.WriteLine("User check passed");
 
             var user = new ApplicationUser
             {
@@ -34,7 +46,6 @@ namespace SiLA_Backend.Services
                 FirstName = model.FirstName,
                 LastName = model.LastName
             };
-            Console.WriteLine("User created");
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
@@ -45,40 +56,57 @@ namespace SiLA_Backend.Services
             else
             {
                 var errors = result.Errors.Select(e => e.Description);
-                Console.WriteLine(string.Join("\n", errors));
                 return (false, $"User registration failed! Errors: {string.Join(", ", errors)}");
             }
         }
 
-        public async Task<(bool IsSuccess, string Message)> LoginAsync(LoginModel model)
+        public async Task<(bool IsSuccess, string Message, string? Token)> LoginAsync(LoginModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user != null)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(user.Email!, model.Password, isPersistent: false, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    // if password is correct, check if user has the selected role
                     var hasRole = await _userManager.IsInRoleAsync(user, model.Role);
                     if (hasRole)
                     {
-                        // if user has the selected role, return success message
-                        return (true, $"Logged in successfully as {model.Role}.");
+                        var token = GenerateJwtToken(user);
+                        return (true, $"Logged in successfully as {model.Role}.", token);
                     }
                     else
                     {
-                        // if user does not have the selected role, return failure message
-                        return (false, "Login failed. The user does not have the selected role.");
+                        return (false, "Login failed. The user does not have the selected role.", null);
                     }
-                }
-                else
-                {
-                    // if password is incorrect, return failure message
-                    return (false, "Invalid login attempt.");
                 }
             }
 
-            return (false, "Invalid login attempt.");
+            return (false, "Invalid login attempt.", null);
+        }
+
+
+        private string GenerateJwtToken(ApplicationUser user)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? string.Empty));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id)
+            };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddDays(3),
+                SigningCredentials = credentials
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

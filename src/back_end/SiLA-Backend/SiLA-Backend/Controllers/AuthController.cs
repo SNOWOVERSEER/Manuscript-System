@@ -22,20 +22,25 @@ namespace SiLA_Backend.Controllers
             var (IsSuccess, Message) = await _authService.RegisterAsync(model);
             if (IsSuccess)
             {
-                return Ok(new { Message });
+                return Ok(new { state = "success", message = Message });
             }
-            return BadRequest(new { Message });
+            return BadRequest(new { state = "error", message = Message });
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginModel model)
         {
-            var (IsSuccess, Message) = await _authService.LoginAsync(model);
+            var (IsSuccess, Message, Token) = await _authService.LoginAsync(model);
             if (IsSuccess)
             {
-                return Ok(new { Message });
+                return Ok(new
+                {
+                    state = "success",
+                    data = new { token = Token },
+                    message = Message
+                });
             }
-            return Unauthorized(new { Message });
+            return Unauthorized(new { state = "error", message = Message });
         }
     }
 }
