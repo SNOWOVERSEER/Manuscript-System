@@ -36,8 +36,7 @@ namespace SiLA_Backend.Controllers
                 return Ok(new
                 {
                     state = "success",
-                    data = new { token = Token },
-                    id = Id,
+                    data = new { token = Token, id = Id },
                     message = Message
                 });
             }
