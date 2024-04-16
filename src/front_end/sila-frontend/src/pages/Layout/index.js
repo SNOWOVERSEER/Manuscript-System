@@ -7,6 +7,9 @@ import {
 } from '@ant-design/icons'
 import './index.scss'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetch_userinfo } from '../../store/modules/user'
 
 const { Header, Sider } = Layout
 
@@ -31,6 +34,13 @@ const items = [
 const MyLayout = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const dispatch = useDispatch()
+
+  
+  useEffect(()=>{
+    dispatch(fetch_userinfo())
+  }, [dispatch])
+  const name = useSelector(state => state.user.userInfo.name)
 
   const onMenuClick = (menu)=>{
     // console.log(menu.key)
@@ -43,7 +53,7 @@ const MyLayout = () => {
       <Header className="header"  style={{ backgroundColor: '#2c2c2c' }}>
         <div className="logo" />
         <div className="user-info">
-          <span className="user-name">Username</span>
+          <span className="user-name">{name}</span>
           <span className="user-logout">
             <Popconfirm title="Sign Out？" okText="OK" cancelText="Cancel">
               <LogoutOutlined style={{ fontSize: '20px' }} />

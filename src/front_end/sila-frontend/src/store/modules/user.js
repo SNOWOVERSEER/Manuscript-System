@@ -4,18 +4,22 @@ import {getToken, http, setToken} from '../../utils'
 const userStore = createSlice({
     name: "user",
     initialState: {
-        token: getToken() || ""
+        token: getToken() || "",
+        userInfo: {}
     },
     reducers: {
         set_token(state, action){
             state.token = action.payload
             //localStorage
             setToken(action.payload)
+        },
+        set_userinfo(state, action){
+            state.userInfo = action.payload
         }
     }
 })
 
-const {set_token} = userStore.actions
+const {set_token, set_userinfo} = userStore.actions
 //async method
 const fetch_login = (data)=>{
     return async (dispatch)=>{
@@ -28,7 +32,15 @@ const fetch_login = (data)=>{
         }
     }
 }
-export {set_token, fetch_login}
+const fetch_userinfo = ()=>{
+    return async (dispatch)=>{
+        const res = await http.get("/User/getuserinfo")
+        console.log(res)
+        dispatch(set_userinfo(res.data))
+    }
+}
+
+export {set_token, fetch_login, fetch_userinfo}
 
 const userReducer = userStore.reducer
 export default userReducer
