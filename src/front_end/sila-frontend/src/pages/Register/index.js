@@ -1,7 +1,7 @@
 
 import { useNavigate } from 'react-router-dom';
-import { http } from '../../utils'
 import { Card, Form, Input, Button, message } from "antd"
+import { register_API } from '../../aips/user';
 
 
 const Register = () => {
@@ -9,7 +9,7 @@ const Register = () => {
 
     const on_finish = async (values) => {
         try {
-            const res = await http.post('/Auth/register', values);
+            const res = await register_API(values)
             navigate('/login')
             message.success(res.message)
         } catch (error) {

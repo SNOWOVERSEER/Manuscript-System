@@ -47,7 +47,8 @@ const MyLayout = () => {
     navigate(menu.key)
   }
 
-  const onConfirm = ()=>{
+  const on_logout = ()=>{
+    // http
     dispatch(clear_user())
     navigate('/login')
   }
@@ -60,7 +61,7 @@ const MyLayout = () => {
         <div className="user-info">
           <span className="user-name">name</span>
           <span className="user-logout">
-            <Popconfirm title="Sign Out？" okText="OK" cancelText="Cancel" onConfirm={onConfirm}>
+            <Popconfirm title="Sign Out？" okText="OK" cancelText="Cancel" onConfirm={on_logout}>
               <LogoutOutlined style={{ fontSize: '20px' }} />
             </Popconfirm>
           </span>

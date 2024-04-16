@@ -1,9 +1,10 @@
 import axios from "axios"
-import { getToken } from "./token"
+import { getToken, removeID, removeToken } from "./token"
+import router from "../router"
 
 const http = axios.create({
-    baseURL: "http://localhost:5266/",
-    // baseURL: "http://localhost:3001/yzl",
+    // baseURL: "http://localhost:5266/",
+    baseURL: "http://localhost:3001/yzl",
     timeout: 5000
 })
 
@@ -23,9 +24,20 @@ http.interceptors.request.use(
 
 http.interceptors.response.use(
     (response)=>{
+        // 2xx success
         return response.data
     },
     (error)=>{
+        //greater than 2xx
+
+        //catch 401 invalidate token
+        if(error.response.status === 401){
+            removeToken()
+            removeID()
+            router.navigate('/login')
+            window.location.reload()
+        }
+
         return Promise.reject(error)
     }
 )
