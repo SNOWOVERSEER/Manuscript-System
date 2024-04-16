@@ -13,7 +13,13 @@ const Register = () => {
             navigate('/login')
             message.success(res.message)
         } catch (error) {
-            message.error(error.response.data.message)
+            if (error.response) {
+                // such as 400、500
+                message.error(`Error: ${error.response.data.message}`);
+            } else {
+                // such as network error
+                message.error(`Network Error: ${error.message}`);
+            }
         }
     };
 
@@ -56,7 +62,7 @@ const Register = () => {
                                 message: 'Please input your password!',
                             },
                             {
-                                pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/,
+                                pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*?&-=_+])[A-Za-z\d@#$!%*?&-=_+]{8,20}$/,
                                 message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, one special character and be 8-20 characters long.',
                             }
                         ]}

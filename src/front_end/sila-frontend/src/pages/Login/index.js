@@ -42,7 +42,7 @@ const Login = ()=>{
                         rules={[
                             {required: true, message: "please enter the password"}
                         ]}>
-                        <Input size="large" placeholder="Password" />
+                        <Input.Password size="large" placeholder="Password" />
                     </Form.Item>
 
                     <Form.Item name="role">
