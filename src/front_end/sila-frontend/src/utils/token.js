@@ -1,4 +1,5 @@
 const TOKEN = "token"
+const ID = "id"
 
 function setToken(value){
     localStorage.setItem(TOKEN, value)
@@ -12,4 +13,19 @@ function removeToken(){
     localStorage.removeItem(TOKEN)
 }
 
-export {setToken, getToken, removeToken}
+function setID(value){
+    localStorage.setItem(ID, value)
+}
+
+function getID(){
+    return localStorage.getItem(ID)
+}
+
+function removeID(){
+    localStorage.removeItem(ID)
+}
+
+export {
+    setToken, getToken, removeToken,
+    setID, getID, removeID
+}
