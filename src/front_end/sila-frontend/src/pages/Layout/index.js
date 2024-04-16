@@ -38,9 +38,9 @@ const MyLayout = () => {
 
   
   useEffect(()=>{
-    dispatch(fetch_userinfo())
+    // dispatch(fetch_userinfo())
   }, [dispatch])
-  const name = useSelector(state => state.user.userInfo.name)
+  // const name = useSelector(state => state.user.userInfo.name)
 
   const onMenuClick = (menu)=>{
     // console.log(menu.key)
@@ -53,7 +53,7 @@ const MyLayout = () => {
       <Header className="header"  style={{ backgroundColor: '#2c2c2c' }}>
         <div className="logo" />
         <div className="user-info">
-          <span className="user-name">{name}</span>
+          <span className="user-name">name</span>
           <span className="user-logout">
             <Popconfirm title="Sign Out？" okText="OK" cancelText="Cancel">
               <LogoutOutlined style={{ fontSize: '20px' }} />
