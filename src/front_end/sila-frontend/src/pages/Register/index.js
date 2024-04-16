@@ -1,7 +1,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Card, Form, Input, Button, message } from "antd"
-import { register_API } from '../../aips/user';
+import { register_API } from '../../apis/user';
 
 
 const Register = () => {
