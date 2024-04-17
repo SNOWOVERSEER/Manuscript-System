@@ -2,7 +2,7 @@ const TOKEN = "token"
 const ID = "id"
 
 function setToken(value){
-    localStorage.setItem(TOKEN, value)
+    localStorage.setItem("token", value)
 }
 
 function getToken(){
@@ -14,7 +14,7 @@ function removeToken(){
 }
 
 function setID(value){
-    localStorage.setItem(ID, value)
+    localStorage.setItem("id", value)
 }
 
 function getID(){

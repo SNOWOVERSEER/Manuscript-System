@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import {getToken, http, removeID, removeToken, setToken} from '../../utils'
-import { getID, setID } from "../../utils";
+import {getToken, http} from '../../utils'
+import { getID } from "../../utils";
 import { login_API } from "../../apis/user";
 
 const userStore = createSlice({
@@ -8,18 +8,24 @@ const userStore = createSlice({
     initialState: {
         id: getID() || "",
         token: getToken() || "",
+        role: localStorage.getItem('role') || "",
         userInfo: {}
     },
     reducers: {
         set_id(state, action){
             state.id = action.payload
             //localStorage
-            setID(action.payload)
+            localStorage.setItem("id", action.payload)
         },
         set_token(state, action){
             state.token = action.payload
             //localStorage
-            setToken(action.payload)
+            localStorage.setItem("token", action.payload)
+        },
+        set_role(state, action){
+            state.role = action.payload
+            //localStorage
+            localStorage.setItem("role", action.payload)
         },
         set_userinfo(state, action){
             state.userInfo = action.payload
@@ -27,14 +33,17 @@ const userStore = createSlice({
         clear_user(state){
             state.id = ""
             state.token = ""
+            state.role = ""
             state.userInfo = {}
-            removeID()
-            removeToken()
+
+            localStorage.removeItem("id")
+            localStorage.removeItem("token")
+            localStorage.removeItem('role')
         }
     }
 })
 
-const {set_token, set_id, set_userinfo, clear_user} = userStore.actions
+const {set_token, set_id, set_role, set_userinfo, clear_user} = userStore.actions
 //async method
 const fetch_login = (data)=>{
     return async (dispatch)=>{
@@ -42,6 +51,7 @@ const fetch_login = (data)=>{
             const res = await login_API(data)
             dispatch(set_id(res.data.id))
             dispatch(set_token(res.data.token))
+            dispatch(set_role(data.role))
             return res
         } catch (error) {
             return {"state":"error" }

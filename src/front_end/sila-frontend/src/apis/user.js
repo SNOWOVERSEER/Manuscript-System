@@ -16,3 +16,7 @@ export function register_API(data_){
     })
 }
 
+export function get_articles_for_review_API(){
+    return ({})
+}
+
