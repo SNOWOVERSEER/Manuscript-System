@@ -8,6 +8,17 @@ Welcome to our website repository! This repo is the implementation of the projec
 2. src: the src folder serves as the primary container for our project's codebase, including both the client-side and server-side components.
 
 # Updates
+*18/04/2024 (Sprint 2)*
+
+1. add sign in feature for role reviewer.
+2. create new Layout page for role reviewer.
+3. the reviewer is now nevigated to a new page for reviewing.
+ 
+
+*16/04/2024 (Sprint 2)*
+
+1. merge `new feature` branchs to dev, including Sign in page, Sign up page, Author main page.
+
 *22/03/2024 (Sprint 1)*
 
 1. create `dev` branch for development environment.
