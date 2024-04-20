@@ -9,7 +9,7 @@ import './index.scss'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetch_userinfo } from '../../store/modules/user'
+import { fetch_userinfo, clearUserInfo } from '../../store/modules/user'
 
 const { Header, Sider } = Layout
 
@@ -47,6 +47,11 @@ const MyLayout = () => {
     navigate(menu.key)
   }
 
+  const onConfirm = () => {
+    dispatch(clearUserInfo())
+    navigate('/login')
+  }
+
   return (
     <Layout>
 
@@ -55,7 +60,7 @@ const MyLayout = () => {
         <div className="user-info">
           <span className="user-name">name</span>
           <span className="user-logout">
-            <Popconfirm title="Sign Out？" okText="OK" cancelText="Cancel">
+            <Popconfirm title="Sign Out？" okText="OK" cancelText="Cancel" onConfirm={onConfirm}>
               <LogoutOutlined style={{ fontSize: '20px' }} />
             </Popconfirm>
           </span>

@@ -1,5 +1,6 @@
 import axios from "axios"
-import { getToken } from "./token"
+import { getToken, removeToken } from "./token"
+import router from "../router"
 
 const http = axios.create({
     baseURL: "http://localhost:5266/",
@@ -26,6 +27,11 @@ http.interceptors.response.use(
         return response.data
     },
     (error)=>{
+        if (error.response.status === 401) {
+            removeToken()
+            router.navigate('/login')
+            window.location.reload()
+        }
         return Promise.reject(error)
     }
 )

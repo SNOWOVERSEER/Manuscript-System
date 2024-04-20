@@ -1,7 +1,104 @@
-const StartNewSubmission = ()=>{
-    return (
-        <div>StartNewSubmission</div>
-    )
-}
+// Publish.jsx
 
-export default StartNewSubmission
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Card, Breadcrumb, Form, Button, Input, Space, Select } from 'antd';
+import './index.scss';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import CustomTable from './EditableTable';
+import PDFUploader from './PDFUploader'; // Adjust the import path as needed
+
+const { Option } = Select;
+
+const Publish = () => {
+    const [dataSource, setDataSource] = useState([]);
+
+    // const [fileList, setFileList] = useState([]);
+
+    const handleFileListChange = (newFileList) => {
+        console.log(newFileList);
+        // setFileList(newFileList);
+    };
+
+    const normFile = (e) => {
+        if (Array.isArray(e)) {
+            return e;
+        }
+        return e && e.fileList;
+    };    
+
+    return (
+        <div className="Publish">
+            <Card
+                title={
+                    <Breadcrumb>
+                        <Breadcrumb.Item>
+                            <Link to="/">Home</Link>
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item>Start New Submission</Breadcrumb.Item>
+                    </Breadcrumb>
+                }
+            >
+                <Form
+                    labelCol={{ span: 4 }}
+                    wrapperCol={{ span: 20 }}
+                    initialValues={{ type: '1' }}
+                >
+                    <Form.Item
+                        label="Title Name"
+                        name="title"
+                        rules={[{ required: true, message: 'Please input title name' }]}
+                    >
+                        <Input placeholder="Input title name" style={{ width: '100%' }} />
+                    </Form.Item>
+                    <Form.Item
+                        label="Article Category"
+                        name="channel_id"
+                        rules={[{ required: true, message: 'Please select article category' }]}
+                    >
+                        <Select placeholder="Select article category" style={{ width: '100%' }}>
+                            <Option value={0}>Recommended</Option>
+                            {/* Add other options as needed */}
+                        </Select>
+                    </Form.Item>
+                    <CustomTable dataSource={dataSource} setDataSource={setDataSource} />
+                    <Form.Item
+                        label="Abstract"
+                        name="content"
+                        rules={[{ required: true, message: 'Please input the abstract' }]}
+                        className="form-item-spacing"
+                    >
+                        <ReactQuill
+                            className="publish-quill"
+                            theme="snow"
+                            placeholder="Input the abstract"
+                            style={{ height: 200 }}
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        label="Upload PDF"
+                        name="uploadedFile"
+                        rules={[{ required: true, message: 'Please upload the PDF' }]} // Add this line
+                        valuePropName="fileList"
+                        getValueFromEvent={normFile} 
+                    >
+                         <PDFUploader onFileListChange={handleFileListChange} />
+                    </Form.Item>
+
+                    
+                    <Form.Item wrapperCol={{ offset: 4 }}>
+                        <Space>
+                            <Button size="large" type="primary" htmlType="submit">
+                                Submit
+                            </Button>
+                        </Space>
+                    </Form.Item>
+                </Form>
+            </Card>
+        </div>
+    );
+};
+
+export default Publish;
+
