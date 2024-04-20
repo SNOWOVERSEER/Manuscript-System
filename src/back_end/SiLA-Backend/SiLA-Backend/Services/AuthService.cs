@@ -93,7 +93,7 @@ namespace SiLA_Backend.Services
             if (user != null)
             {
                 await _signInManager.SignOutAsync();
-                await _tokenManager.DeactivateTokenAsync(token);
+                await _tokenManager.AddToBlacklist(token);
                 return (true, "User logged out successfully!");
             }
 

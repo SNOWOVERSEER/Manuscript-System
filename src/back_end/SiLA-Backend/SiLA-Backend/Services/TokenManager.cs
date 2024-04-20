@@ -1,23 +1,34 @@
-using System.Collections.Concurrent;
+using SiLA_Backend.Models;
+using SiLA_Backend.Data;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace SiLA_Backend.Services
 {
     public class TokenManager : ITokenManager
     {
-        // Using a concurrent dictionary to simulate storage for simplicity.
-        private static readonly ConcurrentDictionary<string, bool> InvalidTokens = new ConcurrentDictionary<string, bool>();
+        private readonly ApplicationDbContext _context;
 
-        public Task<bool> DeactivateTokenAsync(string token)
+        public TokenManager(ApplicationDbContext context)
         {
-            // Mark the token as invalid
-            InvalidTokens[token] = true;
-            return Task.FromResult(true);
+            _context = context;
         }
 
-        public static bool IsTokenActive(string token)
+        public async Task AddToBlacklist(string token)
         {
-            return !InvalidTokens.ContainsKey(token);
+            var blacklistedToken = new BlacklistedToken
+            {
+                Token = token,
+                DateBlacklisted = DateTime.UtcNow
+            };
+            _context.BlacklistedTokens.Add(blacklistedToken);
+            await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> IsTokenBlacklisted(string token)
+        {
+            return await _context.BlacklistedTokens.AnyAsync(t => t.Token == token);
+        }
+
     }
 }

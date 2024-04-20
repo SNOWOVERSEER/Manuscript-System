@@ -6,6 +6,7 @@ using SiLA_Backend.Data;
 using SiLA_Backend.Models;
 using SiLA_Backend.Services;
 using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,8 +23,11 @@ builder.Services.AddCors(options =>
         });
 });
 
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//     options.UseInMemoryDatabase("MyDatabase"));
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseInMemoryDatabase("MyDatabase"));
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        new MySqlServerVersion(new Version(8, 3, 0))));
 
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
@@ -46,6 +50,19 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero,
         ValidateLifetime = true
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenManager>();
+            var token = context.SecurityToken as JwtSecurityToken;
+            if (token != null && await tokenService.IsTokenBlacklisted(token.RawData))
+            {
+                context.Fail("This token is blacklisted");
+            }
+        }
+    };
+
 });
 
 
