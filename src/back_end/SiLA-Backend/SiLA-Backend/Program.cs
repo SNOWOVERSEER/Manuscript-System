@@ -88,9 +88,9 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    // Use CORS policy
-    app.UseCors();
 }
+// Use CORS policy
+app.UseCors();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
