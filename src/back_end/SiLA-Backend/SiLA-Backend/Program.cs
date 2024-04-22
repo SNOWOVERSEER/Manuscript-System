@@ -70,6 +70,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddControllers();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenManager, TokenManager>();
+builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 
 
 builder.Services.AddEndpointsApiExplorer();

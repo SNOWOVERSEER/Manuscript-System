@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace SiLA_Backend.Models
+namespace SiLA_Backend.DTOs
 {
     public class RegisterModel
     {
