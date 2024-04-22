@@ -116,7 +116,7 @@ namespace SiLA_Backend.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(3),
+                Expires = DateTime.UtcNow.AddDays(1),   // Token expires after 1 day
                 SigningCredentials = credentials
             };
 

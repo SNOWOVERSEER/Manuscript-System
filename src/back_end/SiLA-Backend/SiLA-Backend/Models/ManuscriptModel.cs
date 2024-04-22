@@ -18,6 +18,8 @@ namespace SiLA_Backend.Models
         [Required]
         public string AuthorsInfo { get; set; }
 
+        public string? Declaration { get; set; }
+
         [Required]
         public string FilePath { get; set; } // 存储文件位置
 
