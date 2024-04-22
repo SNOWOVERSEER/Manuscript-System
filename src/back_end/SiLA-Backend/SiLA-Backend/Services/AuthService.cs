@@ -75,7 +75,7 @@ namespace SiLA_Backend.Services
                     var hasRole = await _userManager.IsInRoleAsync(user, model.Role);
                     if (hasRole)
                     {
-                        var token = GenerateJwtToken(user);
+                        var token = GenerateJwtToken(user, model.Role);
                         return (true, $"Logged in successfully as {model.Role}.", token, user.Id);
                     }
                     else
@@ -102,7 +102,7 @@ namespace SiLA_Backend.Services
         }
 
 
-        private string GenerateJwtToken(ApplicationUser user)
+        private string GenerateJwtToken(ApplicationUser user, string role)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? string.Empty));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -111,7 +111,8 @@ namespace SiLA_Backend.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id)
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Role, role)
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

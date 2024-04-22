@@ -3,6 +3,7 @@ using SiLA_Backend.Models;
 using SiLA_Backend.DTOs;
 using SiLA_Backend.Services;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 
 
@@ -19,7 +20,11 @@ namespace SiLA_Backend.Controllers
             _submissionService = submissionService;
         }
 
+
+
+
         [HttpPost("submit")]
+        [Authorize(Roles = "Author")]
         public async Task<IActionResult> Submit([FromForm] ManuscriptSubmissionModel model)
         {
             var (IsSuccess, Message) = await _submissionService.SubmitAsync(model);
