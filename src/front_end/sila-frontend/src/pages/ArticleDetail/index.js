@@ -1,22 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, List, Card } from 'antd';
+import { Typography, List, Card, Button, Space } from 'antd';
+import { CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
-
 const { Title, Paragraph, Text } = Typography;
-
-
 
 const articles = [
     {
         id: 1,
         title: 'Article 1',
         abstract: 'Abstract of Article 1',
-        content: 'https://apastyle.apa.org/instructional-aids/reference-guide.pdf', // Direct URL to the PDF
+        content: '/111.pdf', // This assumes 111.pdf is in the public directory
         imageUrl: '/path/to/image1.jpg',
         reviewerComments: [
             { reviewer: 'Reviewer A', comment: 'Needs more references to recent studies.' },
@@ -43,6 +41,11 @@ const ArticleDetail = () => {
         return <div>No article found!</div>;
     }
 
+    // Function to handle the resubmission action
+    const handleResubmit = () => {
+        alert('Article resubmitted.');
+    };
+
     return (
         <div>
             <Title>Article Details - {article.title}</Title>
@@ -51,7 +54,7 @@ const ArticleDetail = () => {
                 <strong>PDF Content:</strong>
                 <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
                     <Viewer
-                        fileUrl={article.content} // Direct link to the PDF
+                        fileUrl={`${process.env.PUBLIC_URL}/${article.content}`}
                         plugins={[defaultLayoutPluginInstance]}
                     />
                 </Worker>
@@ -71,6 +74,22 @@ const ArticleDetail = () => {
                 <Paragraph><strong>Editor's Comments:</strong> {article.editorComments}</Paragraph>
                 <Paragraph><strong>Editor Decision:</strong> {article.editorDecision}</Paragraph>
             </Card>
+            <Space>
+                <Button type="primary" icon={<CheckCircleOutlined />} onClick={() => alert('Deadline accepted.')}>
+                    Accept New Deadline
+                </Button>
+                <Button type="default" icon={<ClockCircleOutlined />} onClick={() => alert('Extension requested.')}>
+                    Request Extension
+                </Button>
+                <Button type="danger" icon={<CloseCircleOutlined />} onClick={() => alert('Submission withdrawn.')}>
+                    Withdraw Submission
+                </Button>
+                {article.editorDecision === 'Revise and Resubmit' && (
+                    <Button type="ghost" icon={<ReloadOutlined />} onClick={handleResubmit}>
+                        Resubmit Article
+                    </Button>
+                )}
+            </Space>
         </div>
     );
 };
