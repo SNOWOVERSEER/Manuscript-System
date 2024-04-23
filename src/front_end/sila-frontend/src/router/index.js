@@ -8,6 +8,7 @@ import Login from "../pages/Login"
 import Register from "../pages/Register"
 import Submitted from "../pages/Submitted"
 import StartNewSubmission from "../pages/StartNewSubmission"
+import ArticleDetail from "../pages/ArticleDetail"
 
 import LayoutReviewer from "../pages/Reviewer/Layout"
 import ReviewAndScore from "../pages/Reviewer/ReviewAndScore"
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
 
     {path: '/register', element: <AuthRouteForLoginPage> <Register /> </AuthRouteForLoginPage>},
 
+
     {
         path: '/', 
         element: <AuthRoute> 
@@ -32,6 +34,7 @@ const router = createBrowserRouter([
             { element: <Home />, index: true},
             {path:"submitted", element: <Submitted />},
             {path:"startnewsubmission", element: <StartNewSubmission />},
+            {path:"articledetail/:id", element: <ArticleDetail />},
         ]
     },
 

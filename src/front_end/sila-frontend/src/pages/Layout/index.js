@@ -15,12 +15,12 @@ const { Header, Sider } = Layout
 
 const items = [
   {
-    label: 'Home',
+    label: 'Author Dashboard',
     key: '/',
     icon: <HomeOutlined />,
   },
   {
-    label: 'Submitted Manuscript',
+    label: 'Profile',
     key: '/submitted',
     icon: <DiffOutlined />,
   },
@@ -52,6 +52,15 @@ const MyLayout = () => {
     dispatch(clear_user())
     navigate('/login')
   }
+  
+  const getSelectedKeys = (pathname) => {
+    
+    if (pathname.startsWith('/articledetail')) {
+      console.log(pathname)
+      return ['/'];
+    }
+    return [pathname];
+  }
 
   return (
     <Layout>
@@ -73,7 +82,7 @@ const MyLayout = () => {
           <Menu
             mode="inline"
             theme="light"
-            selectedKeys={location.pathname}
+            selectedKeys={getSelectedKeys(location.pathname)}
             items={items}
             onClick={onMenuClick}
             style={{ height: '100%', borderRight: 0, backgroundColor: '#f9f9f9' }} ></Menu>

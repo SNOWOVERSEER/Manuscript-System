@@ -13,8 +13,9 @@ const Login = ()=>{
     const navigate = useNavigate()
     
     const on_finish = async (values)=>{
-        // console.log(values)
+        console.log(values)
         const res = await dispatch(fetch_login(values))
+        // console.log(res.data)
         if (res.state === "success"){
             // console.log(res.data)
             navigate("/")
