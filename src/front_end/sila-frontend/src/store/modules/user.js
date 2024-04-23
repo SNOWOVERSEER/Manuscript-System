@@ -54,7 +54,7 @@ const fetch_login = (data)=>{
             dispatch(set_role(data.role))
             return res
         } catch (error) {
-            return {"state":"error" }
+            throw error
         }
     }
 }

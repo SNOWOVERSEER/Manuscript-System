@@ -11,12 +11,13 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { clear_user, fetch_userinfo } from '../../store/modules/user'
 
+
 const { Header, Sider } = Layout
 
 const items = [
   {
     label: 'Author Dashboard',
-    key: '/',
+    key: '/', 
     icon: <HomeOutlined />,
   },
   {
@@ -36,7 +37,8 @@ const MyLayout = () => {
   const location = useLocation()
   const dispatch = useDispatch()
 
-  
+
+
   useEffect(()=>{
     // dispatch(fetch_userinfo())
   }, [dispatch])

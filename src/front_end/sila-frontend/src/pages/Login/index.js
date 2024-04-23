@@ -13,15 +13,12 @@ const Login = ()=>{
     const navigate = useNavigate()
     
     const on_finish = async (values)=>{
-        console.log(values)
-        const res = await dispatch(fetch_login(values))
-        // console.log(res.data)
-        if (res.state === "success"){
-            // console.log(res.data)
+        try{
+            await dispatch(fetch_login(values))
             navigate("/")
             message.success("sign in success !!!")
-        }else{
-            message.success("error")
+        } catch (error){
+            message.error(error.response.data.message)
         }
     }
 
