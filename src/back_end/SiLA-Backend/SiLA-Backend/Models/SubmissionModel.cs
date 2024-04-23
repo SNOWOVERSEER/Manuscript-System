@@ -25,6 +25,8 @@ namespace SiLA_Backend.Models
         [Required]
         public string Status { get; set; } // 如 "Pending", "Reviewed", "Accepted", "Rejected"
 
+        public DateTime? RevisedDeadline { get; set; } // 修订截止日期
+
         // 引用到对应的Manuscript
         [Required]
         public Manuscript Manuscript { get; set; }

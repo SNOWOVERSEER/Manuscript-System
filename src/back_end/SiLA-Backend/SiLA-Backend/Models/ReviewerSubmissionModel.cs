@@ -12,6 +12,8 @@ namespace SiLA_Backend.Models
         public int SubmissionId { get; set; }
         public Submission Submission { get; set; }
 
+        public DateTime? Deadline { get; set; }
+
         public string Comment { get; set; }
 
         public string Status { get; set; }
