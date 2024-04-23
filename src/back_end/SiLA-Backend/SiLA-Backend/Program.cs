@@ -7,6 +7,7 @@ using SiLA_Backend.Models;
 using SiLA_Backend.Services;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
+using Amazon.S3;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,12 +67,11 @@ builder.Services.AddAuthentication(options =>
 });
 
 
-
+builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddControllers();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenManager, TokenManager>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -21,7 +21,7 @@ namespace SiLA_Backend.DTOs
         public string? Declaration { get; set; }
 
         [Required]
-        public List<IFormFile> PDFs { get; set; }
+        public string PDFs { get; set; }
     }
 
 }

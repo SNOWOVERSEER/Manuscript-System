@@ -31,20 +31,6 @@ namespace SiLA_Backend.Services
         {
             try
             {
-                // Process PDFs
-                foreach (var file in model.PDFs)
-                {
-                    if (file.Length > 0)
-                    {
-                        var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "uploads", Path.GetRandomFileName());
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-                    }
-
-                }
-
                 var manuscript = new Manuscript
                 {
                     Title = model.Title,
@@ -53,6 +39,7 @@ namespace SiLA_Backend.Services
                     Category = model.Category,
                     AuthorsInfo = model.AuthorsInfo, // Directly store the JSON string
                     Declaration = model.Declaration,
+                    FilePath = model.PDFs   //var fileUrl = $"https://{_bucketName}.s3.{_region}.amazonaws.com/{filePath}";
                 };
 
                 _context.Manuscripts.Add(manuscript);
