@@ -1,16 +1,10 @@
-import { Link} from 'react-router-dom'
-import { Card, Breadcrumb, Form, Button, Radio, DatePicker, Select} from 'antd'
-import locale from 'antd/es/date-picker/locale/zh_CN'
-
-import { Table, Tag, Space } from 'antd'
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
-
-const { Option } = Select
-const { RangePicker } = DatePicker
+import { Link, useNavigate } from 'react-router-dom'; // Correctly import useNavigate
+import { Card, Table, Tag } from 'antd';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const Submitted = () => {
-    
-    // prepare the column data
+    const navigate = useNavigate(); // Initialize useNavigate
+
     const columns = [
         {
           title: 'ID',
@@ -20,43 +14,49 @@ const Submitted = () => {
         {
           title: 'Title',
           dataIndex: 'title',
-          width: 220
+          width: 220,
         },
         {
           title: 'Status',
           dataIndex: 'status',
-          //render: data => <Tag color="green">审核通过</Tag>
         },
         {
           title: 'Submitted',
-          dataIndex: 'pubdate'
+          dataIndex: 'pubdate',
         },
-       
         {
           title: 'Decision',
           dataIndex: 'decision_result',
-          render: data => <Tag color="green">Approval</Tag>
-        }
-      ]
-    // prepare the body data
-    const data = [
-    {
-        id: '8218',
-        decision_result: 2,
-        pubdate: '2019-03-11 09:00:00',
-        status: 'Waiting for Review',
-        title: 'abc1234'
-    }
-    ]
+          render: data => <Tag color="green">Approval</Tag>,
+        },
+    ];
 
-  return (
-    <div>
-      <Card title={`All Submitted Articles：`}>
-        <Table rowKey="id" columns={columns} dataSource={data} pagination={false}/>
-      </Card>
-    </div>
-  )
+    const data = [
+        {
+            id: '1',
+            decision_result: 2,
+            pubdate: '2019-03-11 09:00:00',
+            status: 'Waiting for Review',
+            title: 'abc1234',
+        },
+    ];
+
+    // Define the onRow function to add click behavior using navigate
+    const onRow = (record, rowIndex) => {
+        return {
+            onClick: event => {
+                navigate(`/articledetail/${record.id}`); // Use navigate for routing
+            },
+        };
+    };
+
+    return (
+        <div>
+            <Card title={`All Submitted Articles:`}>
+                <Table rowKey="id" columns={columns} dataSource={data} pagination={false} onRow={onRow} />
+            </Card>
+        </div>
+    );
 }
 
-export default Submitted
-
+export default Submitted;

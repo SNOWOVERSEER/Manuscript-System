@@ -1,86 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { List, Avatar, Spin, Badge, Button } from 'antd';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-//import 'antd/dist/antd.css';
-
-const articles = [
-    {
-        id: 1,
-        title: 'Article 1',
-        description: 'Description of Article 1',
-        content: 'Content of Article 1',
-        imageUrl: '/path/to/image1.jpg',
-        status: 'desk-reject',
-        comments: 'The article does not fit the scope of our journal.'
-    },
-    {
-        id: 2,
-        title: 'Article 2',
-        description: 'Description of Article 2',
-        content: 'Content of Article 2',
-        imageUrl: '/path/to/image2.jpg',
-        status: 'external review',
-        comments: ''
-    },
-    // More articles...
-];
+import { Link, useNavigate } from 'react-router-dom'; // Correctly import useNavigate
+import { Card, Table, Tag } from 'antd';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const Home = () => {
-    const navigate = useNavigate(); // Hook for navigation
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const navigate = useNavigate(); // Initialize useNavigate
 
-    useEffect(() => {
-        setLoading(true);
-        setTimeout(() => {
-            setData(articles);
-            setLoading(false);
-        }, 1000);
-    }, []);
+    const columns = [
+        {
+          title: 'ID',
+          dataIndex: 'id',
+          width: 120,
+        },
+        {
+          title: 'Title',
+          dataIndex: 'title',
+          width: 220,
+        },
+        {
+          title: 'Status',
+          dataIndex: 'status',
+        },
+        {
+          title: 'Submitted',
+          dataIndex: 'pubdate',
+        },
+        {
+          title: 'Decision',
+          dataIndex: 'decision_result',
+          render: data => <Tag color="green">Approval</Tag>,
+        },
+    ];
 
-    if (loading) return <Spin tip="Loading..." />;
-    if (error) return <div>Error: {error}</div>;
-    if (data.length === 0) return <div>No articles submitted yet.</div>;
+    const data = [
+        {
+            id: '1',
+            decision_result: 2,
+            pubdate: '2019-03-11 09:00:00',
+            status: 'Waiting for Review',
+            title: 'abc1234',
+        },
+    ];
+
+    // Define the onRow function to add click behavior using navigate
+    const onRow = (record, rowIndex) => {
+        return {
+            onClick: event => {
+                navigate(`/articledetail/${record.id}`); // Use navigate for routing
+            },
+        };
+    };
 
     return (
-        <div className="home-container">
-            <h1>Submitted Articles</h1>
-            <List
-                itemLayout="horizontal"
-                dataSource={data}
-                renderItem={item => (
-                    <List.Item
-                        actions={[
-                            <Badge dot={item.status === 'desk-reject' || item.status === 'external review'}>
-                                <Button type="link" onClick={() => navigate(`/articledetail/${item.id}`)}>
-                                    Review Details
-                                </Button>
-                            </Badge>
-                        ]}
-                    >
-                        <List.Item.Meta
-                            avatar={<Avatar src={item.imageUrl} />}
-                            title={<a href="https://example.com">{item.title}</a>}
-                            description={item.description}
-                        />
-                        <div>
-                            {item.content}
-                            <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#f0f2f5', borderRadius: '8px' }}>
-                                <p><strong>Status:</strong> {item.status}</p>
-                                {item.status === 'desk-reject' && (
-                                    <p><strong>Editor's Comments:</strong> {item.comments}</p>
-                                )}
-                            </div>
-                        </div>
-                    </List.Item>
-                )}
-                pagination={{
-                    pageSize: 5,
-                }}
-            />
+        <div>
+            <Card title={`All Submitted Articles:`}>
+                <Table rowKey="id" columns={columns} dataSource={data} pagination={false} onRow={onRow} />
+            </Card>
         </div>
     );
-};
+}
 
 export default Home;
