@@ -92,7 +92,7 @@ const CustomTable = ({ dataSource, setDataSource }) => {
       orcid: 'N/A',
     };
     setDataSource([...dataSource, newData]);
-    console.log("Added new row", newData);
+    console.log("Added new row", dataSource);
   };
 
   const handleSave = (row) => {

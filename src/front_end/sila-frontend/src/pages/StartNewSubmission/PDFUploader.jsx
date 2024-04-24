@@ -1,7 +1,7 @@
 // PDFUploader.jsx
 
 import React, { useState } from 'react';
-import { Upload, message } from 'antd';
+import { Upload, message, Button } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 
 const { Dragger } = Upload;
@@ -12,7 +12,10 @@ const PDFUploader = ({ onFileListChange }) => {
     const draggerProps = {
         name: 'file',
         multiple: false,
-        action: 'https://your-backend-endpoint-for-upload', // Replace with your actual upload URL
+        action: 'http://13.211.202.4:5266/Manuscripts/uploadfile', // Replace with your actual upload URL
+        headers: {
+            authorization: `Bearer ${localStorage.getItem('token')}`, 
+          },
         accept: '.pdf',
         fileList,
         onChange(info) {

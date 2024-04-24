@@ -1,5 +1,3 @@
-// Publish.jsx
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Breadcrumb, Form, Button, Input, Space, Select } from 'antd';
@@ -7,14 +5,14 @@ import './index.scss';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import CustomTable from './EditableTable';
-import PDFUploader from './PDFUploader'; // Adjust the import path as needed
+import PDFUploader from './PDFUploader';
 
 const { Option } = Select;
+const { useForm } = Form;
 
 const Publish = () => {
     const [dataSource, setDataSource] = useState([]);
-
-    // const [fileList, setFileList] = useState([]);
+    const [form] = useForm(); // 创建表单实例
 
     const handleFileListChange = (newFileList) => {
         console.log(newFileList);
@@ -26,7 +24,30 @@ const Publish = () => {
             return e;
         }
         return e && e.fileList;
-    };    
+    };
+
+    const submit = async () => {
+        form.validateFields()
+            .then(values => {
+                const formData = new FormData();
+                formData.append('title', values.title);
+                formData.append('channel_id', values.channel_id);
+                formData.append('content', values.content);
+                
+                // if (values.uploadedFile && values.uploadedFile.length > 0) {
+                //     formData.append('file', values.uploadedFile[0].originFileObj);
+                // }
+                
+                const authors = JSON.stringify(dataSource);
+                formData.append('authors', authors)
+                console.log("fffffff")
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}: ${value}`);
+                }
+            }
+        )
+        
+    }
 
     return (
         <div className="Publish">
@@ -41,9 +62,11 @@ const Publish = () => {
                 }
             >
                 <Form
+                    form={form}
                     labelCol={{ span: 4 }}
                     wrapperCol={{ span: 20 }}
                     initialValues={{ type: '1' }}
+                    onFinish={submit}
                 >
                     <Form.Item
                         label="Title Name"
@@ -79,14 +102,13 @@ const Publish = () => {
                     <Form.Item
                         label="Upload PDF"
                         name="uploadedFile"
-                        rules={[{ required: true, message: 'Please upload the PDF' }]} // Add this line
+                        rules={[{ required: true, message: 'Please upload the PDF' }]}
                         valuePropName="fileList"
-                        getValueFromEvent={normFile} 
+                        getValueFromEvent={normFile}
                     >
-                         <PDFUploader onFileListChange={handleFileListChange} />
+                        <PDFUploader onFileListChange={handleFileListChange} />
                     </Form.Item>
 
-                    
                     <Form.Item wrapperCol={{ offset: 4 }}>
                         <Space>
                             <Button size="large" type="primary" htmlType="submit">
@@ -101,4 +123,3 @@ const Publish = () => {
 };
 
 export default Publish;
-
