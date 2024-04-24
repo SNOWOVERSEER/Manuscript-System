@@ -18,27 +18,37 @@ namespace SiLA_Backend.Controllers
         private readonly ISubmissionService _submissionService;
         private readonly IAmazonS3 _amazonS3;
         private readonly string _bucketName = "sila-storage";
+        private readonly IConfiguration _configuration;
 
-        public ManuscriptsController(ISubmissionService submissionService, IAmazonS3 amazonS3)
+        public ManuscriptsController(ISubmissionService submissionService, IAmazonS3 amazonS3, IConfiguration configuration)
         {
             _submissionService = submissionService;
             _amazonS3 = amazonS3;
+            _configuration = configuration;
         }
 
-        [Authorize]
         [HttpPost("uploadfile")]
-        public async Task<IActionResult> UploadFile([FromForm] IFormFile file)
+        public async Task<IActionResult> UploadFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return BadRequest("No file uploaded.");
-
+                return BadRequest(new { state = "error", message = "No file uploaded." });
             var filePath = $"uploads/{Guid.NewGuid()}_{file.FileName}";
-            using (var fileTransferUtility = new TransferUtility(_amazonS3))
+            try
             {
-                await fileTransferUtility.UploadAsync(file.OpenReadStream(), _bucketName, filePath);
+                using (var fileTransferUtility = new TransferUtility(_amazonS3))
+                {
+                    await fileTransferUtility.UploadAsync(file.OpenReadStream(), _bucketName, filePath);
+                }
+                return Ok(new { state = "success", message = "File uploaded successfully", path = filePath });
             }
-
-            return Ok($"File uploaded successfully: {Guid.NewGuid()}_{file.FileName}");
+            catch (AmazonS3Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error uploading file to S3: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Server error: {ex.Message}");
+            }
         }
 
 

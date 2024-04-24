@@ -53,5 +53,20 @@ namespace SiLA_Backend.Controllers
                 return NotFound(new { state = "error", message = "User not found!" });
             }
         }
+
+        [Authorize]
+        [HttpGet("/AuthorDashboard/{userId}")]
+        public async Task<IActionResult> GetAuthorDashboard(string userId)
+        {
+            try
+            {
+                var userDto = await _userService.GetUserInfoAsync(userId);
+                return Ok(new { state = "success", data = userDto });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { state = "error", message = "User not found!" });
+            }
+        }
     }
 }

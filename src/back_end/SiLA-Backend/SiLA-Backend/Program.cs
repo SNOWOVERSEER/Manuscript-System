@@ -8,6 +8,8 @@ using SiLA_Backend.Services;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Amazon.S3;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,7 +69,18 @@ builder.Services.AddAuthentication(options =>
 });
 
 
-builder.Services.AddAWSService<IAmazonS3>();
+
+
+
+// Add the missing using directive
+
+builder.Services.AddAWSService<IAmazonS3>(new AWSOptions
+{
+    Region = Amazon.RegionEndpoint.APSoutheast2,
+    Credentials = new BasicAWSCredentials(
+        builder.Configuration["AWS:AccessKeyId"],
+        builder.Configuration["AWS:SecretAccessKey"])
+});
 builder.Services.AddControllers();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenManager, TokenManager>();
