@@ -1,8 +1,6 @@
 import { Layout, Menu, Popconfirm } from 'antd'
 import {
-  HomeOutlined,
   DiffOutlined,
-  EditOutlined,
   LogoutOutlined,
 } from '@ant-design/icons'
 import './index.scss'

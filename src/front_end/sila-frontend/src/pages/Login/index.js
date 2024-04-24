@@ -1,7 +1,7 @@
 import './index.scss'
 
 import { Card, Form, Input, Button, message, Radio } from "antd"
-import logo from "../../assets/logo.png"
+import logo from "../../assets/logo.jpg"
 import { useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -18,7 +18,13 @@ const Login = ()=>{
             navigate("/")
             message.success("sign in success !!!")
         } catch (error){
-            message.error(error.response.data.message)
+            if (error.message && error.message.includes('timeout..')) {
+                message.error('Login timeout, please check your network connection and try again.');
+            } else if (error.response && error.response.data && error.response.data.message) {
+                message.error(error.response.data.message);
+            } else {
+                message.error('Login failed, please try again.');
+            }
         }
     }
 

@@ -4,8 +4,8 @@ import router from "../router"
 
 const http = axios.create({
     // baseURL: "http://localhost:5266/",
-    // baseURL: "http://localhost:3001/yzl",
-    baseURL: "http://13.211.202.4:5266/",
+    baseURL: "http://localhost:3001/yzl",
+    // baseURL: "http://13.211.202.4:5266/",
     timeout: 5000
 })
 
@@ -32,11 +32,16 @@ http.interceptors.response.use(
         //greater than 2xx
 
         //catch 401 invalidate token
-        if(error.response.status === 401){
+        if(error.response && error.response.status === 401){
             removeToken()
             removeID()
             router.navigate('/login')
             window.location.reload()
+        }
+
+        // timeout
+        if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+            return Promise.reject(new Error('timeout..'));
         }
 
         return Promise.reject(error)

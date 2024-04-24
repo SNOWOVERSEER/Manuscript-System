@@ -52,9 +52,10 @@ const ArticleDetail = () => {
             <Paragraph><strong>Abstract:</strong> {article.abstract}</Paragraph>
             <div style={{ height: '500px' }}>
                 <strong>PDF Content:</strong>
-                <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
+                <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js`}>
                     <Viewer
-                        fileUrl={`${process.env.PUBLIC_URL}/${article.content}`}
+                        // fileUrl={`${process.env.PUBLIC_URL}/${article.content}`}
+                        fileUrl="/A.pdf"
                         plugins={[defaultLayoutPluginInstance]}
                     />
                 </Worker>

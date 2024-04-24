@@ -1,7 +1,7 @@
 // PDFUploader.jsx
 
 import React, { useState } from 'react';
-import { Upload, message, Button } from 'antd';
+import { Upload, message } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 
 const { Dragger } = Upload;

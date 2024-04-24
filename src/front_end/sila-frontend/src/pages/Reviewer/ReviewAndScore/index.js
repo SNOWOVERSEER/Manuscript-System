@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
-import { get_articles_for_review_API } from "../../../apis/user"
+// import { get_articles_for_review_API } from "../../../apis/user"
 import { Table, Tag, Space } from 'antd'
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
-import { Card, Breadcrumb, Form, Button, Radio, DatePicker, Select } from 'antd'
+import { EditOutlined } from '@ant-design/icons'
+import { Card, Button } from 'antd'
 import { useNavigate } from "react-router-dom"
+import { ArticleStatus } from "../../../utils/status"
+
 
 const ReviewAndScore = ()=>{
     const navigate = useNavigate()
@@ -36,11 +38,11 @@ const ReviewAndScore = ()=>{
     {
       title: 'STATUS',
       dataIndex: 'status',
-      render: data => {
-        if (data===1){
-            return <Tag color="red">To be review</Tag>
-        }else{
-            return <Tag color="green">Done</Tag>
+      render: status => {
+        if (status === ArticleStatus.ToBeReviewed) {
+            return <Tag color="red">To be reviewed</Tag>;
+        } else {
+            return <Tag color="green">Done</Tag>;
         }
       }
     },
