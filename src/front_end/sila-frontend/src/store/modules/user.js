@@ -60,7 +60,7 @@ const fetch_login = (data)=>{
 }
 const fetch_userinfo = ()=>{
     return async (dispatch)=>{
-        const res = await http.get("/User/getuserinfo")
+        const res = await http.get(`/User/${localStorage.getItem('id')}`)
         console.log(res)
         dispatch(set_userinfo(res.data))
     }

@@ -1,6 +1,13 @@
 const ArticleStatus = {
-    ToBeReviewed: 1,
-    Done: 2,
+    Submitted: "Submitted",
+    ToBeReviewed: "ToBeReviewed",
+    WaitingFordecision: "WaitingFordecision",
+    DecisionMade: "DecisionMade",
   }
 
-  export {ArticleStatus} 
+  // Submitted
+  // ToBeReview
+  // WaitingFordecision  
+  // DecisionMade 
+
+  export {ArticleStatus}
