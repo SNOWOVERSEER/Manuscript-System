@@ -1,0 +1,71 @@
+/* UserProfileDisplay.css */
+.profile-container {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    width: 80%; /* Increase width */
+    max-width: 800px; /* Adjust maximum width as needed */
+    margin: 40px auto; /* Increase top and bottom margin */
+    padding: 20px;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px; /* Optional: to match the image style */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: to add some depth */
+  }
+  
+  .profile-header {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 2rem; /* Increase bottom margin */
+  }
+  
+  .profile-section {
+    margin-bottom: 2rem;
+  }
+  
+  .profile-section-header {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem; /* Increase bottom margin */
+  }
+  
+  .profile-detail {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem; /* Increase bottom margin */
+  }
+  
+  .profile-detail-label {
+    font-weight: 600;
+  }
+  
+  .primary-tag {
+    background-color: #0052cc;
+    color: #ffffff;
+    padding: 0.2em 0.5em;
+    border-radius: 2px;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+  }
+
+  .profile-detail-bio {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem; /* 根据需要调整底部外边距 */
+    min-height: 100px; /* 这将确保即使文本很短，Bio部分也会显示较大的空间 */
+  }
+  
+  .edit-button {
+    border: 1px solid #e1e4e8;
+    background-color: #f6f8fa;
+    color: #24292e;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 2rem; /* Increase top margin */
+  }
+  
+  .edit-button:hover {
+    background-color: #e1e4e8;
+  }
+  
+  
+  
