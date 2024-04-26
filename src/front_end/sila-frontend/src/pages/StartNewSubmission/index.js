@@ -14,10 +14,10 @@ const Publish = () => {
     const [dataSource, setDataSource] = useState([]);
     const [form] = useForm(); // 创建表单实例
 
-    const handleFileListChange = (fileList) => {
-        // console.log(fileList);
-        form.setFieldsValue({ uploadedFile: fileList });
-    };    
+    const handleFileListChange = (newFileList) => {
+        console.log(newFileList);
+        // setFileList(newFileList);
+    };
 
     const normFile = (e) => {
         if (Array.isArray(e)) {
@@ -26,31 +26,24 @@ const Publish = () => {
         return e && e.fileList;
     };
 
-    const [uploadedFilePath, setUploadedFilePath] = useState('');
-
-    // Store the uploaded file path
-    const handleFileUploaded = (response) => {
-        if (response && response.path) {
-            setUploadedFilePath(response.path); 
-        }
-    };
-
     const submit = async () => {
         form.validateFields()
             .then(values => {
                 const formData = new FormData();
                 formData.append('title', values.title);
-                formData.append('category', values.category);
+                formData.append('channel_id', values.channel_id);
                 formData.append('content', values.content);
+                
+                // if (values.uploadedFile && values.uploadedFile.length > 0) {
+                //     formData.append('file', values.uploadedFile[0].originFileObj);
+                // }
+                
                 const authors = JSON.stringify(dataSource);
                 formData.append('authors', authors)
-                if (uploadedFilePath) {
-                    formData.append('filePath', uploadedFilePath); // Include the file path in the formData
-                }
+                console.log("fffffff")
                 for (let [key, value] of formData.entries()) {
                     console.log(`${key}: ${value}`);
                 }
-
             }
         )
         
@@ -84,7 +77,7 @@ const Publish = () => {
                     </Form.Item>
                     <Form.Item
                         label="Article Category"
-                        name="category"
+                        name="channel_id"
                         rules={[{ required: true, message: 'Please select article category' }]}
                     >
                         <Select placeholder="Select article category" style={{ width: '100%' }}>
@@ -113,7 +106,7 @@ const Publish = () => {
                         valuePropName="fileList"
                         getValueFromEvent={normFile}
                     >
-                        <PDFUploader onFileListChange={handleFileListChange} onFileUploaded={handleFileUploaded}/>
+                        <PDFUploader onFileListChange={handleFileListChange} />
                     </Form.Item>
 
                     <Form.Item wrapperCol={{ offset: 4 }}>

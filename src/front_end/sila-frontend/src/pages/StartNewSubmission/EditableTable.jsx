@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Button, Checkbox, Form, Input, Popconfirm, Table } from 'antd';
+import { Button, Form, Input, Popconfirm, Table } from 'antd';
 
 const EditableContext = React.createContext(null);
 
@@ -29,6 +29,7 @@ const EditableCell = ({
 
   useEffect(() => {
     if (editing) {
+      // Delay focus slightly to ensure it works in complex scenarios
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [editing]);
@@ -36,6 +37,7 @@ const EditableCell = ({
   const toggleEdit = () => {
     setEditing(!editing);
     form.setFieldsValue({ [dataIndex]: record[dataIndex] });
+    console.log(`Editing ${dataIndex}: ${record[dataIndex]}`);
   };
 
   const save = async () => {
@@ -43,6 +45,7 @@ const EditableCell = ({
       const values = await form.validateFields();
       toggleEdit();
       handleSave({ ...record, ...values });
+      console.log("Saved", values);
     } catch (errInfo) {
       console.log('Save failed:', errInfo);
     }
@@ -73,57 +76,33 @@ const EditableCell = ({
 };
 
 const CustomTable = ({ dataSource, setDataSource }) => {
-  const authorTitles = ['First Author', 'Second Author', 'Third Author', 'Fourth Author', 'Fifth Author', 'Sixth Author', 'Seventh Author', 'Eighth Author'];
-
   const handleDelete = (key) => {
     const newData = dataSource.filter(item => item.key !== key);
     setDataSource(newData);
   };
 
   const handleAdd = () => {
-    if (dataSource.length >= 8) {
-      console.log("Maximum number of rows reached");
-      return;
-    }
-    const newKey = dataSource.length + 1;
+    const newKey = dataSource.length > 0 ? parseInt(dataSource[dataSource.length - 1].key) + 1 : 0;
     const newData = {
       key: newKey.toString(),
-      authorOrder: `Author ${newKey}`,  // Not displayed, index-based
       firstName: 'N/A',  
       lastName: 'N/A',
       affiliation: 'N/A',
       academicTitle: 'N/A',
       orcid: 'N/A',
-      isCorresponding: false
     };
     setDataSource([...dataSource, newData]);
+    console.log("Added new row", dataSource);
   };
 
   const handleSave = (row) => {
     const newData = [...dataSource];
-    const index = newData.findIndex(item => item.key === row.key);
-    if (index > -1) {
-      const item = newData[index];
-      newData[index] = { ...item, ...row };
-      setDataSource(newData);
-      console.log("Data after save", newData);
-    } else {
-      console.log("Item not found when trying to save");
-    }
+    const index = newData.findIndex(item => row.key === item.key);
+    const item = newData[index];
+    newData.splice(index, 1, { ...item, ...row });
+    setDataSource(newData);
+    console.log("Data after save", newData);
   };
-
-  // checkbox for corresponding author
-  const handleCorrespondingChange = (e, key) => {
-    const newData = [...dataSource];
-    const index = newData.findIndex(item => item.key === key);
-    if (index > -1) {
-      const item = newData[index];
-      item.isCorresponding = e.target.checked; 
-      setDataSource(newData);
-      console.log("Updated Corresponding Status", newData);
-    }
-  };
-  
 
   const components = {
     body: {
@@ -133,37 +112,20 @@ const CustomTable = ({ dataSource, setDataSource }) => {
   };
 
   const columns = [
-    {
-      title: 'Author Order',
-      dataIndex: 'authorOrder',
-      key: 'authorOrder',
-      width: 100,  
-      render: (_, __, index) => authorTitles[index] || 'Additional Author'
-    },
     { title: 'First Name', dataIndex: 'firstName', editable: true },
     { title: 'Last Name', dataIndex: 'lastName', editable: true },
     { title: 'Affiliation', dataIndex: 'affiliation', editable: true },
     { title: 'Academic Title', dataIndex: 'academicTitle', editable: true },
     { title: 'ORCID', dataIndex: 'orcid', editable: true },
     {
-      title: 'Corresponding?',
-      dataIndex: 'isCorresponding',
-      key: 'isCorresponding',
-      render: (text, record) => (
-        <Checkbox 
-          checked={record.isCorresponding} 
-          onChange={(e) => handleCorrespondingChange(e, record.key)}
-        />
-      )
-    },
-    {
       title: 'Operation',
       dataIndex: 'operation',
-      render: (_, record) => dataSource.length >= 1 ? (
-        <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
-          <a>Delete</a>
-        </Popconfirm>
-      ) : null,
+      render: (_, record) =>
+        dataSource.length >= 1 ? (
+          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
+            <a>Delete</a>
+          </Popconfirm>
+        ) : null,
     },
   ].map(col => ({
     ...col,
