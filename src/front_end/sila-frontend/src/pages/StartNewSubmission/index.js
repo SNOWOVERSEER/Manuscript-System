@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Breadcrumb, Form, Button, Input, Space, Select } from 'antd';
+import { Card, Breadcrumb, Form, Button, Input, Space, Select, message } from 'antd';
 import './index.scss';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import CustomTable from './EditableTable';
 import PDFUploader from './PDFUploader';
+import {article_submission_API} from '../../apis/submisson'
 
 const { Option } = Select;
 const { useForm } = Form;
 
 const Publish = () => {
-    const [dataSource, setDataSource] = useState([]);
+    const [authorsInfo, setAuthorsInfo] = useState([]);
     const [form] = useForm(); // 创建表单实例
    
 
@@ -37,21 +38,31 @@ const Publish = () => {
 
     const submit = async () => {
         form.validateFields()
-            .then(values => {
-                const formData = new FormData();
-                formData.append('title', values.title);
-                formData.append('category', values.category);
-                formData.append('content', values.content);
-                const authors = JSON.stringify(dataSource);
-                formData.append('authors', authors)
-                uploadedFilePaths.forEach(path => formData.append('filePaths', path));
-                for (let [key, value] of formData.entries()) {
+            .then(async values => {
+                const jsonData = {
+                    title: values.title,
+                    abstract: values.abstract,
+                    category: values.category,
+                    authorsInfo: JSON.stringify(authorsInfo), 
+                    declaration: 'Not Implemented Yet',
+                    pdFs: JSON.stringify(uploadedFilePaths) 
+                };
+    
+                console.log(jsonData);
+                for (let [key, value] of Object.entries(jsonData)) {
                     console.log(`${key}: ${value}`);
                 }
 
-            }
-        )
-        
+                // Sending the formData to the backend API
+                try {
+                    const response = await article_submission_API(jsonData);
+                    console.log('Submission response:', response);
+                    message.success('Article submitted successfully!');
+                } catch (error) {
+                    console.error('Submission error:', error);
+                    message.error('Failed to submit the article.');
+                }
+            });
     }
 
     return (
@@ -90,10 +101,10 @@ const Publish = () => {
                             {/* Add other options as needed */}
                         </Select>
                     </Form.Item>
-                    <CustomTable dataSource={dataSource} setDataSource={setDataSource} />
+                    <CustomTable dataSource={authorsInfo} setDataSource={setAuthorsInfo} />
                     <Form.Item
                         label="Abstract"
-                        name="content"
+                        name="abstract"
                         rules={[{ required: true, message: 'Please input the abstract' }]}
                         className="form-item-spacing"
                     >
