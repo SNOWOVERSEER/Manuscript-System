@@ -13,11 +13,7 @@ const { useForm } = Form;
 const Publish = () => {
     const [dataSource, setDataSource] = useState([]);
     const [form] = useForm(); // 创建表单实例
-
-    const handleFileListChange = (fileList) => {
-        // console.log(fileList);
-        form.setFieldsValue({ uploadedFile: fileList });
-    };    
+   
 
     const normFile = (e) => {
         if (Array.isArray(e)) {
@@ -26,12 +22,16 @@ const Publish = () => {
         return e && e.fileList;
     };
 
-    const [uploadedFilePath, setUploadedFilePath] = useState('');
+    const [uploadedFilePaths, setUploadedFilePaths] = useState([]); // Store multiple file paths
 
-    // Store the uploaded file path
+    const handleFileListChange = (fileList) => {
+        // console.log(fileList);
+        form.setFieldsValue({ uploadedFile: fileList });
+    };
+
     const handleFileUploaded = (response) => {
         if (response && response.path) {
-            setUploadedFilePath(response.path); 
+            setUploadedFilePaths(prevPaths => [...prevPaths, response.path]);
         }
     };
 
@@ -44,9 +44,7 @@ const Publish = () => {
                 formData.append('content', values.content);
                 const authors = JSON.stringify(dataSource);
                 formData.append('authors', authors)
-                if (uploadedFilePath) {
-                    formData.append('filePath', uploadedFilePath); // Include the file path in the formData
-                }
+                uploadedFilePaths.forEach(path => formData.append('filePaths', path));
                 for (let [key, value] of formData.entries()) {
                     console.log(`${key}: ${value}`);
                 }
