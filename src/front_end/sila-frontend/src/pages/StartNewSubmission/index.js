@@ -22,36 +22,46 @@ const Publish = () => {
         }
         return e && e.fileList;
     };
+    
 
-    const [uploadedFilePaths, setUploadedFilePaths] = useState([]); // Store multiple file paths
+    const [uploadedFilePaths, setUploadedFilePaths] = useState({});
+
+    const handleFileUploaded = (response, id) => {
+        if (response && response.path) {
+            setUploadedFilePaths(prevPaths => ({
+                ...prevPaths,
+                [id]: response.path
+            }));
+        }
+    };
+
 
     const handleFileListChange = (fileList) => {
         // console.log(fileList);
         form.setFieldsValue({ uploadedFile: fileList });
     };
 
-    const handleFileUploaded = (response) => {
-        if (response && response.path) {
-            setUploadedFilePaths(prevPaths => [...prevPaths, response.path]);
-        }
-    };
 
     const submit = async () => {
         form.validateFields()
             .then(async values => {
+                // JSON.stringify(authorsInfo)
                 const jsonData = {
                     title: values.title,
                     abstract: values.abstract,
-                    category: values.category,
+                    authorId: localStorage.getItem("id"),
+                    category: "0",
                     authorsInfo: JSON.stringify(authorsInfo), 
                     declaration: 'Not Implemented Yet',
                     pdFs: JSON.stringify(uploadedFilePaths) 
                 };
+                console.log("---------------")
+                // console.log(authorsInfo)
     
                 console.log(jsonData);
-                for (let [key, value] of Object.entries(jsonData)) {
-                    console.log(`${key}: ${value}`);
-                }
+                // for (let [key, value] of Object.entries(jsonData)) {
+                //     console.log(`${key}: ${value}`);
+                // }
 
                 // Sending the formData to the backend API
                 try {
@@ -122,7 +132,10 @@ const Publish = () => {
                         valuePropName="fileList"
                         getValueFromEvent={normFile}
                     >
-                        <PDFUploader onFileListChange={handleFileListChange} onFileUploaded={handleFileUploaded}/>
+                        <PDFUploader id={"body"} onFileListChange={handleFileListChange} onFileUploaded={handleFileUploaded}/>
+                        <PDFUploader id={"appendix"} onFileListChange={handleFileListChange} onFileUploaded={handleFileUploaded}/>
+                        <PDFUploader id={"others"} onFileListChange={handleFileListChange} onFileUploaded={handleFileUploaded}/>
+
                     </Form.Item>
 
                     <Form.Item wrapperCol={{ offset: 4 }}>
