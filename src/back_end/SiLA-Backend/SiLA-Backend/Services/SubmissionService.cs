@@ -52,6 +52,7 @@ namespace SiLA_Backend.Services
             {
                 // Log the error
                 return (false, $"An error occurred: {ex.Message}");
+
             }
         }
     }
