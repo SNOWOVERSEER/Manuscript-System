@@ -54,8 +54,8 @@ namespace SiLA_Backend.Controllers
             }
         }
 
-        [Authorize]
-        [HttpGet("/AuthorDashboard/{userId}")]
+        [Authorize(Roles = "Author")]
+        [HttpGet("AuthorDashboard/{userId}")]
         public async Task<IActionResult> GetAuthorDashboard(string userId)
         {
             try

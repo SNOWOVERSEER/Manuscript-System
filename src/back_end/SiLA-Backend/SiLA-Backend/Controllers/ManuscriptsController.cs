@@ -28,6 +28,7 @@ namespace SiLA_Backend.Controllers
         }
 
         [HttpPost("uploadfile")]
+        [Authorize(Roles = "Author")]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
