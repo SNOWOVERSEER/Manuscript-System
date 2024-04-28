@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Breadcrumb, Form, Button, Input, Space, Select } from 'antd';
+import { Card, Breadcrumb, Form, Button, Input, Space, Select, message } from 'antd';
 import './index.scss';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import CustomTable from './EditableTable';
 import PDFUploader from './PDFUploader';
+import {article_submission_API} from '../../apis/submisson'
 
 const { Option } = Select;
 const { useForm } = Form;
 
 const Publish = () => {
-    const [dataSource, setDataSource] = useState([]);
+    const [authorsInfo, setAuthorsInfo] = useState([]);
     const [form] = useForm(); // 创建表单实例
-
-    const handleFileListChange = (newFileList) => {
-        console.log(newFileList);
-        // setFileList(newFileList);
-    };
+   
 
     const normFile = (e) => {
         if (Array.isArray(e)) {
@@ -25,28 +22,57 @@ const Publish = () => {
         }
         return e && e.fileList;
     };
+    
+
+    const [uploadedFilePaths, setUploadedFilePaths] = useState({});
+
+    const handleFileUploaded = (response, id) => {
+        if (response && response.path) {
+            setUploadedFilePaths(prevPaths => ({
+                ...prevPaths,
+                [id]: response.path
+            }));
+        }
+    };
+
+
+    const handleFileListChange = (fileList) => {
+        // console.log(fileList);
+        form.setFieldsValue({ uploadedFile: fileList });
+    };
+
 
     const submit = async () => {
         form.validateFields()
-            .then(values => {
-                const formData = new FormData();
-                formData.append('title', values.title);
-                formData.append('channel_id', values.channel_id);
-                formData.append('content', values.content);
-                
-                // if (values.uploadedFile && values.uploadedFile.length > 0) {
-                //     formData.append('file', values.uploadedFile[0].originFileObj);
+            .then(async values => {
+                // JSON.stringify(authorsInfo)
+                const jsonData = {
+                    title: values.title,
+                    abstract: values.abstract,
+                    authorId: localStorage.getItem("id"),
+                    category: "0",
+                    authorsInfo: JSON.stringify(authorsInfo), 
+                    declaration: 'Not Implemented Yet',
+                    pdFs: JSON.stringify(uploadedFilePaths) 
+                };
+                console.log("---------------")
+                // console.log(authorsInfo)
+    
+                console.log(jsonData);
+                // for (let [key, value] of Object.entries(jsonData)) {
+                //     console.log(`${key}: ${value}`);
                 // }
-                
-                const authors = JSON.stringify(dataSource);
-                formData.append('authors', authors)
-                console.log("fffffff")
-                for (let [key, value] of formData.entries()) {
-                    console.log(`${key}: ${value}`);
+
+                // Sending the formData to the backend API
+                try {
+                    const response = await article_submission_API(jsonData);
+                    console.log('Submission response:', response);
+                    message.success('Article submitted successfully!');
+                } catch (error) {
+                    console.error('Submission error:', error);
+                    message.error('Failed to submit the article.');
                 }
-            }
-        )
-        
+            });
     }
 
     return (
@@ -77,7 +103,7 @@ const Publish = () => {
                     </Form.Item>
                     <Form.Item
                         label="Article Category"
-                        name="channel_id"
+                        name="category"
                         rules={[{ required: true, message: 'Please select article category' }]}
                     >
                         <Select placeholder="Select article category" style={{ width: '100%' }}>
@@ -85,10 +111,10 @@ const Publish = () => {
                             {/* Add other options as needed */}
                         </Select>
                     </Form.Item>
-                    <CustomTable dataSource={dataSource} setDataSource={setDataSource} />
+                    <CustomTable dataSource={authorsInfo} setDataSource={setAuthorsInfo} />
                     <Form.Item
                         label="Abstract"
-                        name="content"
+                        name="abstract"
                         rules={[{ required: true, message: 'Please input the abstract' }]}
                         className="form-item-spacing"
                     >
@@ -106,7 +132,10 @@ const Publish = () => {
                         valuePropName="fileList"
                         getValueFromEvent={normFile}
                     >
-                        <PDFUploader onFileListChange={handleFileListChange} />
+                        <PDFUploader id={"body"} onFileListChange={handleFileListChange} onFileUploaded={handleFileUploaded}/>
+                        <PDFUploader id={"appendix"} onFileListChange={handleFileListChange} onFileUploaded={handleFileUploaded}/>
+                        <PDFUploader id={"others"} onFileListChange={handleFileListChange} onFileUploaded={handleFileUploaded}/>
+
                     </Form.Item>
 
                     <Form.Item wrapperCol={{ offset: 4 }}>
