@@ -1,62 +1,39 @@
-import { useNavigate } from 'react-router-dom'; // Correctly import useNavigate
-import { Card, Table, Tag } from 'antd';
-// import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+// ProfilePage.jsx
+import React, { useState } from 'react';
+import UserProfileDisplay from './UserProfileDisplay';
+import UserEditProfileForm from './UserEditProfileForm';
 
-const Submitted = () => {
-    const navigate = useNavigate(); // Initialize useNavigate
+const ProfilePage = () => {
+  const initialProfileData = {
+    username: 'JohnDoe',
+    Email: '123@gmail.com',
+    address: '1234 Sunset Blvd',
+    phoneNumber: '123-456-7890',
+    gender: 'Female',
+    bio: 'This is a short bio...',
+  };
 
-    const columns = [
-        {
-          title: 'ID',
-          dataIndex: 'id',
-          width: 120,
-        },
-        {
-          title: 'Title',
-          dataIndex: 'title',
-          width: 220,
-        },
-        {
-          title: 'Status',
-          dataIndex: 'status',
-        },
-        {
-          title: 'Submitted',
-          dataIndex: 'pubdate',
-        },
-        {
-          title: 'Decision',
-          dataIndex: 'decision_result',
-          render: data => <Tag color="green">Approval</Tag>,
-        },
-    ];
+  const [userData, setUserData] = useState(initialProfileData);
+  const [isEditing, setIsEditing] = useState(false);
 
-    const data = [
-        {
-            id: '1',
-            decision_result: 2,
-            pubdate: '2019-03-11 09:00:00',
-            status: 'Waiting for Review',
-            title: 'abc1234',
-        },
-    ];
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
 
-    // Define the onRow function to add click behavior using navigate
-    const onRow = (record, rowIndex) => {
-        return {
-            onClick: event => {
-                navigate(`/articledetail/${record.id}`); // Use navigate for routing
-            },
-        };
-    };
+  const handleSave = (updatedData) => {
+    setUserData({ ...userData, ...updatedData });
+    setIsEditing(false);
+  };
 
-    return (
-        <div>
-            <Card title={`All Submitted Articles:`}>
-                <Table rowKey="id" columns={columns} dataSource={data} pagination={false} onRow={onRow} />
-            </Card>
-        </div>
-    );
-}
+  return (
+    <div>
+      {isEditing ? (
+        <UserEditProfileForm userData={userData} onSave={handleSave} />
+      ) : (
+        <UserProfileDisplay userData={userData} onEdit={handleEdit} />
+      )}
+    </div>
+  );
+};
 
-export default Submitted;
+export default ProfilePage;
