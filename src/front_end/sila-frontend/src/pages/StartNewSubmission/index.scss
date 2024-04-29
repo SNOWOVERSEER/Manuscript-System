@@ -1,22 +1,21 @@
 .publish {
-    position: relative;
-  }
-  
-  .ant-upload-list {
-    .ant-upload-list-picture-card-container,
-    .ant-upload-select {
-      width: 146px;
-      height: 146px;
-    }
-  }
+  position: relative;
+}
 
-  .bio {
-    .ql-editor {
-      min-height: 300px;
-    }
+.ant-upload-list {
+  .ant-upload-list-picture-card-container,
+  .ant-upload-select {
+    width: 146px;
+    height: 146px;
   }
+}
 
-  .form-item-spacing {
-    margin-bottom: 100px;
+.bio {
+  .ql-editor {
+    min-height: 300px;
   }
-  
+}
+
+.form-item-spacing {
+  margin-bottom: 100px;
+}
