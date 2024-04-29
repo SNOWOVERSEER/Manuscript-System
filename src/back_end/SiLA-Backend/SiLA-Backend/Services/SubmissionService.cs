@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using SiLA_Backend.DTOs;
+using SiLA_Backend.Utilities;
 
 namespace SiLA_Backend.Services
 {
@@ -29,30 +30,48 @@ namespace SiLA_Backend.Services
 
         public async Task<(bool IsSuccess, string Message)> SubmitAsync(ManuscriptSubmissionModel model)
         {
-            try
+
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                var manuscript = new Manuscript
+                try
                 {
-                    Title = model.Title,
-                    Abstract = model.Abstract,
-                    AuthorId = model.AuthorId,
-                    Category = model.Category,
-                    AuthorsInfo = model.AuthorsInfo, // Directly store the JSON string
-                    Declaration = model.Declaration,
-                    FilePath = model.PDFs   //var fileUrl = $"https://{_bucketName}.s3.{_region}.amazonaws.com/{filePath}";
-                };
+                    var manuscript = new Manuscript
+                    {
+                        Title = model.Title,
+                        Abstract = model.Abstract,
+                        AuthorId = model.AuthorId,
+                        Category = model.Category,
+                        AuthorsInfo = model.AuthorsInfo, // Directly store the JSON string
+                        Declaration = model.Declaration,
+                        FilePath = model.PDFs
+                    };
 
-                _context.Manuscripts.Add(manuscript);
-                await _context.SaveChangesAsync();
+                    _context.Manuscripts.Add(manuscript);
+                    await _context.SaveChangesAsync();
+
+                    var submission = new Submission
+                    {
+                        ManuscriptId = manuscript.Id,
+                        AuthorId = manuscript.AuthorId,
+                        SubmissionDate = DateTime.UtcNow,
+                        Status = SubmissionStatus.Submitted.ToString()
+                    };
+
+                    _context.Submissions.Add(submission);
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
 
 
-                return (true, "Submission successful");
-            }
-            catch (Exception ex)
-            {
-                // Log the error
-                return (false, $"An error occurred: {ex.Message}");
+                    return (true, "Submission successful");
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    // Log the error
+                    return (false, $"An error occurred: {ex.Message}");
 
+                }
             }
         }
     }

@@ -23,7 +23,7 @@ namespace SiLA_Backend.Models
         public DateTime SubmissionDate { get; set; }
 
         [Required]
-        public string Status { get; set; } // 如 "Pending", "Reviewed", "Accepted", "Rejected"
+        public string Status { get; set; }
 
         public DateTime? RevisedDeadline { get; set; } // 修订截止日期
 

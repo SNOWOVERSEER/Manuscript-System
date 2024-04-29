@@ -18,6 +18,7 @@ namespace SiLA_Backend.Controllers
         private readonly ISubmissionService _submissionService;
         private readonly IAmazonS3 _amazonS3;
         private readonly string _bucketName = "sila-storage";
+        private readonly string _region = "ap-southeast-2";
         private readonly IConfiguration _configuration;
 
         public ManuscriptsController(ISubmissionService submissionService, IAmazonS3 amazonS3, IConfiguration configuration)
@@ -40,7 +41,7 @@ namespace SiLA_Backend.Controllers
                 {
                     await fileTransferUtility.UploadAsync(file.OpenReadStream(), _bucketName, filePath);
                 }
-                return Ok(new { state = "success", message = "File uploaded successfully", path = filePath });
+                return Ok(new { state = "success", message = "File uploaded successfully", path = $"https://{_bucketName}.s3.{_region}.amazonaws.com/{filePath}" }); //$"https://{_bucketName}.s3.{_region}.amazonaws.com/{filePath}"
             }
             catch (AmazonS3Exception ex)
             {
@@ -54,7 +55,7 @@ namespace SiLA_Backend.Controllers
 
 
         [HttpPost("submit")]
-        [Authorize(Roles = "Author")]
+        // [Authorize(Roles = "Author")]
         public async Task<IActionResult> Submit(ManuscriptSubmissionModel model)
         {
             var (IsSuccess, Message) = await _submissionService.SubmitAsync(model);
