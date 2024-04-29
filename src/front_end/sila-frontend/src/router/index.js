@@ -2,13 +2,14 @@
 import { AuthRoute, AuthRouteForLoginPage } from "../components/AuthRoute"
 import { createBrowserRouter } from "react-router-dom"
 
-import Home from "../pages/Home"
-import Layout from "../pages/Layout"
-import Login from "../pages/Login"
 import Register from "../pages/Register"
-import Submitted from "../pages/Submitted"
+import Login from "../pages/Login"
+
+import Home from "../pages/Author/Home"
+import Layout from "../pages/Author/Layout"
+import Submitted from "../pages/Author/Submitted"
 import StartNewSubmission from "../pages/StartNewSubmission"
-import ArticleDetail from "../pages/ArticleDetail"
+import ArticleDetail from "../pages/Author/ArticleDetail"
 
 import LayoutReviewer from "../pages/Reviewer/Layout"
 import ReviewAndScore from "../pages/Reviewer/ReviewAndScore"

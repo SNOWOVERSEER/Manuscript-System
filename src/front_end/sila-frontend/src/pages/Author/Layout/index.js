@@ -9,7 +9,7 @@ import './index.scss'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { clear_user, fetch_userinfo } from '../../store/modules/user'
+import { clear_user, fetch_userinfo } from '../../../store/modules/user'
 
 
 const { Header, Sider } = Layout
