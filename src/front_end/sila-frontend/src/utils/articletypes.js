@@ -14,4 +14,4 @@ const ArticleTypes = {
   // Test review
   // Book review
 
-  export {ArticleStatus}
+  export {ArticleTypes}
