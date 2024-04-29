@@ -14,8 +14,8 @@ const Login = () => {
   const on_finish = async (values) => {
     try {
       await dispatch(fetch_login(values));
-      navigate("/");
-      message.success("sign in success !!!");
+      navigate("/")
+      message.success("sign in success !!!")
     } catch (error) {
       if (error.message && error.message.includes("timeout..")) {
         message.error(

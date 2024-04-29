@@ -15,7 +15,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import CustomTable from "./EditableTable";
 import PDFUploader from "./PDFUploader";
-import { article_submission_API } from "../../apis/submisson";
+import { article_submission_API } from "../../../apis/submisson";
 
 const { Option } = Select;
 const { useForm } = Form;
