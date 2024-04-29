@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SiLA_Backend.DTOs;
 using SiLA_Backend.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace SiLA_Backend.Services
 {
@@ -19,13 +20,14 @@ namespace SiLA_Backend.Services
         private readonly ApplicationDbContext _context;
         private readonly ITokenManager _tokenManager;
         private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public SubmissionService(IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager)
+        public SubmissionService(IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _tokenManager = tokenManager;
             _hostingEnvironment = hostEnvironment;
-
+            _userManager = userManager;
         }
 
         public async Task<(bool IsSuccess, string Message)> SubmitAsync(ManuscriptSubmissionModel model)
@@ -74,6 +76,30 @@ namespace SiLA_Backend.Services
                 }
             }
         }
+
+        public async Task<List<AuthorDashBoardDTO>> GetAuthorDashBoardAsync(string authorId)
+        {
+
+            var user = await _userManager.FindByIdAsync(authorId);
+            if (user == null)
+                throw new KeyNotFoundException("User not found");
+
+            var submissions = await _context.Submissions
+            .Where(s => s.AuthorId == authorId)
+            .Include(s => s.Manuscript)
+            .Select(s => new AuthorDashBoardDTO
+            {
+                Id = s.Id,
+                Title = s.Manuscript.Title,
+                SubmissionDate = s.SubmissionDate,
+                Status = s.Status // Convert the enum to string
+            })
+            .ToListAsync();
+
+            return submissions;
+        }
+
+
     }
 
 

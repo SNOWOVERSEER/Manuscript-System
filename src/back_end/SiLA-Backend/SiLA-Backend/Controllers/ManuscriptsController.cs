@@ -55,7 +55,7 @@ namespace SiLA_Backend.Controllers
 
 
         [HttpPost("submit")]
-        // [Authorize(Roles = "Author")]
+        [Authorize(Roles = "Author")]
         public async Task<IActionResult> Submit(ManuscriptSubmissionModel model)
         {
             var (IsSuccess, Message) = await _submissionService.SubmitAsync(model);
@@ -64,6 +64,22 @@ namespace SiLA_Backend.Controllers
                 return Ok(new { state = "success", message = Message });
             }
             return BadRequest(new { state = "error", message = Message });
+        }
+
+
+        [Authorize(Roles = "Author")]
+        [HttpGet("AuthorDashboard/{userId}")]
+        public async Task<IActionResult> GetAuthorDashboard(string userId)
+        {
+            try
+            {
+                var dashboardData = await _submissionService.GetAuthorDashBoardAsync(userId);
+                return Ok(new { state = "success", data = dashboardData });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { state = "error", message = "User not found!" });
+            }
         }
     }
 }
