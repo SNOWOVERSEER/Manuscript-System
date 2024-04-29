@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Button, Checkbox, Form, Input, Popconfirm, Table } from 'antd';
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Button, Checkbox, Form, Input, Popconfirm, Table } from "antd";
 
 const EditableContext = React.createContext(null);
 
@@ -44,7 +44,7 @@ const EditableCell = ({
       toggleEdit();
       handleSave({ ...record, ...values });
     } catch (errInfo) {
-      console.log('Save failed:', errInfo);
+      console.log("Save failed:", errInfo);
     }
   };
 
@@ -73,10 +73,19 @@ const EditableCell = ({
 };
 
 const CustomTable = ({ dataSource, setDataSource }) => {
-  const authorTitles = ['First Author', 'Second Author', 'Third Author', 'Fourth Author', 'Fifth Author', 'Sixth Author', 'Seventh Author', 'Eighth Author'];
+  const authorTitles = [
+    "First Author",
+    "Second Author",
+    "Third Author",
+    "Fourth Author",
+    "Fifth Author",
+    "Sixth Author",
+    "Seventh Author",
+    "Eighth Author",
+  ];
 
   const handleDelete = (key) => {
-    const newData = dataSource.filter(item => item.key !== key);
+    const newData = dataSource.filter((item) => item.key !== key);
     setDataSource(newData);
   };
 
@@ -88,20 +97,20 @@ const CustomTable = ({ dataSource, setDataSource }) => {
     const newKey = dataSource.length + 1;
     const newData = {
       key: newKey.toString(),
-      authorOrder: `Author ${newKey}`,  // Not displayed, index-based
-      firstName: 'N/A',  
-      lastName: 'N/A',
-      affiliation: 'N/A',
-      academicTitle: 'N/A',
-      orcid: 'N/A',
-      isCorresponding: false
+      authorOrder: `Author ${newKey}`, // Not displayed, index-based
+      firstName: "N/A",
+      lastName: "N/A",
+      affiliation: "N/A",
+      academicTitle: "N/A",
+      orcid: "N/A",
+      isCorresponding: false,
     };
     setDataSource([...dataSource, newData]);
   };
 
   const handleSave = (row) => {
     const newData = [...dataSource];
-    const index = newData.findIndex(item => item.key === row.key);
+    const index = newData.findIndex((item) => item.key === row.key);
     if (index > -1) {
       const item = newData[index];
       newData[index] = { ...item, ...row };
@@ -115,15 +124,14 @@ const CustomTable = ({ dataSource, setDataSource }) => {
   // checkbox for corresponding author
   const handleCorrespondingChange = (e, key) => {
     const newData = [...dataSource];
-    const index = newData.findIndex(item => item.key === key);
+    const index = newData.findIndex((item) => item.key === key);
     if (index > -1) {
       const item = newData[index];
-      item.isCorresponding = e.target.checked; 
+      item.isCorresponding = e.target.checked;
       setDataSource(newData);
       console.log("Updated Corresponding Status", newData);
     }
   };
-  
 
   const components = {
     body: {
@@ -134,40 +142,44 @@ const CustomTable = ({ dataSource, setDataSource }) => {
 
   const columns = [
     {
-      title: 'Author Order',
-      dataIndex: 'authorOrder',
-      key: 'authorOrder',
-      width: 100,  
-      render: (_, __, index) => authorTitles[index] || 'Additional Author'
+      title: "Author Order",
+      dataIndex: "authorOrder",
+      key: "authorOrder",
+      width: 100,
+      render: (_, __, index) => authorTitles[index] || "Additional Author",
     },
-    { title: 'First Name', dataIndex: 'firstName', editable: true },
-    { title: 'Last Name', dataIndex: 'lastName', editable: true },
-    { title: 'Affiliation', dataIndex: 'affiliation', editable: true },
-    { title: 'Academic Title', dataIndex: 'academicTitle', editable: true },
-    { title: 'ORCID', dataIndex: 'orcid', editable: true },
+    { title: "First Name", dataIndex: "firstName", editable: true },
+    { title: "Last Name", dataIndex: "lastName", editable: true },
+    { title: "Affiliation", dataIndex: "affiliation", editable: true },
+    { title: "Academic Title", dataIndex: "academicTitle", editable: true },
+    { title: "ORCID", dataIndex: "orcid", editable: true },
     {
-      title: 'Corresponding?',
-      dataIndex: 'isCorresponding',
-      key: 'isCorresponding',
+      title: "Corresponding?",
+      dataIndex: "isCorresponding",
+      key: "isCorresponding",
       render: (text, record) => (
-        <Checkbox 
-          checked={record.isCorresponding} 
+        <Checkbox
+          checked={record.isCorresponding}
           onChange={(e) => handleCorrespondingChange(e, record.key)}
         />
-      )
+      ),
     },
     {
-      title: 'Operation',
-      dataIndex: 'operation',
-      render: (_, record) => dataSource.length >= 1 ? (
-        <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
-          <a>Delete</a>
-        </Popconfirm>
-      ) : null,
+      title: "Operation",
+      dataIndex: "operation",
+      render: (_, record) =>
+        dataSource.length >= 1 ? (
+          <Popconfirm
+            title="Sure to delete?"
+            onConfirm={() => handleDelete(record.key)}
+          >
+            <a>Delete</a>
+          </Popconfirm>
+        ) : null,
     },
-  ].map(col => ({
+  ].map((col) => ({
     ...col,
-    onCell: record => ({
+    onCell: (record) => ({
       record,
       editable: col.editable,
       dataIndex: col.dataIndex,
@@ -177,15 +189,22 @@ const CustomTable = ({ dataSource, setDataSource }) => {
   }));
 
   return (
-    <div style={{width: '67%', margin: 'auto', marginTop: '30px', marginBottom: '30px'}}>
+    <div
+      style={{
+        width: "67%",
+        margin: "auto",
+        marginTop: "30px",
+        marginBottom: "30px",
+      }}
+    >
       <Table
         components={components}
-        rowClassName={() => 'editable-row'}
+        rowClassName={() => "editable-row"}
         bordered
         dataSource={dataSource}
         columns={columns}
-        rowKey={record => record.key} 
-        pagination={false} 
+        rowKey={(record) => record.key}
+        pagination={false}
       />
       <Button onClick={handleAdd} type="primary" style={{ marginTop: 16 }}>
         Add a Row
