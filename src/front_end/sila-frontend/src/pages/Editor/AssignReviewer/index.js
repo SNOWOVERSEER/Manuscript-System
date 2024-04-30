@@ -7,7 +7,7 @@ import { Card, Button } from 'antd'
 import { useNavigate } from "react-router-dom"
 import { ArticleStatus } from "../../../utils/status"
 import FormModal from "../FormModal"
-
+import { article_List_API } from "../../../apis/article"
 
 const AssignReviewer = ()=>{
     const navigate = useNavigate()
@@ -16,18 +16,21 @@ const AssignReviewer = ()=>{
     //get articles for review
     const [articles, setArticles] = useState([])
 
-    useEffect(()=>{
-        //1.
-        // async function get_articles_for_review(){
-        //     const res = await get_articles_for_review_API()
-        //     setArticles(res.data)
+    useEffect(() => {
+      async function get_articles_by_author(id) {
+        const res = await article_List_API(id);  // Assuming the API expects an object with an authorId property
+        console.log(res)
+        // if (res && res.data) {
+        //   const formattedArticles = res.data.map(article => ({
+        //     ...article,
+        //     submissionDate: formatDate(article.submissionDate)
+        //   }));
+        //   setArticles(formattedArticles);
         // }
-        // get_articles_for_review()
-
-        //2/
-        setArticles([1,2])
-
-    }, [])
+      }
+  
+      get_articles_by_author(localStorage.getItem('id'));
+    }, []);
 
     const showModal = async (article_id) => {
         

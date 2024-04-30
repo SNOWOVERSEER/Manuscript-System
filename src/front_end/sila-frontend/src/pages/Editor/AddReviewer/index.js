@@ -9,6 +9,7 @@ const AssignReviewer = ()=>{
 
     const on_finish = async (values) => {
         try {
+            
             const res = await register_reviewer_API(values)
             // console.log(res)
             // navigate('/') //navigate to editor home page
