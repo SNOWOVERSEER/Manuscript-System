@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Table, Tag, Space } from 'antd'
 import { EditOutlined } from '@ant-design/icons'
 import { Card, Button } from 'antd'
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { ArticleStatus } from "../../../utils/status"
 import FormModal from "../FormModal"
 import { article_List_API } from "../../../apis/article"
@@ -18,8 +18,8 @@ const AssignReviewer = ()=>{
 
     useEffect(() => {
       async function get_articles_by_author(id) {
-        const res = await article_List_API(id);  // Assuming the API expects an object with an authorId property
-        console.log(res)
+        // const res = await article_List_API(id);  // Assuming the API expects an object with an authorId property
+        // console.log(res)
         // if (res && res.data) {
         //   const formattedArticles = res.data.map(article => ({
         //     ...article,
@@ -37,8 +37,8 @@ const AssignReviewer = ()=>{
         try {
             console.log(article_id)
             // const data = await fetchArticleData(article_id);
-            setArticleData({"title":"article1","content":"content1"}); 
-            setIsModalOpen(true); 
+            // setArticleData({"title":"article1","content":"content1"}); 
+            // setIsModalOpen(true); 
           } catch (error) {
             console.error('Error fetching article data:', error);
           }
@@ -133,6 +133,8 @@ const AssignReviewer = ()=>{
     return (
         <div>
         {/*        */}
+        <Link to="/editor/editorarticle/1">About</Link>
+        
         <Card title={`Assign reviewers to articles`}>
           <Table rowKey="id" columns={columns} dataSource={data} />
         </Card>
