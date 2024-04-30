@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Amazon.S3;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,8 +27,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-// builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//     options.UseInMemoryDatabase("MyDatabase"));
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
         new MySqlServerVersion(new Version(8, 3, 0))));
@@ -58,11 +57,17 @@ builder.Services.AddAuthentication(options =>
         OnTokenValidated = async context =>
         {
             var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenManager>();
-            var token = context.SecurityToken as JwtSecurityToken;
-            if (token != null && await tokenService.IsTokenBlacklisted(token.RawData))
+            var token = context.SecurityToken as JsonWebToken;
+
+            if (token != null)
             {
-                context.Fail("This token is blacklisted");
+                var isBlacklisted = await tokenService.IsTokenBlacklisted(token.EncodedToken);
+                if (isBlacklisted)
+                {
+                    context.Fail("This token is blacklisted");
+                }
             }
+            return;
         }
     };
 

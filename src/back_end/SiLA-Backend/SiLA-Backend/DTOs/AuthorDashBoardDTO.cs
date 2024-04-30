@@ -6,6 +6,7 @@ namespace SiLA_Backend.DTOs
     {
         public int Id { get; set; }
         public string Title { get; set; }
+        public string Category { get; set; }
 
         public DateTime SubmissionDate { get; set; }
 

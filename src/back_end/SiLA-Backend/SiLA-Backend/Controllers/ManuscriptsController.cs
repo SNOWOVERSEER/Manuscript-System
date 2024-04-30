@@ -28,8 +28,8 @@ namespace SiLA_Backend.Controllers
             _configuration = configuration;
         }
 
-        [HttpPost("uploadfile")]
         [Authorize(Roles = "Author")]
+        [HttpPost("uploadfile")]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -53,9 +53,8 @@ namespace SiLA_Backend.Controllers
             }
         }
 
-
-        [HttpPost("submit")]
         [Authorize(Roles = "Author")]
+        [HttpPost("submit")]
         public async Task<IActionResult> Submit(ManuscriptSubmissionModel model)
         {
             var (IsSuccess, Message) = await _submissionService.SubmitAsync(model);
@@ -67,7 +66,7 @@ namespace SiLA_Backend.Controllers
         }
 
 
-        [Authorize(Roles = "Author")]
+        [Authorize]
         [HttpGet("AuthorDashboard/{userId}")]
         public async Task<IActionResult> GetAuthorDashboard(string userId)
         {

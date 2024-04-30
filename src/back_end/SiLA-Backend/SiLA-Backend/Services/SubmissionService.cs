@@ -92,6 +92,7 @@ namespace SiLA_Backend.Services
             {
                 Id = s.Id,
                 Title = s.Title,
+                Category = s.Manuscript.Category,
                 SubmissionDate = s.SubmissionDate,
                 Status = s.Status // Convert the enum to string
             })
