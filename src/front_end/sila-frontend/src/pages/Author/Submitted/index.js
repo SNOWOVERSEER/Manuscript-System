@@ -10,7 +10,7 @@ const ProfilePage = () => {
     address: '1234 Sunset Blvd',
     phoneNumber: '123-456-7890',
     gender: 'Female',
-    bio: 'This is a short bio...',
+    bio: 'This is a short bio....',
   };
 
   const [userData, setUserData] = useState(initialProfileData);
