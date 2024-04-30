@@ -11,7 +11,7 @@ const { Title, Paragraph, Text } = Typography;
 
 const articles = [
     {
-        id: 1,
+        id: 2,
         title: 'Article 1',
         abstract: 'Abstract of Article 1',
         content: '/111.pdf', // This assumes 111.pdf is in the public directory
