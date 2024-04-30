@@ -67,7 +67,7 @@ namespace SiLA_Backend.Controllers
 
 
         [Authorize]
-        [HttpGet("AuthorDashboard/{userId}")]
+        [HttpGet("submissions/{userId}")]
         public async Task<IActionResult> GetAuthorDashboard(string userId)
         {
             try
