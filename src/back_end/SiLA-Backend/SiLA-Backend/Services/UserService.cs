@@ -67,5 +67,26 @@ namespace SiLA_Backend.Services
 
 
         }
+
+        public async Task<List<ReviewerInfoDTO>> GetReviewersInfoAsync()
+        {
+            try
+            {
+                var reviewers = await _userManager.GetUsersInRoleAsync("Reviewer");
+                return reviewers.Select(r => new ReviewerInfoDTO
+                {
+                    Id = r.Id,
+                    Email = r.Email,
+                    Name = r.FirstName + " " + r.LastName,
+                    Category = r.Category ?? "N/A",
+                    NumberOfTasksAssigned = 0
+
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new KeyNotFoundException($"No reviewers found,{ex.Message}");
+            }
+        }
     }
 }

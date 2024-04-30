@@ -23,6 +23,7 @@ namespace SiLA_Backend.Models
         public string? Bio { get; set; }
         public string? ProfilePicture { get; set; }
         public string? Education { get; set; }
+        public string? Category { get; set; }
 
 
         public ICollection<Manuscript> Manuscripts { get; set; }  // 作者的稿件

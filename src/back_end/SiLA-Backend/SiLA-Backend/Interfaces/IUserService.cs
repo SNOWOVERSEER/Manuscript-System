@@ -9,5 +9,6 @@ namespace SiLA_Backend.Services
     {
         Task<UserDTO> GetUserInfoAsync(string userId);
         Task<(bool IsSuccess, string Message)> UpdateUserInfoAsync(string userId, UserDTO userDto);
+        Task<List<ReviewerInfoDTO>> GetReviewersInfoAsync();
     }
 }

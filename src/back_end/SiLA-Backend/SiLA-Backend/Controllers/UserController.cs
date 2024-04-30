@@ -54,5 +54,21 @@ namespace SiLA_Backend.Controllers
             }
         }
 
+        [Authorize(Roles = "Editor")]
+        [HttpGet("reviewersinfo")]
+        public async Task<IActionResult> GetReviewersInfo()
+        {
+            try
+            {
+                var reviewers = await _userService.GetReviewersInfoAsync();
+                return Ok(new { state = "success", data = reviewers });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { state = "error", message = ex.Message });
+            }
+
+        }
+
     }
 }
