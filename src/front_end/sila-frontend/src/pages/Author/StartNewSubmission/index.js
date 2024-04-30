@@ -10,7 +10,7 @@ import {
   Select,
   message,
 } from "antd";
-import { ArticleTypes } from "../../utils/articletypes";
+import { ArticleTypes } from "../../../utils/articletypes";
 import "./index.scss";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
