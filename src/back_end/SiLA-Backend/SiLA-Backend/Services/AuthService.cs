@@ -64,6 +64,41 @@ namespace SiLA_Backend.Services
             }
         }
 
+
+        public async Task<(bool IsSuccess, string Message)> RegisterReviewerAsync(RegisterModel model)
+        {
+            var userExists = await _userManager.FindByEmailAsync(model.Email);
+            if (userExists != null)
+            {
+                if (await _userManager.IsInRoleAsync(userExists, "Reviewer"))
+                {
+                    return (false, "This User is already a Reviewer!");
+                }
+                await _userManager.AddToRoleAsync(userExists, "Reviewer");
+                return (true, "User is now a Reviewer!");
+            }
+
+            var user = new ApplicationUser
+            {
+                Email = model.Email,
+                UserName = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, "Reviewer");
+                return (true, "New Reviewer User registered successfully!");
+            }
+            else
+            {
+                var errors = result.Errors.Select(e => e.Description);
+                return (false, $"Reviewer User registration failed! Errors: {string.Join(", ", errors)}");
+            }
+        }
+
         public async Task<(bool IsSuccess, string Message, string? Token, string? Id)> LoginAsync(LoginModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);

@@ -56,7 +56,8 @@ namespace SiLA_Backend.Services
                         ManuscriptId = manuscript.Id,
                         AuthorId = manuscript.AuthorId,
                         SubmissionDate = DateTime.UtcNow,
-                        Status = SubmissionStatus.Submitted.ToString()
+                        Status = SubmissionStatus.Submitted.ToString(),
+                        Title = model.Title,
                     };
 
                     _context.Submissions.Add(submission);
@@ -90,7 +91,7 @@ namespace SiLA_Backend.Services
             .Select(s => new AuthorDashBoardDTO
             {
                 Id = s.Id,
-                Title = s.Manuscript.Title,
+                Title = s.Title,
                 SubmissionDate = s.SubmissionDate,
                 Status = s.Status // Convert the enum to string
             })

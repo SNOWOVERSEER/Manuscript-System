@@ -13,6 +13,9 @@ namespace SiLA_Backend.Models
         public string AuthorId { get; set; } // 作者ID
         public ApplicationUser Author { get; set; } // 作者实体
 
+        [Required]
+        public string Title { get; set; }
+
         public string? ReviewerId { get; set; } // 审稿人ID
         public ApplicationUser? Reviewer { get; set; } // 审稿人实体
 
