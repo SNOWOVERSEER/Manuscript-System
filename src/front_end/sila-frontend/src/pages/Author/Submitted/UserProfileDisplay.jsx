@@ -9,16 +9,20 @@ const UserProfileDisplay = ({ userData, onEdit }) => {
       <div className="profile-section">
         <div className="profile-section-header">Profile</div>
         
-        <div className="profile-detail">{userData.username}</div>
+        <div className="profile-detail">{userData.firstName}</div>
       </div>
       <div className="profile-section">
         <div className="profile-detail">
-          <span className="profile-detail-label">Username: </span>
-          <span>{userData.username}</span>
+          <span className="profile-detail-label">First Name: </span>
+          <span>{userData.firstName}</span>
+        </div>
+        <div className="profile-detail">
+          <span className="profile-detail-label">Last Name: </span>
+          <span>{userData.lastName}</span>
         </div>
         <div className="profile-detail">
           <span className="profile-detail-label">Email addresses: </span>
-          <span>{userData.Email}</span>
+          <span>{userData.email}</span>
           <span className="primary-tag">Primary</span>
         </div>
         <div className="profile-detail">
@@ -27,11 +31,15 @@ const UserProfileDisplay = ({ userData, onEdit }) => {
         </div>
         <div className="profile-detail">
           <span className="profile-detail-label">Phone Number: </span>
-          <span>{userData.phoneNumber}</span>
+          <span>{userData.phone}</span>
         </div>
         <div className="profile-detail">
           <span className="profile-detail-label">Gender: </span>
           <span>{userData.gender}</span>
+        </div>
+        <div className="profile-detail">
+          <span className="profile-detail-label">Date of Birth: </span>
+          <span>{userData.birthDate}</span>
         </div>
         <div className="profile-detail profile-detail-bio">
           <span className="profile-detail-label">Bio: </span>
