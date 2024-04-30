@@ -7,15 +7,26 @@ import {useSelector} from "react-redux";
 import { message } from 'antd';
 
 const ProfilePage = () => {
+  const {
+    firstName,
+    lastName,
+    email,
+    address,
+    phone,
+    gender,
+    birthDate,
+    bio,
+  } = useSelector((state) => state.user.userInfo);
+
   const initialProfileData = {
-    firstName: useSelector((state) => state.user.userInfo.firstName),
-    lastName: useSelector((state) => state.user.userInfo.lastName),
-    email: useSelector((state) => state.user.userInfo.email),
-    address: useSelector((state) => state.user.userInfo.address),
-    phone: useSelector((state) => state.user.userInfo.phone),
-    gender: useSelector((state) => state.user.userInfo.gender),
-    birthDate: useSelector((state) => state.user.userInfo.birthDate),
-    bio: useSelector((state) => state.user.userInfo.bio),
+    firstName,
+    lastName,
+    email,
+    address,
+    phone,
+    gender,
+    birthDate,
+    bio,
   };
 
   const [userData, setUserData] = useState(initialProfileData);
