@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, Form, Input, Button, message } from "antd"
-import { register_API } from '../../../apis/user';
+import { register_API } from '../../../apis/user'
+import { register_reviewer_API } from '../../../apis/user';
 
 const AssignReviewer = ()=>{
 
@@ -8,8 +9,10 @@ const AssignReviewer = ()=>{
 
     const on_finish = async (values) => {
         try {
-            const res = await register_API(values)
-            navigate('/') //navigate to editor home page
+            const res = await register_reviewer_API(values)
+            // console.log(res)
+            // navigate('/') //navigate to editor home page
+            window.location.reload()
             message.success(res.message)
         } catch (error) {
             if (error.response) {

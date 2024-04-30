@@ -20,3 +20,10 @@ export function get_articles_for_review_API(){
     return ({})
 }
 
+export function register_reviewer_API(data_){
+    return http({
+        url: '/Auth/register/reviewer',
+        method: 'POST',
+        data: data_
+    })
+}
