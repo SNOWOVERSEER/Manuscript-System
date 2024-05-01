@@ -7,7 +7,9 @@ Welcome to our website repository! This repo is the implementation of the projec
 1. docs: the documents related to our project are included in the "docs" folder, such as Project Personan, Goal Model and ER disgram.
 2. src: the src folder serves as the primary container for our project's codebase, including both the client-side and server-side components.
 
-**Version 2.0.0**
+| Version |
+|---|
+| `2.0.0` |
 
 # Updates
 *5/05/2024 (Sprint 2)*
