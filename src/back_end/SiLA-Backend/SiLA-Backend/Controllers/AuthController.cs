@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using SiLA_Backend.Models;
+using SiLA_Backend.DTOs;
 using SiLA_Backend.Services;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SiLA_Backend.Controllers
 {
@@ -20,6 +22,18 @@ namespace SiLA_Backend.Controllers
         public async Task<IActionResult> Register(RegisterModel model)
         {
             var (IsSuccess, Message) = await _authService.RegisterAsync(model);
+            if (IsSuccess)
+            {
+                return Ok(new { state = "success", message = Message });
+            }
+            return BadRequest(new { state = "error", message = Message });
+        }
+
+        [Authorize(Roles = "Editor")]
+        [HttpPost("register/reviewer")]
+        public async Task<IActionResult> RegisterReviewer(RegisterModel model)
+        {
+            var (IsSuccess, Message) = await _authService.RegisterReviewerAsync(model);
             if (IsSuccess)
             {
                 return Ok(new { state = "success", message = Message });
