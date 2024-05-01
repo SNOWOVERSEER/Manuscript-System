@@ -10,6 +10,7 @@ import {
   Select,
   message,
 } from "antd";
+import { ArticleTypes } from "../../../utils/articletypes";
 import "./index.scss";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -54,7 +55,7 @@ const Publish = () => {
         title: values.title,
         abstract: values.abstract,
         authorId: localStorage.getItem("id"),
-        category: "0",
+        category: values.category,
         authorsInfo: JSON.stringify(authorsInfo),
         declaration: "Not Implemented Yet",
         pdFs: JSON.stringify(uploadedFilePaths),
@@ -116,16 +117,24 @@ const Publish = () => {
               placeholder="Select article category"
               style={{ width: "100%" }}
             >
-              <Option value={"Regular issue research paper"}>
-                Regular issue research paper
+              <Option value={ArticleTypes.Regular_issue_research_paper}>
+                {ArticleTypes.Regular_issue_research_paper}
               </Option>
-              <Option value={"Discussion paper"}>Discussion paper</Option>
-              <Option value={"Short research report"}>
-                Short research report
+              <Option value={ArticleTypes.Discussion_paper}>
+                {ArticleTypes.Discussion_paper}
               </Option>
-              <Option value={"Special issue paper"}>Special issue paper</Option>
-              <Option value={"Test review"}>Test review</Option>
-              <Option value={"Book review"}>Book review</Option>
+              <Option value={ArticleTypes.Short_research_report}>
+                {ArticleTypes.Short_research_report}
+              </Option>
+              <Option value={ArticleTypes.Special_issue_paper}>
+                {ArticleTypes.Special_issue_paper}
+              </Option>
+              <Option value={ArticleTypes.Test_review}>
+                {ArticleTypes.Test_review}
+              </Option>
+              <Option value={ArticleTypes.Book_review}>
+                {ArticleTypes.Book_review}
+              </Option>
               {/* Add other options as needed */}
             </Select>
           </Form.Item>
