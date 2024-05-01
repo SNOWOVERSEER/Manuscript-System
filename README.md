@@ -8,6 +8,12 @@ Welcome to our website repository! This repo is the implementation of the projec
 2. src: the src folder serves as the primary container for our project's codebase, including both the client-side and server-side components.
 
 # Updates
+*5/05/2024 (Sprint 2)*
+
+1. add Author Dashboard, new submition page, and article detail page.
+2. add Reviewer Dashboard.
+3. add Editor Dashboard, new Reviewer account page, and assign reviewer page.
+
 *18/04/2024 (Sprint 2)*
 
 1. add sign in feature for role reviewer.
@@ -27,6 +33,10 @@ Welcome to our website repository! This repo is the implementation of the projec
 
 1. Establish the repository's framework. 
 2. update the ReadMe file.
+
+# Release 
+- Second relsease[May 3, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT2
+- First relsease [March 22, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT1
 
 # Introduction
 This project aims to develop an Online Manuscript Submission and Peer Review Platform for the Studies in Language Assessment (SiLA) journal, operated by the Association for Language Testing and Assessment of Australia and New Zealand (ALTAANZ). The envisioned platform will replace the current email-based manuscript submission and review process with a comprehensive, streamlined, online system. This initiative seeks to enhance the efficiency of manuscript handling, review assignments, editorial decision-making, and communication among authors, reviewers, and editors.
