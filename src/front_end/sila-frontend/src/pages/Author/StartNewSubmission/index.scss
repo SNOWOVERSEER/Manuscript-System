@@ -1,0 +1,21 @@
+.publish {
+  position: relative;
+}
+
+.ant-upload-list {
+  .ant-upload-list-picture-card-container,
+  .ant-upload-select {
+    width: 146px;
+    height: 146px;
+  }
+}
+
+.bio {
+  .ql-editor {
+    min-height: 300px;
+  }
+}
+
+.form-item-spacing {
+  margin-bottom: 100px;
+}

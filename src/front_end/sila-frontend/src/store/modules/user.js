@@ -1,46 +1,72 @@
 import { createSlice } from "@reduxjs/toolkit";
-import {getToken, http, setToken} from '../../utils'
+import {getToken, http} from '../../utils'
+import { getID } from "../../utils";
+import { login_API } from "../../apis/user";
 
 const userStore = createSlice({
     name: "user",
     initialState: {
+        id: getID() || "",
         token: getToken() || "",
+        role: localStorage.getItem('role') || "",
         userInfo: {}
     },
     reducers: {
+        set_id(state, action){
+            state.id = action.payload
+            //localStorage
+            localStorage.setItem("id", action.payload)
+        },
         set_token(state, action){
             state.token = action.payload
             //localStorage
-            setToken(action.payload)
+            localStorage.setItem("token", action.payload)
+        },
+        set_role(state, action){
+            state.role = action.payload
+            //localStorage
+            localStorage.setItem("role", action.payload)
         },
         set_userinfo(state, action){
             state.userInfo = action.payload
+        },
+        clear_user(state){
+            state.id = ""
+            state.token = ""
+            state.role = ""
+            state.userInfo = {}
+
+            localStorage.removeItem("id")
+            localStorage.removeItem("token")
+            localStorage.removeItem('role')
         }
     }
 })
 
-const {set_token, set_userinfo} = userStore.actions
+const {set_token, set_id, set_role, set_userinfo, clear_user} = userStore.actions
 //async method
 const fetch_login = (data)=>{
     return async (dispatch)=>{
         try{
-            const res = await http.post('/Auth/login', data)
+            const res = await login_API(data)
+            dispatch(set_id(res.data.id))
             dispatch(set_token(res.data.token))
+            dispatch(set_role(data.role))
             return res
         } catch (error) {
-            return {"state":"error" }
+            throw error
         }
     }
 }
 const fetch_userinfo = ()=>{
     return async (dispatch)=>{
-        const res = await http.get("/User/getuserinfo")
-        console.log(res)
+        const res = await http.get(`/User/${localStorage.getItem('id')}`)
+        // console.log(res)
         dispatch(set_userinfo(res.data))
     }
 }
 
-export {set_token, fetch_login, fetch_userinfo}
+export {set_token, fetch_login, fetch_userinfo, clear_user}  //set_id
 
 const userReducer = userStore.reducer
 export default userReducer

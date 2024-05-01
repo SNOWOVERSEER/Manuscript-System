@@ -1,10 +1,11 @@
-import { getToken } from "../utils"
+import { getID, getToken } from "../utils"
 import { Navigate } from "react-router-dom"
 
 //for login page, {children} is a component
 const AuthRouteForLoginPage = ({children})=>{
     const token = getToken() // get token from localstorage
-    if(!token){
+    const id = getID()
+    if(!token || !id){
         return <>{children}</>
     }else{
         return <Navigate to="/" replace/>
@@ -14,7 +15,8 @@ const AuthRouteForLoginPage = ({children})=>{
 //{children} is like <Layout /> or <Login />
 const AuthRoute = ({children})=>{
     const token = getToken()
-    if(token){
+    const id = getID()
+    if(token && id){
         return <>{children}</>
     }else{
         return <Navigate to="/login" replace/>

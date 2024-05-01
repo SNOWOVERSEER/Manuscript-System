@@ -1,50 +1,57 @@
 import { Layout, Menu, Popconfirm } from 'antd'
 import {
-  HomeOutlined,
   DiffOutlined,
-  EditOutlined,
   LogoutOutlined,
 } from '@ant-design/icons'
 import './index.scss'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetch_userinfo } from '../../store/modules/user'
+import { clear_user, fetch_userinfo } from '../../../store/modules/user'
 
 const { Header, Sider } = Layout
 
 const items = [
   {
-    label: 'Home',
-    key: '/',
-    icon: <HomeOutlined />,
-  },
-  {
-    label: 'Submitted Manuscript',
-    key: '/submitted',
+    label: 'Review and Score',
+    key: '/reviewer',
     icon: <DiffOutlined />,
   },
   {
-    label: 'Start New Submission',
-    key: '/startnewsubmission',
-    icon: <EditOutlined />,
+    label: 'History',
+    key: '/reviewer/history',
+    icon: <DiffOutlined />,
   },
+
 ]
 
-const MyLayout = () => {
+const LayoutReviewer = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch()
 
-  
+  console.log(location.pathname)
   useEffect(()=>{
-    // dispatch(fetch_userinfo())
+    dispatch(fetch_userinfo())
   }, [dispatch])
-  // const name = useSelector(state => state.user.userInfo.name)
+  const name = useSelector(state => state.user.userInfo.firstName) + " " + useSelector(state => state.user.userInfo.lastName)
 
   const onMenuClick = (menu)=>{
     // console.log(menu.key)
     navigate(menu.key)
+  }
+
+  const on_logout = ()=>{
+    // http
+    dispatch(clear_user())
+    navigate('/login')
+  }
+
+  const getSelectedKeys = (pathname) => {
+    if (pathname.startsWith('/reviewer/reviewpage')) {
+      return ['/reviewer'];
+    }
+    return [pathname];
   }
 
   return (
@@ -53,9 +60,9 @@ const MyLayout = () => {
       <Header className="header"  style={{ backgroundColor: '#2c2c2c' }}>
         <div className="logo" />
         <div className="user-info">
-          <span className="user-name">name</span>
+          <span className="user-name">{name}</span>
           <span className="user-logout">
-            <Popconfirm title="Sign Out？" okText="OK" cancelText="Cancel">
+            <Popconfirm title="Sign Out？" okText="OK" cancelText="Cancel" onConfirm={on_logout}>
               <LogoutOutlined style={{ fontSize: '20px' }} />
             </Popconfirm>
           </span>
@@ -67,7 +74,7 @@ const MyLayout = () => {
           <Menu
             mode="inline"
             theme="light"
-            selectedKeys={location.pathname}
+            selectedKeys={getSelectedKeys(location.pathname)}
             items={items}
             onClick={onMenuClick}
             style={{ height: '100%', borderRight: 0, backgroundColor: '#f9f9f9' }} ></Menu>
@@ -81,4 +88,4 @@ const MyLayout = () => {
     </Layout>
   )
 }
-export default MyLayout
+export default LayoutReviewer

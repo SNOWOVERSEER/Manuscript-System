@@ -1,0 +1,26 @@
+.ulContainer {
+    list-style-type: none; 
+    display: flex; 
+    flex-wrap: wrap; 
+    padding: 0; 
+    margin: 0; 
+    
+    Button {
+        background: grey;
+        margin-left: 5px;
+    }
+  }
+  
+  .ulContainer li {
+    flex-grow: 0; 
+    flex-shrink: 0; 
+    margin: 10px; 
+    border: 1px dashed #ccc !important; 
+    padding: 5px; 
+    border-radius: 5px; 
+    background-color: #f9f9f9; 
+    white-space: nowrap; 
+  }
+
+  
+  
