@@ -49,7 +49,6 @@ namespace SiLA_Backend.Services
                     };
 
                     _context.Manuscripts.Add(manuscript);
-                    await _context.SaveChangesAsync();
 
                     var submission = new Submission
                     {
