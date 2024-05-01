@@ -7,6 +7,8 @@ Welcome to our website repository! This repo is the implementation of the projec
 1. docs: the documents related to our project are included in the "docs" folder, such as Project Personan, Goal Model and ER disgram.
 2. src: the src folder serves as the primary container for our project's codebase, including both the client-side and server-side components.
 
+**Version 2.0.0**
+
 # Updates
 *5/05/2024 (Sprint 2)*
 
@@ -40,6 +42,18 @@ Welcome to our website repository! This repo is the implementation of the projec
 
 # Introduction
 This project aims to develop an Online Manuscript Submission and Peer Review Platform for the Studies in Language Assessment (SiLA) journal, operated by the Association for Language Testing and Assessment of Australia and New Zealand (ALTAANZ). The envisioned platform will replace the current email-based manuscript submission and review process with a comprehensive, streamlined, online system. This initiative seeks to enhance the efficiency of manuscript handling, review assignments, editorial decision-making, and communication among authors, reviewers, and editors.
+
+# Structure of the repository
+- `.github/workflows`: auto code review
+- `docs`: the project related documents are placed here.
+- `src/back_end`: this directory corresponds to the back-end program.
+- `src/front_end`: front-end related source code are placed in this directory.
+
+# Usage
+1. Launch the front-end: 
+    run `npm start` under `SI-Wombat/src/front_end/sila-frontend/`.
+2. Launch the back-end:
+    run `dotnet run` under `SI-Wombat/src/back_end/SiLA-Backend/SiLA-Backend/`.
 
 # Stakeholder
 | Name            | Role                | Email                         |
