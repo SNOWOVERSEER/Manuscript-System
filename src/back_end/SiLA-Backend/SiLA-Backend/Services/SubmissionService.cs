@@ -57,6 +57,7 @@ namespace SiLA_Backend.Services
                         SubmissionDate = DateTime.UtcNow,
                         Status = SubmissionStatus.Submitted.ToString(),
                         Title = model.Title,
+                        Category = model.Category
                     };
 
                     _context.Submissions.Add(submission);

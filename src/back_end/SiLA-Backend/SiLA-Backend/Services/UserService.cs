@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using SiLA_Backend.DTOs;
+using System.Globalization;
 
 namespace SiLA_Backend.Services
 {
@@ -28,13 +29,14 @@ namespace SiLA_Backend.Services
             if (user == null)
                 throw new KeyNotFoundException("User not found");
 
+
             return new UserDTO
             {
                 Id = user.Id,
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                BirthDate = user.BirthDate,
+                BirthDate = user.BirthDate.ToString(),
                 Gender = user.Gender,
                 Address = user.Address,
                 Phone = user.Phone,
@@ -50,9 +52,18 @@ namespace SiLA_Backend.Services
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
                 throw new KeyNotFoundException("User not found");
+
+
             user.FirstName = userDto.FirstName;
             user.LastName = userDto.LastName;
-            user.BirthDate = userDto.BirthDate;
+            if (DateOnly.TryParseExact(userDto.BirthDate, "dd/MM/yyyy", null, DateTimeStyles.None, out DateOnly parsedDate))
+            {
+                user.BirthDate = parsedDate;
+            }
+            else
+            {
+                return (false, "Invalid birth date format");
+            }
             user.Gender = userDto.Gender;
             user.Address = userDto.Address;
             user.Phone = userDto.Phone;
