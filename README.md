@@ -40,6 +40,7 @@ Welcome to our website repository! This repo is the implementation of the projec
 
 # Release 
 - Second relsease[May 3, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT2
+[![Sprint 2 demonstration video](docs\images\sprint_2_demonstration.png)](https://www.youtube.com/watch?v=m-Q2aA_KJoA&ab_channel=RyuunosukeHikigaya)
 - First relsease [March 22, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT1
 
 # Introduction
@@ -64,6 +65,9 @@ This project aims to develop an Online Manuscript Submission and Peer Review Pla
 | Dr Lucy Sparrow    | Subject Coordinator | lucy.sparrow@unimelb.edu.au   |
 | Lin Li            | Mentor              | lin.li1@unimelb.edu.au        |
 | Jason Fan         | Client              | jinsong.fan@unimelb.edu.au    |
+| John Read         | Client              | ja.read@auckland.ac.nz |
+| Annemiek         | Client              | annemiek.huisman@unimelb.edu.au |
+
 
 # Development Team
 | Name            | Email               |
