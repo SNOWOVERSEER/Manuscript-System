@@ -44,8 +44,3 @@ yarn-error.log*
 # ------frontend--------
 
 .vscode/tasks.json
-<<<<<<< HEAD
-.vscode/launch.json
-=======
-.vscode/launch.json
->>>>>>> dev
