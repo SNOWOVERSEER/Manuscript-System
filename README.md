@@ -40,7 +40,7 @@ Welcome to our website repository! This repo is the implementation of the projec
 
 # Release 
 - Second relsease[May 3, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT2
-[![Sprint 2 demonstration video](docs\images\sprint_2_demonstration.png)](https://www.youtube.com/watch?v=m-Q2aA_KJoA&ab_channel=RyuunosukeHikigaya)
+[![Sprint 2 demonstration video](./docs/images/sprint_2_demonstration.png)](https://www.youtube.com/watch?v=m-Q2aA_KJoA&ab_channel=RyuunosukeHikigaya)
 - First relsease [March 22, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT1
 
 # Introduction
