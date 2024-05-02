@@ -8,5 +8,5 @@ export function update_authors_info_API(data_){
         params: {
             Id:localStorage.getItem('id')
         }
-    })
+    }) 
 }
