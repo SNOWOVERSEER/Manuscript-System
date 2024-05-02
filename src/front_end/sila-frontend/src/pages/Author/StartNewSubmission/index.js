@@ -62,7 +62,7 @@ const Publish = () => {
       };
       console.log("---------------");
       // console.log(authorsInfo)
-
+      //
       console.log(jsonData);
       // for (let [key, value] of Object.entries(jsonData)) {
       //     console.log(`${key}: ${value}`);
