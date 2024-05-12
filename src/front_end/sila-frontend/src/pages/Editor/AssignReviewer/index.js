@@ -9,11 +9,14 @@ import { ArticleStatus } from "../../../utils/status"
 import FormModal from "../FormModal"
 import { article_List_API } from "../../../apis/article"
 import { http } from "../../../utils"
+import { formatDate } from "../../../utils/common"
 
 const AssignReviewer = ()=>{
     const navigate = useNavigate()
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [articleData, setArticleData] = useState(null);
+    //get all articles
+    const [allarticles, setAllarticles] = useState([])
     //get articles for review
     const [articles, setArticles] = useState([])
     //get all reviewers
@@ -33,23 +36,37 @@ const AssignReviewer = ()=>{
       }
   
       get_articles_by_author(localStorage.getItem('id'));
+
+      const fetchAllArticleData = async () => {
+        try {
+          const response = await http.get(`/Manuscripts/EditorSubmissions/${localStorage.getItem("id")}`);
+          const res = response.data.filter(article => article.status === 'Submitted').map(article => ({
+            ...article,
+            id: article.submissionId,
+            submissionDate: formatDate(article.submissionDate)
+          }));
+
+          setAllarticles(res) 
+        } catch (error) {
+          console.error('Fetching article data failed', error);
+        }
+      }
+      fetchAllArticleData()
     }, []);
 
-    function formatDate(dateString) {
-      const date = new Date(dateString);
-      return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-    }
 
-    const showModal = async (article_id) => {
+
+    const showModal = async (submission_id) => {
         
         try {
-            console.log(article_id)
+            // console.log(submission_id)
             // const data = await fetchArticleData(article_id);
-            const reviewers = await fetchAllReviewers(localStorage.getItem("id"), article_id);
-            // console.log(reviewers)
-
+            const reviewers = await fetchAllReviewers(localStorage.getItem("id"), submission_id);
             setReviewers(reviewers)
-            setArticleData({"title":"article1","content":"content1"}); 
+
+            const res = await fetArticleDataBySubmissionID(submission_id)
+
+            
 
             setIsModalOpen(true); 
           } catch (error) {
@@ -68,28 +85,42 @@ const AssignReviewer = ()=>{
       try {
           // const response = await http.get(`/User/reviewersinfo/${articleId}`);
           const response = await http.get(`/User/reviewersinfo`);
-          return response.data; 
+          return response.data
+        } catch (error) {
+          console.error('Fetching reviewer data failed', error);
+          return null
+        }
+    }
+    
+    const fetArticleDataBySubmissionID = async (submission_id)=>{
+      try {
+          const response = await http.get(`/Manuscripts/submissionabstract/${submission_id}`);
+          // console.log(response.data)
+          const modifiedData = { ...response.data, submission_id: submission_id };
+          setArticleData(modifiedData); 
         } catch (error) {
           console.error('Fetching reviewer data failed', error);
           return null
         }
     }
 
-    const fetchArticleData = async (articleId) => {
-        // try {
-        //   const response = await axios.get(`/api/articles/${articleId}`);
-        //   return response.data; 
-        // } catch (error) {
-        //   console.error('Fetching article data failed', error);
-        // }
-      };
+
+
+    // const fetchArticleData = async (articleId) => {
+    //     try {
+    //       const response = await http.get(`/api/articles/${articleId}`);
+    //       return response.data; 
+    //     } catch (error) {
+    //       console.error('Fetching article data failed', error);
+    //     }
+    //   };
 
     // data
   const columns = [
     {
       title: 'TITLE',
       dataIndex: 'title',
-      width: 220
+      width: 220,
     },
     {
         title: 'CATEGORY',
@@ -99,16 +130,24 @@ const AssignReviewer = ()=>{
       title: 'STATUS',
       dataIndex: 'status',
       render: status => {
-        if (status === ArticleStatus.ToBeReviewed) {
-            return <Tag color="red">To be reviewed</Tag>;
-        } else {
-            return <Tag color="green">Done</Tag>;
+        if (status === ArticleStatus.Submitted) {
+            return <Tag color="orange">Submitted</Tag>;
+        } else if(status === ArticleStatus.ToBeReview) {
+            return <Tag color="red">To Be Review</Tag>;
+        } else if(status === ArticleStatus.WaitingFordecision) {
+          return <Tag color="green">Waiting For decision</Tag>;
+        } else if(status === ArticleStatus.Approved) {
+          return <Tag color="yellow">Done</Tag>;
+        } else if(status === ArticleStatus.Rejected) {
+          return <Tag color="purple">Done</Tag>;
+        } else if(status === ArticleStatus.Revised) {
+          return <Tag color="black">Done</Tag>;
         }
       }
     },
     {
       title: 'SUBMISSION DATE',
-      dataIndex: 'submission_date'
+      dataIndex: 'submissionDate'
     },
     {
       title: 'Assign',
@@ -136,23 +175,6 @@ const AssignReviewer = ()=>{
       }
     }
   ]
-  // data
-  const data = [
-    {   
-        id: '1',
-        title: 'AAA',
-        category: 'C',
-        status: 1,
-        submission_date: '2019-03-11 09:00'
-    },
-    {
-        id: '2',
-        title: 'BBB',
-        category: 'C',
-        status: 2,
-        submission_date: '2019-03-11 09:00'
-    }
-  ]
 
     return (
         <div>
@@ -160,7 +182,7 @@ const AssignReviewer = ()=>{
         <Link to="/editor/editorarticle/1">About</Link>
         
         <Card title={`Assign reviewers to articles`}>
-          <Table rowKey="id" columns={columns} dataSource={data} />
+          <Table rowKey="id" columns={columns} dataSource={allarticles} />
         </Card>
         <FormModal
             open={isModalOpen}
@@ -168,8 +190,9 @@ const AssignReviewer = ()=>{
             onOk={handleOk}
             articleData={articleData}
             reviewers={reviewers}
+            // selectedReviewers={[]}
         />
-      </div>
+        </div>
     )
 }
 

@@ -24,6 +24,14 @@ export function register_API(data_) {
   });
 }
 
+export function assign_reviewers(data_) {
+  return http({
+    url: "/Manuscripts/assignreviewers",
+    method: "POST",
+    data: data_,
+  });
+}
+
 export function register_reviewer_API(data_){
     return http({
         url: '/Auth/register/reviewer',
