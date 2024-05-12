@@ -38,26 +38,32 @@ const UserEditProfileForm = ({ userData, onSave }) => {
           validateMessages={validateMessages}
           initialValues={userData}
         >
-          <Form.Item name="username" label="Username" rules={[{ required: true }]}>
+          <Form.Item name="firstName" label="FirstName" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="Email" label="Email" rules={[{ type: 'email', required: true }]}>
+          <Form.Item name="lastName" label="LastName" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="gender" label="Gender" rules={[{ required: true, message: 'Please select your gender!' }]}>
+          <Form.Item name="email" label="Email" rules={[{ type: 'email', required: true }]}>
+            <Input readOnly className="readonly-input" />
+          </Form.Item>
+          <Form.Item name="gender" label="Gender" rules={[{ message: 'Please select your gender!' }]}>
             <Select placeholder="Select your gender">
               <Option value="male">Male</Option>
               <Option value="female">Female</Option>
               <Option value="other">Other</Option>
             </Select>
           </Form.Item>
-          <Form.Item name="phoneNumber" label="Phone Number">
+          <Form.Item name="phone" label="Phone Number">
+            <Input />
+          </Form.Item>
+          <Form.Item name="birthDate" label="Date of Birth">
             <Input />
           </Form.Item>
           <Form.Item name="address" label="Address">
             <Input />
           </Form.Item>
-          <Form.Item name="bio" label="Bio" rules={[{ required: true }]}>
+          <Form.Item name="bio" label="Bio" rules={[{ type: 'bio' }]}>
             <Input.TextArea rows={10} /> 
           </Form.Item>
           <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>

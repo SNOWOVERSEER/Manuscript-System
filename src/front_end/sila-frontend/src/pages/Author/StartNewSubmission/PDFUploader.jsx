@@ -8,6 +8,21 @@ const { Dragger } = Upload;
 const PDFUploader = ({ onFileListChange, onFileUploaded, id }) => {
   const [fileList, setFileList] = useState([]);
 
+  const getTextBasedOnId = (id) => {
+    switch (id) {
+      case "body":
+        return "Click or drag your anonymised manuscript to this area to upload";
+      case "appendix":
+        return "Appendix (if applicable)";
+      case "others":
+        return "Supplementary materials (if applicable)";
+      case "Reviewed":
+        return "Upload PDF for you local review";
+      default:
+        return "Click or drag file to this area to upload";
+    }
+  };
+
   const draggerProps = {
     name: "file",
     multiple: false,
@@ -39,14 +54,16 @@ const PDFUploader = ({ onFileListChange, onFileUploaded, id }) => {
   };
 
   return (
-    <Dragger {...draggerProps}>
-      <p className="ant-upload-drag-icon">
-        <InboxOutlined />
-      </p>
-      <p className="ant-upload-text">
-        Click or drag file to this area to upload
-      </p>
-    </Dragger>
+    <div style={{ marginBottom: "20px" }}>
+      {" "}
+      {/* Inline style for margin between components */}
+      <Dragger {...draggerProps}>
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">{getTextBasedOnId(id)}</p>
+      </Dragger>
+    </div>
   );
 };
 

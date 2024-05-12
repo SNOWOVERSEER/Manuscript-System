@@ -6,6 +6,11 @@ using SiLA_Backend.Data;
 using SiLA_Backend.Models;
 using SiLA_Backend.Services;
 using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using Amazon.S3;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.Runtime;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +28,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseInMemoryDatabase("MyDatabase"));
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        new MySqlServerVersion(new Version(8, 3, 0))));
 
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
@@ -46,14 +52,45 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero,
         ValidateLifetime = true
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenManager>();
+            var token = context.SecurityToken as JsonWebToken;
+
+            if (token != null)
+            {
+                var isBlacklisted = await tokenService.IsTokenBlacklisted(token.EncodedToken);
+                if (isBlacklisted)
+                {
+                    context.Fail("This token is blacklisted");
+                }
+            }
+            return;
+        }
+    };
+
 });
 
 
 
+
+
+// Add the missing using directive
+
+builder.Services.AddAWSService<IAmazonS3>(new AWSOptions
+{
+    Region = Amazon.RegionEndpoint.APSoutheast2,
+    Credentials = new BasicAWSCredentials(
+        builder.Configuration["AWS:AccessKeyId"],
+        builder.Configuration["AWS:SecretAccessKey"])
+});
 builder.Services.AddControllers();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenManager, TokenManager>();
-
+builder.Services.AddScoped<ISubmissionService, SubmissionService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -71,9 +108,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    // Use CORS policy
-    app.UseCors();
 }
+
+app.UseSwagger();
+app.UseSwaggerUI();
+// Use CORS policy
+app.UseCors();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

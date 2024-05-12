@@ -30,7 +30,7 @@ const LayoutEditor = () => {
   const location = useLocation()
   const dispatch = useDispatch()
 
-  console.log(location.pathname)
+  // console.log(location.pathname)
   useEffect(()=>{
     dispatch(fetch_userinfo())
   }, [dispatch])

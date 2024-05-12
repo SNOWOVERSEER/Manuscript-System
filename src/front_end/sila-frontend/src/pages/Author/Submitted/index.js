@@ -2,15 +2,31 @@
 import React, { useState } from 'react';
 import UserProfileDisplay from './UserProfileDisplay';
 import UserEditProfileForm from './UserEditProfileForm';
+import { update_authors_info_API } from '../../../apis/authorInfo';
+import {useSelector} from "react-redux";
+import { message } from 'antd';
 
 const ProfilePage = () => {
+  const {
+    firstName,
+    lastName,
+    email,
+    address,
+    phone,
+    gender,
+    birthDate,
+    bio,
+  } = useSelector((state) => state.user.userInfo);
+
   const initialProfileData = {
-    username: 'JohnDoe',
-    Email: '123@gmail.com',
-    address: '1234 Sunset Blvd',
-    phoneNumber: '123-456-7890',
-    gender: 'Female',
-    bio: 'This is a short bio...',
+    firstName,
+    lastName,
+    email,
+    address,
+    phone,
+    gender,
+    birthDate,
+    bio,
   };
 
   const [userData, setUserData] = useState(initialProfileData);
@@ -20,8 +36,18 @@ const ProfilePage = () => {
     setIsEditing(true);
   };
 
-  const handleSave = (updatedData) => {
+  const handleSave = async (updatedData) => {
     setUserData({ ...userData, ...updatedData });
+    try{
+      updatedData['id'] = localStorage.getItem('id') 
+      console.log(updatedData)
+      const response = await update_authors_info_API(updatedData);
+      console.log("Update user info response", response);
+      message.success("Updated successfully");
+    } catch (error){
+      console.error("Update Error", error);
+      message.error("Failed to update");
+    }
     setIsEditing(false);
   };
 

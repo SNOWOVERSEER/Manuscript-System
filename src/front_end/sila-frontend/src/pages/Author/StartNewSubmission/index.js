@@ -10,7 +10,7 @@ import {
   Select,
   message,
 } from "antd";
-import { ArticleTypes } from "../../utils/articletypes";
+import { ArticleTypes } from "../../../utils/articletypes";
 import "./index.scss";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -62,7 +62,7 @@ const Publish = () => {
       };
       console.log("---------------");
       // console.log(authorsInfo)
-
+      //
       console.log(jsonData);
       // for (let [key, value] of Object.entries(jsonData)) {
       //     console.log(`${key}: ${value}`);

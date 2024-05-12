@@ -14,4 +14,7 @@ const ArticleStatus = {
     // Rejected   （editor的决定）
     // Revised    (editor的决定)  
 
+    // Decide: accept (ACC), accept with minor revisions (AR), revise&resubmit (RR), reject (RJ)
+    // RV2: send revised manuscript back to reviewers, specify the deadline
+
   export {ArticleStatus} 
