@@ -81,19 +81,19 @@ namespace SiLA_Backend.Controllers
             }
         }
 
-        // [HttpGet("ReviewerSubmissions/{reviewerId}")]
-        // public async Task<IActionResult> GetReviewerDashboard(string reviewerId)
-        // {
-        //     try
-        //     {
-        //         var dashboardData = await _submissionService.GetReviewerDashBoardAsync(reviewerId);
-        //         return Ok(new { state = "success", data = dashboardData });
-        //     }
-        //     catch (KeyNotFoundException)
-        //     {
-        //         return NotFound(new { state = "error", message = "User not found!" });
-        //     }
-        // }
+        [HttpGet("ReviewerSubmissions/{reviewerId}")]
+        public async Task<IActionResult> GetReviewerDashboard(string reviewerId)
+        {
+            try
+            {
+                var dashboardData = await _submissionService.GetReviewerDashBoardAsync(reviewerId);
+                return Ok(new { state = "success", data = dashboardData });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { state = "error", message = "User not found!" });
+            }
+        }
 
 
         [Authorize(Roles = "Editor")]
@@ -125,7 +125,7 @@ namespace SiLA_Backend.Controllers
             return BadRequest(new { state = "error", message = Message });
         }
 
-
+        [Authorize(Roles = "Editor")]
         [HttpGet("submissionabstract/{submissionId}")]
         public async Task<IActionResult> GetSubmissionAbstract(int submissionId)
         {

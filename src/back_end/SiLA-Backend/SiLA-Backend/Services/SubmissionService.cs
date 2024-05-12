@@ -169,7 +169,25 @@ namespace SiLA_Backend.Services
 
         public async Task<List<ReviewerDashBoardDTO>> GetReviewerDashBoardAsync(string ReviewerId)
         {
-            throw new NotImplementedException();
+            var user = await _userManager.FindByIdAsync(ReviewerId);
+            if (user == null)
+                throw new KeyNotFoundException("Reviewer not found");
+
+            var submissions = await _context.ReviewerSubmissions
+            .Where(s => s.ReviewerId == ReviewerId)
+            .Select(s => new ReviewerDashBoardDTO
+            {
+
+                SubmissionId = s.SubmissionId,
+                Title = s.Submission.Title,
+                Category = s.Submission.Category,
+                SubmissionDate = s.Submission.SubmissionDate,
+                ReviewDeadline = s.Deadline,
+                Status = s.Status
+            })
+            .ToListAsync();
+
+            return submissions;
         }
 
         public async Task<List<EditorDashBoardDTO>> GetEditorDashBoardAsync(string EditorId)
