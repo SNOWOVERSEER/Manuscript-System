@@ -14,8 +14,8 @@ namespace SiLA_Backend.Models
 
         public DateTime? Deadline { get; set; }
 
-        public string CommentsToEditor { get; set; }
-        public string CommentsToAuthor { get; set; }
+        public string? CommentsToEditor { get; set; }
+        public string? CommentsToAuthor { get; set; }
 
         public string Status { get; set; }
 

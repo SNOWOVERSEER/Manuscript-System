@@ -124,9 +124,47 @@ namespace SiLA_Backend.Services
 
         // }
 
-        public async Task<(bool IsSuccess, string Message)> AssignReviewersAsync(string submissionId, List<string> reviewerIds)
+        public async Task<(bool IsSuccess, string Message)> AssignReviewersAsync(int submissionId, List<string> reviewerIds)
         {
-            throw new NotImplementedException();
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    var submission = await _context.Submissions.FindAsync(submissionId);
+                    if (submission == null)
+                        throw new KeyNotFoundException("Submission not found");
+
+                    foreach (var reviewerId in reviewerIds)
+                    {
+                        var reviewer = await _userManager.FindByIdAsync(reviewerId);
+                        if (reviewer == null)
+                            throw new KeyNotFoundException("One or several Reviewer(s) not found");
+
+                        var reviewerSubmission = new ReviewerSubmission
+                        {
+                            SubmissionId = submissionId,
+                            ReviewerId = reviewerId,
+                            Status = SubmissionStatus.ToBeReviewed.ToString(),
+                            Deadline = DateTime.UtcNow.AddDays(7),
+                            CommentsToEditor = "[{}]",
+                            CommentsToAuthor = "[{}]",
+
+                        };
+
+                        _context.ReviewerSubmissions.Add(reviewerSubmission);
+                    }
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+
+                    return (true, "Reviewers assigned successfully");
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return (false, $"An error occurred: {ex.Message}");
+                }
+            }
         }
 
         public async Task<List<ReviewerDashBoardDTO>> GetReviewerDashBoardAsync(string ReviewerId)
@@ -143,7 +181,7 @@ namespace SiLA_Backend.Services
             var submissions = await _context.Submissions
             .Select(s => new EditorDashBoardDTO
             {
-                Id = s.Id,
+                SubmissionId = s.Id,
                 Title = s.Title,
                 Category = s.Manuscript.Category,
                 SubmissionDate = s.SubmissionDate,

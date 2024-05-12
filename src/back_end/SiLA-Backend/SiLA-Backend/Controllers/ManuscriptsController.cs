@@ -110,5 +110,17 @@ namespace SiLA_Backend.Controllers
                 return NotFound(new { state = "error", message = "User not found!" });
             }
         }
+
+        [Authorize(Roles = "Editor")]
+        [HttpPost("assignreviewers")]
+        public async Task<IActionResult> AssignReviewers(AssignReviewersModel model)
+        {
+            var (IsSuccess, Message) = await _submissionService.AssignReviewersAsync(model.SubmissionId, model.ReviewerIds);
+            if (IsSuccess)
+            {
+                return Ok(new { state = "success", message = Message });
+            }
+            return BadRequest(new { state = "error", message = Message });
+        }
     }
 }

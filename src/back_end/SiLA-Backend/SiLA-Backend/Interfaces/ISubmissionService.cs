@@ -9,6 +9,6 @@ namespace SiLA_Backend.Services
         Task<List<AuthorDashBoardDTO>> GetAuthorDashBoardAsync(string userId);
         Task<List<ReviewerDashBoardDTO>> GetReviewerDashBoardAsync(string ReviewerId);
         Task<List<EditorDashBoardDTO>> GetEditorDashBoardAsync(string EditorId);
-        Task<(bool IsSuccess, string Message)> AssignReviewersAsync(string submissionId, List<string> reviewerIds);
+        Task<(bool IsSuccess, string Message)> AssignReviewersAsync(int submissionId, List<string> reviewerIds);
     }
 }
