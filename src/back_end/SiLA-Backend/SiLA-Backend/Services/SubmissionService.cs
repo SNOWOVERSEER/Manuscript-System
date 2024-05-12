@@ -191,5 +191,30 @@ namespace SiLA_Backend.Services
 
             return submissions;
         }
+
+        public async Task<SubmissionAbsDTO> GetSubmissionAbstractAsync(int submissionId)
+        {
+
+
+            var submissionAbs = await _context.Submissions
+            .Where(s => s.Id == submissionId)
+            .Include(s => s.Manuscript)
+            .Include(s => s.Author)
+            .Select(s => new SubmissionAbsDTO
+            {
+
+                Title = s.Title,
+                Category = s.Category,
+                Abstract = s.Manuscript.Abstract,
+                AuthorName = $"{s.Author.FirstName} {s.Author.LastName}"
+            })
+            .FirstOrDefaultAsync();
+
+            if (submissionAbs == null)
+                throw new KeyNotFoundException("Submission not found");
+
+            return submissionAbs;
+
+        }
     }
 }

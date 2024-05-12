@@ -111,6 +111,8 @@ namespace SiLA_Backend.Controllers
             }
         }
 
+
+
         [Authorize(Roles = "Editor")]
         [HttpPost("assignreviewers")]
         public async Task<IActionResult> AssignReviewers(AssignReviewersModel model)
@@ -121,6 +123,21 @@ namespace SiLA_Backend.Controllers
                 return Ok(new { state = "success", message = Message });
             }
             return BadRequest(new { state = "error", message = Message });
+        }
+
+
+        [HttpGet("submissionabstract/{submissionId}")]
+        public async Task<IActionResult> GetSubmissionAbstract(int submissionId)
+        {
+            try
+            {
+                var submissionAbstract = await _submissionService.GetSubmissionAbstractAsync(submissionId);
+                return Ok(new { state = "success", data = submissionAbstract });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { state = "error", message = "Submission not found!" });
+            }
         }
     }
 }
