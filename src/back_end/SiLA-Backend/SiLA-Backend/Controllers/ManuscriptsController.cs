@@ -67,12 +67,42 @@ namespace SiLA_Backend.Controllers
 
 
         [Authorize]
-        [HttpGet("submissions/{userId}")]
+        [HttpGet("AuthorSubmissions/{userId}")]
         public async Task<IActionResult> GetAuthorDashboard(string userId)
         {
             try
             {
                 var dashboardData = await _submissionService.GetAuthorDashBoardAsync(userId);
+                return Ok(new { state = "success", data = dashboardData });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { state = "error", message = "User not found!" });
+            }
+        }
+
+        // [HttpGet("ReviewerSubmissions/{reviewerId}")]
+        // public async Task<IActionResult> GetReviewerDashboard(string reviewerId)
+        // {
+        //     try
+        //     {
+        //         var dashboardData = await _submissionService.GetReviewerDashBoardAsync(reviewerId);
+        //         return Ok(new { state = "success", data = dashboardData });
+        //     }
+        //     catch (KeyNotFoundException)
+        //     {
+        //         return NotFound(new { state = "error", message = "User not found!" });
+        //     }
+        // }
+
+
+        [Authorize(Roles = "Editor")]
+        [HttpGet("EditorSubmissions/{editorId}")]
+        public async Task<IActionResult> GetEditorDashboard(string editorId)
+        {
+            try
+            {
+                var dashboardData = await _submissionService.GetEditorDashBoardAsync(editorId);
                 return Ok(new { state = "success", data = dashboardData });
             }
             catch (KeyNotFoundException)

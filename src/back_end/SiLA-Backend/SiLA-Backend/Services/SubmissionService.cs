@@ -102,8 +102,56 @@ namespace SiLA_Backend.Services
             return submissions;
         }
 
+        // public async Task<List<SubmissionDetailForReviewerDTO>> GetReviewerDashBoardAsync(string reviewerId)
+        // {
+        //     var user = await _userManager.FindByIdAsync(reviewerId);
+        //     if (user == null)
+        //         throw new KeyNotFoundException("User not found");
 
+        //     var submissions = await _context.Submissions
+        //     .Where(s => s.Status == SubmissionStatus.Submitted.ToString())
+        //     .Include(s => s.Manuscript)
+        //     .Select(s => new SubmissionDetailForReviewerDTO
+        //     {
+        //         Id = s.Id,
+        //         Title = s.Title,
+        //         Category = s.Manuscript.Category,
+
+        //     }
+
+        //     ).ToListAsync();
+        //     return submissions;
+
+        // }
+
+        public async Task<(bool IsSuccess, string Message)> AssignReviewersAsync(string submissionId, List<string> reviewerIds)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<ReviewerDashBoardDTO>> GetReviewerDashBoardAsync(string ReviewerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<EditorDashBoardDTO>> GetEditorDashBoardAsync(string EditorId)
+        {
+            var user = await _userManager.FindByIdAsync(EditorId);
+            if (user == null)
+                throw new KeyNotFoundException("Editor not found");
+
+            var submissions = await _context.Submissions
+            .Select(s => new EditorDashBoardDTO
+            {
+                Id = s.Id,
+                Title = s.Title,
+                Category = s.Manuscript.Category,
+                SubmissionDate = s.SubmissionDate,
+                Status = s.Status // Convert the enum to string
+            })
+            .ToListAsync();
+
+            return submissions;
+        }
     }
-
-
 }
