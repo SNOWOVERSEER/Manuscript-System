@@ -8,8 +8,8 @@ namespace SiLA_Backend.DTOs
         public string Title { get; set; }
         public string Category { get; set; }
 
-        public DateTime SubmissionDate { get; set; }
-        public DateTime? ReviewDeadline { get; set; }
+        public string SubmissionDate { get; set; }
+        public string? ReviewDeadline { get; set; }
         public string Status { get; set; }
     }
 }

@@ -181,8 +181,8 @@ namespace SiLA_Backend.Services
                 SubmissionId = s.SubmissionId,
                 Title = s.Submission.Title,
                 Category = s.Submission.Category,
-                SubmissionDate = s.Submission.SubmissionDate,
-                ReviewDeadline = s.Deadline,
+                SubmissionDate = s.Submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                ReviewDeadline = s.Deadline.Value.ToString("yyyy-MM-dd HH:mm:ss"),
                 Status = s.Status
             })
             .ToListAsync();
