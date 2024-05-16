@@ -82,6 +82,7 @@ namespace SiLA_Backend.Controllers
             }
         }
 
+        [Authorize(Roles = "Reviewer")]
         [HttpGet("ReviewerSubmissions/{reviewerId}")]
         public async Task<IActionResult> GetReviewerDashboard(string reviewerId)
         {
@@ -155,6 +156,35 @@ namespace SiLA_Backend.Controllers
                 return NotFound(new { state = "error", message = "Submission not found!" });
             }
         }
+
+        [Authorize(Roles = "Editor")]
+        [HttpGet("submissiondetailforeditor/{submissionId}")]
+        public async Task<IActionResult> GetSubmissionDetailForEditor(int submissionId)
+        {
+            try
+            {
+                var submissionDetail = await _submissionService.GetSubmissionDetailForEditorAsync(submissionId);
+                return Ok(new { state = "success", data = submissionDetail });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { state = "error", message = "Submission not found!" });
+            }
+        }
+
+        [Authorize(Roles = "Reviewer")]
+        [HttpPost("submitreview")]
+        public async Task<IActionResult> SubmitReview(SubmissionReviewDTO model)
+        {
+            var (IsSuccess, Message) = await _submissionService.SubmitReviewAsync(model);
+            if (IsSuccess)
+            {
+                return Ok(new { state = "success", message = Message });
+            }
+            return BadRequest(new { state = "error", message = Message });
+        }
+
+
 
 
     }

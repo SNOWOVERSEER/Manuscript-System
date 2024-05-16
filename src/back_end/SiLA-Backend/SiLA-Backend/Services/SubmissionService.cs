@@ -131,9 +131,10 @@ namespace SiLA_Backend.Services
                             ReviewerId = reviewerId,
                             Status = SubmissionStatus.ToBeReviewed.ToString(),
                             Deadline = DateTime.UtcNow.AddDays(7),
-                            CommentsToEditor = "[{}]",
-                            CommentsToAuthor = "[{}]",
-
+                            IsRevision = false,
+                            IsReviewComplete = false,
+                            CommentsToEditor = JsonSerializer.Serialize(new Dictionary<string, string>()),
+                            CommentsToAuthor = JsonSerializer.Serialize(new Dictionary<string, string>())
                         };
 
                         _context.ReviewerSubmissions.Add(reviewerSubmission);
@@ -235,14 +236,7 @@ namespace SiLA_Backend.Services
 
             var filePaths = JsonSerializer.Deserialize<Dictionary<string, string>>(submissionDetail.Manuscript.FilePath);
 
-            // 生成预签名URL
             Dictionary<string, string> preSignedUrls = new Dictionary<string, string>();
-
-            // foreach (var file in filePaths)
-            // {
-            //     string presignedUrl = await GeneratePreSignedURLAsync(file.Value);
-            //     preSignedUrls.Add(file.Key, presignedUrl);
-            // }
 
             if (filePaths.ContainsKey("body"))
             {
@@ -261,6 +255,111 @@ namespace SiLA_Backend.Services
                 Status = submissionDetail.Submission.Status
             };
         }
+
+        public async Task<SubmissionDetailForEditorDTO> GetSubmissionDetailForEditorAsync(int submissionId)
+        {
+            var submission = await _context.Submissions
+                .Where(s => s.Id == submissionId)
+                .Include(s => s.Manuscript)
+                .Include(s => s.ReviewerSubmissions)
+                    .ThenInclude(rs => rs.Reviewer)
+                .FirstOrDefaultAsync();
+
+            if (submission == null)
+                throw new KeyNotFoundException("Submission not found");
+
+            var filePaths = JsonSerializer.Deserialize<Dictionary<string, string>>(submission.Manuscript.FilePath);
+
+            Dictionary<string, string> preSignedUrls = new Dictionary<string, string>();
+            foreach (var file in filePaths!)
+            {
+                string presignedUrl = await GeneratePreSignedURLAsync(file.Value);
+                preSignedUrls.Add(file.Key, presignedUrl);
+            }
+
+            var reviewers = submission.ReviewerSubmissions
+                .Select(rs => new ReviewerDTO
+                {
+                    ReviewerId = rs.Reviewer.Id,
+                    ReviewerName = $"{rs.Reviewer.FirstName} {rs.Reviewer.LastName}",
+                    ReviewerContact = rs.Reviewer.Email!,
+                    ReviewerRecommendation = rs.Recommendation ?? "N/A", //rs.Recommendation
+                    IsRevision = rs.IsRevision, //rs.IsRevision
+                    IsReviewComplete = rs.IsReviewComplete, //rs.IsReviewComplete
+                    DocumentUrl = rs.FileUrl != null ? GeneratePreSignedURLAsync(rs.FileUrl).Result : "N/A"
+                })
+                .ToList();
+
+            var commentsFromReviewers = submission.ReviewerSubmissions
+                .Select(rs => JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToEditor ?? "{}"))
+                .ToList();
+
+            var submissionDetail = new SubmissionDetailForEditorDTO
+            {
+                SubmissionId = submission.Id,
+                Title = submission.Manuscript.Title,
+                Category = submission.Manuscript.Category,
+                Files = new List<Dictionary<string, string>> { preSignedUrls },
+                Declaration = submission.Manuscript.Declaration,
+                SubmissionDate = submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                Status = submission.Status,
+                Reviewers = reviewers,
+                CommentsFromReviewers = commentsFromReviewers!
+
+            };
+            return submissionDetail;
+        }
+
+        public async Task<(bool IsSuccess, string Message)> SubmitReviewAsync(SubmissionReviewDTO model)
+        {
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    var reviewerSubmission = await _context.ReviewerSubmissions
+                        .Where(rs => rs.SubmissionId == model.SubmissionId && rs.ReviewerId == model.ReviewerId)
+                        .FirstOrDefaultAsync();
+
+                    if (reviewerSubmission == null)
+                        throw new KeyNotFoundException("Reviewer Submission not found");
+
+                    reviewerSubmission.Recommendation = model.Recommendation;
+                    reviewerSubmission.IsReviewComplete = true;
+                    reviewerSubmission.FileUrl = model.FileUrl;
+                    reviewerSubmission.Status = SubmissionStatus.Reviewed.ToString();
+                    reviewerSubmission.CommentsToEditor = JsonSerializer.Serialize(
+                        new Dictionary<string, string>
+                        {
+                            { "Reviewer", model.ReviewerName },
+                            { "ReviewerId", model.ReviewerId },
+                            { "LastEditDate", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
+                            { "Comments", model.CommentsToEditor }
+                        }
+                    );
+                    reviewerSubmission.CommentsToAuthor = JsonSerializer.Serialize(
+                        new Dictionary<string, string>
+                        {
+                            { "Reviewer", model.ReviewerName },
+                            { "ReviewerId", model.ReviewerId },
+                            { "LastEditDate", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
+                            { "Comments", model.CommentsToAuthor }
+                        }
+                    );
+
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+
+                    return (true, "Review submitted successfully");
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return (false, $"An error occurred: {ex.Message}");
+                }
+            }
+        }
+
 
         public async Task<string> GeneratePreSignedURLAsync(string objectKey)
         {
