@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, Form, Button, Table, Radio } from "antd";
+import { Card, Form, Button, Table } from "antd";
 import PDFUploader from "../../Author/StartNewSubmission/PDFUploader";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import ReactQuill from "react-quill";
@@ -125,21 +125,21 @@ const EditorArticle = () => {
           type="primary"
           onClick={handleSubmit}
           style={{
-            marginTop: "10px",
             width: "20%",
+            height: "40px",
             backgroundColor: "#34A853",
           }}
         >
-          Submit Review
+          Accept
         </Button>
 
         <Button
           type="primary"
           onClick={handleSubmit}
           style={{
-            marginTop: "10px",
-            marginLeft: "20px",
+            marginLeft: "5%",
             width: "20%",
+            height: "40px",
             backgroundColor: "#EB4335",
           }}
         >
@@ -150,9 +150,9 @@ const EditorArticle = () => {
           type="primary"
           onClick={handleSubmit}
           style={{
-            marginTop: "10px",
-            marginLeft: "20px",
+            marginLeft: "5%",
             width: "20%",
+            height: "40px",
             backgroundColor: "#FBBC05",
           }}
         >
