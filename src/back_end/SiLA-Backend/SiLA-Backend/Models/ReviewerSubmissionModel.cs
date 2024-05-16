@@ -12,7 +12,7 @@ namespace SiLA_Backend.Models
         public int SubmissionId { get; set; }
         public Submission Submission { get; set; }
 
-        public DateTime? Deadline { get; set; }
+        public DateTime Deadline { get; set; }
 
         public string? CommentsToEditor { get; set; }
         public string? CommentsToAuthor { get; set; }

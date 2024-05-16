@@ -7,8 +7,8 @@ namespace SiLA_Backend.DTOs
         public string Title { get; set; }
         public string Category { get; set; }
         public string? Declaration { get; set; }
-        public string Files { get; set; }
-        public DateTime SubmissionDate { get; set; }
+        public Dictionary<string, string> File { get; set; }
+        public string SubmissionDate { get; set; }
         public string Status { get; set; }
     }
 }

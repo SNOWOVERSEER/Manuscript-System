@@ -18,7 +18,7 @@ namespace SiLA_Backend.Controllers
             _userService = userService;
         }
 
-        [Authorize]
+        // [Authorize]
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUserInfo(string userId)
         {

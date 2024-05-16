@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using SiLA_Backend.DTOs;
 using SiLA_Backend.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Amazon.S3;
+using Amazon.S3.Model;
+using System.Text.Json;
 
 namespace SiLA_Backend.Services
 {
@@ -21,13 +24,17 @@ namespace SiLA_Backend.Services
         private readonly ITokenManager _tokenManager;
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAmazonS3 _amazonS3;
+        private readonly string _bucketName = "sila-storage";
+        private readonly string _region = "ap-southeast-2";
 
-        public SubmissionService(IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager)
+        public SubmissionService(IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager, IAmazonS3 amazonS3)
         {
             _context = context;
             _tokenManager = tokenManager;
             _hostingEnvironment = hostEnvironment;
             _userManager = userManager;
+            _amazonS3 = amazonS3;
         }
 
         public async Task<(bool IsSuccess, string Message)> SubmitAsync(ManuscriptSubmissionModel model)
@@ -102,28 +109,6 @@ namespace SiLA_Backend.Services
             return submissions;
         }
 
-        // public async Task<List<SubmissionDetailForReviewerDTO>> GetReviewerDashBoardAsync(string reviewerId)
-        // {
-        //     var user = await _userManager.FindByIdAsync(reviewerId);
-        //     if (user == null)
-        //         throw new KeyNotFoundException("User not found");
-
-        //     var submissions = await _context.Submissions
-        //     .Where(s => s.Status == SubmissionStatus.Submitted.ToString())
-        //     .Include(s => s.Manuscript)
-        //     .Select(s => new SubmissionDetailForReviewerDTO
-        //     {
-        //         Id = s.Id,
-        //         Title = s.Title,
-        //         Category = s.Manuscript.Category,
-
-        //     }
-
-        //     ).ToListAsync();
-        //     return submissions;
-
-        // }
-
         public async Task<(bool IsSuccess, string Message)> AssignReviewersAsync(int submissionId, List<string> reviewerIds)
         {
             using (var transaction = _context.Database.BeginTransaction())
@@ -174,18 +159,17 @@ namespace SiLA_Backend.Services
                 throw new KeyNotFoundException("Reviewer not found");
 
             var submissions = await _context.ReviewerSubmissions
-            .Where(s => s.ReviewerId == ReviewerId)
-            .Select(s => new ReviewerDashBoardDTO
-            {
-
-                SubmissionId = s.SubmissionId,
-                Title = s.Submission.Title,
-                Category = s.Submission.Category,
-                SubmissionDate = s.Submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
-                ReviewDeadline = s.Deadline.Value.ToString("yyyy-MM-dd HH:mm:ss"),
-                Status = s.Status
-            })
-            .ToListAsync();
+                .Where(s => s.ReviewerId == ReviewerId)
+                .Select(s => new ReviewerDashBoardDTO
+                {
+                    SubmissionId = s.SubmissionId,
+                    Title = s.Submission.Title,
+                    Category = s.Submission.Category,
+                    SubmissionDate = s.Submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                    ReviewDeadline = s.Deadline.ToString("yyyy-MM-dd HH:mm:ss"),
+                    Status = s.Status
+                })
+                .ToListAsync();
 
             return submissions;
         }
@@ -233,6 +217,69 @@ namespace SiLA_Backend.Services
 
             return submissionAbs;
 
+        }
+
+        public async Task<SubmissionDetailForReviewerDTO> GetSubmissionDetailForReviewerAsync(int submissionId)
+        {
+            var submissionDetail = await _context.Submissions
+                .Where(s => s.Id == submissionId)
+                .Include(s => s.Manuscript)
+                .Select(s => new
+                {
+                    Submission = s,
+                    s.Manuscript
+                }).FirstOrDefaultAsync();
+
+            if (submissionDetail == null)
+                throw new KeyNotFoundException("Submission not found");
+
+            var filePaths = JsonSerializer.Deserialize<Dictionary<string, string>>(submissionDetail.Manuscript.FilePath);
+
+            // 生成预签名URL
+            Dictionary<string, string> preSignedUrls = new Dictionary<string, string>();
+
+            // foreach (var file in filePaths)
+            // {
+            //     string presignedUrl = await GeneratePreSignedURLAsync(file.Value);
+            //     preSignedUrls.Add(file.Key, presignedUrl);
+            // }
+
+            if (filePaths.ContainsKey("body"))
+            {
+                string presignedUrl = await GeneratePreSignedURLAsync(filePaths["body"]);
+                preSignedUrls.Add("body", presignedUrl);
+            }
+
+            return new SubmissionDetailForReviewerDTO
+            {
+                SubmissionId = submissionDetail.Submission.Id,
+                Title = submissionDetail.Submission.Title,
+                Category = submissionDetail.Submission.Category,
+                File = preSignedUrls,
+                Declaration = submissionDetail.Manuscript.Declaration,
+                SubmissionDate = submissionDetail.Submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                Status = submissionDetail.Submission.Status
+            };
+        }
+
+        public async Task<string> GeneratePreSignedURLAsync(string objectKey)
+        {
+            var request = new GetPreSignedUrlRequest
+            {
+                BucketName = _bucketName,
+                Key = objectKey,
+                Expires = DateTime.UtcNow.AddMinutes(60)
+            };
+
+            try
+            {
+                string preSignedURL = _amazonS3.GetPreSignedURL(request);
+                return preSignedURL;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error generating pre-signed URL: " + ex.Message);
+            }
         }
     }
 }

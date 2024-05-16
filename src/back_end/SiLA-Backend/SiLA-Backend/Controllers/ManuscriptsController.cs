@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Amazon.S3;
 using Amazon.S3.Transfer;
+using Amazon.S3.Model;
 
 
 
@@ -41,7 +42,7 @@ namespace SiLA_Backend.Controllers
                 {
                     await fileTransferUtility.UploadAsync(file.OpenReadStream(), _bucketName, filePath);
                 }
-                return Ok(new { state = "success", message = "File uploaded successfully", path = $"https://{_bucketName}.s3.{_region}.amazonaws.com/{filePath}" }); //$"https://{_bucketName}.s3.{_region}.amazonaws.com/{filePath}"
+                return Ok(new { state = "success", message = "File uploaded successfully", path = filePath }); //$"https://{_bucketName}.s3.{_region}.amazonaws.com/{filePath}"
             }
             catch (AmazonS3Exception ex)
             {
@@ -139,5 +140,22 @@ namespace SiLA_Backend.Controllers
                 return NotFound(new { state = "error", message = "Submission not found!" });
             }
         }
+
+        [Authorize(Roles = "Reviewer")]
+        [HttpGet("submissiondetail/{submissionId}")]
+        public async Task<IActionResult> GetSubmissionDetailForReviewer(int submissionId)
+        {
+            try
+            {
+                var submissionDetail = await _submissionService.GetSubmissionDetailForReviewerAsync(submissionId);
+                return Ok(new { state = "success", data = submissionDetail });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { state = "error", message = "Submission not found!" });
+            }
+        }
+
+
     }
 }
