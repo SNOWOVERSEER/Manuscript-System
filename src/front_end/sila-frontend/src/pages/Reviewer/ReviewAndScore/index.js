@@ -55,8 +55,9 @@ const ReviewAndScore = () => {
         {
             title: 'ACTION',
             render: record => (
+                console.log('Record ID:', record.submissionId),
                 <Space size="middle">
-                    <Button type="primary" shape="circle" icon={<EditOutlined />} onClick={() => navigate(`/reviewer/reviewpage?id=${record.id}`)} />
+                    <Button type="primary" shape="circle" icon={<EditOutlined />} onClick={() => navigate(`/reviewer/reviewpage?id=${record.submissionId}`)} />
                 </Space>
             ),
         },

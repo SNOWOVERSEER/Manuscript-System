@@ -1,57 +1,52 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Form, Button, Table, Radio } from "antd";
+import { useLocation } from "react-router-dom";
+import ReactQuill from "react-quill";
 import PDFUploader from "../../Author/StartNewSubmission/PDFUploader";
 import "@react-pdf-viewer/core/lib/styles/index.css";
-import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-
+import { Review_Get_Article } from "../../../apis/reviewerDashbord";
 import logo from "../../../assets/logo.jpg"; // Adjust the path as necessary
 import "./index.scss";
+import { useSelector } from "react-redux";
+import moment from "moment";
 
-const columns = [
-  {
-    title: "Field",
-    dataIndex: "field",
-    key: "field",
-    render: (text) => <b>{text}</b>, // Bold the text in the left column
-  },
-  {
-    title: "Value",
-    dataIndex: "value",
-    key: "value",
-  },
-];
-
-const data = [
-  {
-    key: "1",
-    field: "Article title",
-    value: "Example Article Title",
-  },
-  {
-    key: "2",
-    field: "Reviewer’s name",
-    value: "John Doe",
-  },
-  {
-    key: "3",
-    field: "Reviewer’s contact details",
-    value: "johndoe@example.com",
-  },
-  {
-    key: "4",
-    field: "Target date",
-    value: "2023-12-31",
-  },
-];
+// Utility function to parse query parameters
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+};
 
 const ReviewPage = () => {
+  const query = useQuery();
+  const id = query.get("id");
+  console.log("id: ", id);
+
+  const { firstName, lastName, email } = useSelector((state) => state.user.userInfo);
   const [form] = Form.useForm();
   const [editorComments, setEditorComments] = useState("");
   const [authorComments, setAuthorComments] = useState("");
   const [recommendation, setRecommendation] = useState(null);
   const [willingToReview, setWillingToReview] = useState(null);
-  const pdfFile = "/A.pdf";
+  const [articleData, setArticleData] = useState(null);
+
+  useEffect(() => {
+    async function fetchArticle() {
+      try {
+        const response = await Review_Get_Article(id);
+        console.log('Fetched Article:', response); // Log the full response
+        const article = response.data;
+        const targetDate = moment(article.submissionDate).add(7, 'days').format('YYYY-MM-DD');
+        setArticleData({
+          ...article,
+          targetDate,
+        });
+      } catch (error) {
+        console.error("Error fetching article:", error);
+      }
+    }
+
+    fetchArticle();
+  }, [id]);
 
   const handleSubmit = () => {
     console.log(
@@ -89,21 +84,53 @@ const ReviewPage = () => {
     return e && e.fileList;
   };
 
-  const [uploadedFilePaths, setUploadedFilePaths] = useState({});
-
   const handleFileUploaded = (response, id) => {
     if (response && response.path) {
-      setUploadedFilePaths((prevPaths) => ({
-        ...prevPaths,
-        [id]: response.path,
-      }));
+      console.log(`File uploaded for ${id}: ${response.path}`);
     }
   };
 
   const handleFileListChange = (fileList) => {
-    // console.log(fileList);
     form.setFieldsValue({ uploadedFile: fileList });
   };
+
+  // Define the data for the Table component dynamically
+  const data = articleData ? [
+    {
+      key: "1",
+      field: "Article title",
+      value: articleData.title || "N/A",
+    },
+    {
+      key: "2",
+      field: "Reviewer’s name",
+      value: `${firstName} ${lastName}`,
+    },
+    {
+      key: "3",
+      field: "Reviewer’s contact details",
+      value: email,
+    },
+    {
+      key: "4",
+      field: "Target date",
+      value: articleData.targetDate || "N/A",
+    },
+  ] : [];
+
+  const columns = [
+    {
+      title: "Field",
+      dataIndex: "field",
+      key: "field",
+      render: (text) => <b>{text}</b>, // Bold the text in the left column
+    },
+    {
+      title: "Value",
+      dataIndex: "value",
+      key: "value",
+    },
+  ];
 
   return (
     <div className="reviewpage" style={{ padding: "20px" }}>
@@ -125,7 +152,7 @@ const ReviewPage = () => {
       />
 
       <div style={{ textAlign: "left", margin: "20px 0" }}>
-        <Button type="primary" href={pdfFile} download="Manuscript.pdf">
+        <Button type="primary" href={articleData ? articleData.file.body : '#'} download="Manuscript.pdf">
           Download Manuscript
         </Button>
       </div>
@@ -136,7 +163,7 @@ const ReviewPage = () => {
           Studies in Language Assessment (SiLA) is the international
           peer-reviewed research journal of the Association for Language Testing
           and Assessment of Australia and New Zealand (
-          <a href="https://www.altaanz.org/" target="_blank">
+          <a href="https://www.altaanz.org/" target="_blank" rel="noopener noreferrer">
             ALTAANZ
           </a>
           ). It previously appeared under the title Papers in Language Testing
@@ -151,13 +178,13 @@ const ReviewPage = () => {
         </p>
         <p>
           SiLA is available exclusively online at{" "}
-          <a href="https://www.altaanz.org/" target="_blank">
+          <a href="https://www.altaanz.org/" target="_blank" rel="noopener noreferrer">
             ALTAANZ
           </a>{" "}
           and the{" "}
           <a
             href="https://arts.unimelb.edu.au/language-testing-research-centre/research/publications"
-            target="_blank"
+            target="_blank" rel="noopener noreferrer"
           >
             Language Testing Research Centre
           </a>
