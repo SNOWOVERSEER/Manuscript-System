@@ -214,96 +214,91 @@ const ReviewPage = () => {
         </p>
       </div>
 
-      <div style={{ margin: "20px 0" }}>
-        <b>Recommendation (Select One):</b>
-        <Radio.Group
-          onChange={handleRecommendationChange}
-          value={recommendation}
-          rules={[
-            { required: true, message: "Please select your recommendation" },
-          ]}
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form.Item
+          label={<b>Recommendation (Select One):</b>}
+          name="recommendation"
+          rules={[{ required: true, message: "Please select your recommendation" }]}
         >
-          <Radio value="accept">
-            Accept – this article is suitable for publication.
-          </Radio>
-          <Radio value="minor_revisions">
-            Accept with minor revisions – this article is suitable for
-            publication in its present form, provided that minor corrections or
-            revisions are made as specified in the comments below.
-          </Radio>
-          <Radio value="revise_resubmit">
-            Revise & resubmit – this article is potentially suitable for
-            publication, but requires considerable revision as specified in the
-            comments below.
-          </Radio>
-          <Radio value="reject">
-            Reject – this article is not recommended for publication.
-          </Radio>
-        </Radio.Group>
-      </div>
+          <Radio.Group onChange={handleRecommendationChange} value={recommendation}>
+            <Radio value="accept">
+              Accept – this article is suitable for publication.
+            </Radio>
+            <Radio value="minor revisions">
+              Accept with minor revisions – this article is suitable for
+              publication in its present form, provided that minor corrections or
+              revisions are made as specified in the comments below.
+            </Radio>
+            <Radio value="revise resubmit">
+              Revise & resubmit – this article is potentially suitable for
+              publication, but requires considerable revision as specified in the
+              comments below.
+            </Radio>
+            <Radio value="reject">
+              Reject – this article is not recommended for publication.
+            </Radio>
+          </Radio.Group>
+        </Form.Item>
 
-      <div style={{ margin: "20px 0" }}>
-        <b>Would you be willing to review a revision of this manuscript?</b>
-        <br />
-        <Radio.Group
-          onChange={handleWillingToReviewChange}
-          value={willingToReview}
-          rules={[{ required: true, message: "Please select the willingness" }]}
+        <Form.Item
+          label={<b>Would you be willing to review a revision of this manuscript?</b>}
+          name="willingToReview"
+          rules={[{ required: true, message: "Please select your willingness" }]}
         >
-          <Radio value="yes">Yes</Radio>
-          <Radio value="no">No</Radio>
-        </Radio.Group>
-      </div>
+          <Radio.Group onChange={handleWillingToReviewChange} value={willingToReview}>
+            <Radio value="yes">Yes</Radio>
+            <Radio value="no">No</Radio>
+          </Radio.Group>
+        </Form.Item>
 
-      <Card
-        title="Comments to the Editors (confidential)"
-        style={{ paddingBottom: "50px", marginBottom: "30px" }}
-      >
-        <ReactQuill
-          className="editor-quill"
-          theme="snow"
-          value={editorComments}
-          onChange={handleEditorCommentsChange}
-          style={{ height: "300px" }}
-          placeholder="Enter confidential comments to the editors (optional)"
-        />
-      </Card>
+        <Form.Item
+          label={<b>Comments to the Editors (confidential)</b>}
+          name="editorComments"
+          style={{marginBottom: "60px"}}
+        >
+          <ReactQuill
+            className="editor-quill"
+            theme="snow"
+            value={editorComments}
+            onChange={handleEditorCommentsChange}
+            style={{ height: "300px" }}
+            placeholder="Enter confidential comments to the editors (optional)"
+          />
+        </Form.Item>
 
-      <Card
-        title="Comments to the Author(s)"
-        style={{ paddingBottom: "50px", marginBottom: "30px" }}
-      >
-        <ReactQuill
-          className="author-quill"
-          theme="snow"
-          value={authorComments}
-          onChange={handleAuthorCommentsChange}
-          style={{ height: "300px" }}
-          placeholder="Enter comments to the author(s) (required)"
+        <Form.Item
+          label={<b>Comments to the Author(s)</b>}
+          name="authorComments"
           rules={[{ required: true, message: "Please write your comments" }]}
-        />
-      </Card>
-      <Card
-        title="Manuscript with comments (Optional)"
-        label="Upload PDF"
-        name="uploadedFile"
-        valuePropName="fileList"
-        getValueFromEvent={normFile}
-      >
-        <PDFUploader
-          id={"Reviewed"}
-          onFileListChange={handleFileListChange}
-          onFileUploaded={handleFileUploaded}
-        />
-      </Card>
+          style={{marginBottom: "60px"}}
+        >
+          <ReactQuill
+            className="author-quill"
+            theme="snow"
+            value={authorComments}
+            onChange={handleAuthorCommentsChange}
+            style={{ height: "300px" }}
+            placeholder="Enter comments to the author(s) (required)"
+          />
+        </Form.Item>
 
-      <Button
-        type="primary"
-        onClick={handleSubmit}
-        style={{ marginTop: "10px" }}
-      >
-        Submit Review
-      </Button>
+        <Form.Item
+          label={<b>Manuscript with comments (Optional)</b>}
+          name="uploadedFile"
+          valuePropName="fileList"
+          getValueFromEvent={normFile}
+        >
+          <PDFUploader
+            id={"Reviewed"}
+            onFileListChange={handleFileListChange}
+            onFileUploaded={handleFileUploaded}
+          />
+        </Form.Item>
+
+        <Button type="primary" htmlType="submit" style={{ marginTop: "10px" }}>
+          Submit Review
+        </Button>
+      </Form>
     </div>
   );
 };

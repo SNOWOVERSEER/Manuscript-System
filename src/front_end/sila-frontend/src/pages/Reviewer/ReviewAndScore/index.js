@@ -4,6 +4,7 @@ import { EditOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
 import { ArticleStatus } from "../../../utils/status";
 import { Review_List_API } from "../../../apis/reviewerDashbord";
+import { get_user_info_API } from "../../../apis/user";
 
 const ReviewAndScore = () => {
     const navigate = useNavigate();
