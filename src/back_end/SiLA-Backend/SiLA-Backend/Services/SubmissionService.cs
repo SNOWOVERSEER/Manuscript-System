@@ -288,12 +288,16 @@ namespace SiLA_Backend.Services
                     ReviewerRecommendation = rs.Recommendation ?? "N/A", //rs.Recommendation
                     IsRevision = rs.IsRevision, //rs.IsRevision
                     IsReviewComplete = rs.IsReviewComplete, //rs.IsReviewComplete
-                    DocumentUrl = rs.FileUrl != null ? GeneratePreSignedURLAsync(rs.FileUrl).Result : "N/A"
+                    ReviewerStatus = rs.Status,
+                    DocumentUrl = !string.IsNullOrEmpty(rs.FileUrl) ? GeneratePreSignedURLAsync(rs.FileUrl).Result : "N/A"
                 })
                 .ToList();
 
             var commentsFromReviewers = submission.ReviewerSubmissions
                 .Select(rs => JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToEditor ?? "{}"))
+                .ToList();
+            var commentsToAuthor = submission.ReviewerSubmissions
+                .Select(rs => JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToAuthor ?? "{}"))
                 .ToList();
 
             var submissionDetail = new SubmissionDetailForEditorDTO
@@ -307,8 +311,8 @@ namespace SiLA_Backend.Services
                 ReviewDeadline = submission.ReviewDeadline != null ? submission.ReviewDeadline.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
                 Status = submission.Status,
                 Reviewers = reviewers,
-                CommentsFromReviewers = commentsFromReviewers!
-
+                CommentsFromReviewers = commentsFromReviewers!,
+                CommentsToAuthor = commentsToAuthor!
             };
             return submissionDetail;
         }
@@ -348,9 +352,8 @@ namespace SiLA_Backend.Services
                             { "Comments", model.CommentsToAuthor }
                         }
                     );
-
                     await _context.SaveChangesAsync();
-
+                    await UpdateSubmissionStatusIfNeeded(model.SubmissionId);
                     await transaction.CommitAsync();
 
                     return (true, "Review submitted successfully");
@@ -383,5 +386,31 @@ namespace SiLA_Backend.Services
                 throw new Exception("Error generating pre-signed URL: " + ex.Message);
             }
         }
+
+        public async Task UpdateSubmissionStatusIfNeeded(int submissionId)
+        {
+            var reviewerSubmissions = await _context.ReviewerSubmissions
+                .Where(rs => rs.SubmissionId == submissionId)
+                .ToListAsync();
+
+            if (reviewerSubmissions.All(rs => rs.Status != SubmissionStatus.ToBeReviewed.ToString()))
+            {
+                var submission = await _context.Submissions
+                    .FirstOrDefaultAsync(s => s.Id == submissionId);
+
+                if (submission != null && submission.Status != SubmissionStatus.WaitingForDecision.ToString())
+                {
+                    submission.Status = SubmissionStatus.WaitingForDecision.ToString();
+                    _context.Submissions.Update(submission);
+                    await _context.SaveChangesAsync();
+
+                    // 可以添加一些逻辑来通知相关的用户状态已更改
+                    // 例如发送电子邮件或消息通知
+                }
+            }
+        }
+
+
+
     }
 }

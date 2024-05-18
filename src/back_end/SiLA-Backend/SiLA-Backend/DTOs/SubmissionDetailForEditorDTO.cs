@@ -13,6 +13,7 @@ namespace SiLA_Backend.DTOs
         public string ReviewDeadline { get; set; }
         public List<ReviewerDTO> Reviewers { get; set; }
         public List<Dictionary<string, string>>? CommentsFromReviewers { get; set; }
+        public List<Dictionary<string, string>>? CommentsToAuthor { get; set; }
     }
 
     public class ReviewerDTO
@@ -26,6 +27,7 @@ namespace SiLA_Backend.DTOs
         public string ReviewerRecommendation { get; set; }
         public bool IsRevision { get; set; }
         public bool IsReviewComplete { get; set; }
+        public string ReviewerStatus { get; set; }
         public string DocumentUrl { get; set; }
     }
 }
