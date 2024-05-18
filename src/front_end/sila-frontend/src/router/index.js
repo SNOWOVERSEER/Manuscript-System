@@ -22,6 +22,7 @@ import AssignReviewer from "../pages/Editor/AssignReviewer"
 import AddReviewer from "../pages/Editor/AddReviewer"
 import AssignReviewerDetail from "../pages/Editor/AssignReviewerDetail"
 import EditorArticle from "../pages/Editor/EditorArticle"
+import AssignedArticlesList from "../pages/Editor/AssignedArticlesList"
 
 const router = createBrowserRouter([
 
@@ -67,8 +68,10 @@ const router = createBrowserRouter([
                 </AuthRoute>,
         children: [
             {index: true, element: <AssignReviewer />},
-            {path:"assignreviewerdetail/:id", element: <AssignReviewerDetail />},
+            // {path:"assignreviewerdetail/:id", element: <AssignReviewerDetail />},
 
+
+            {path:"assignedarticleslist", element: <AssignedArticlesList />},
             {path:"addreviewer", element: <AddReviewer />},
             {path:"editorarticle/:id", element: <EditorArticle />}
         ]

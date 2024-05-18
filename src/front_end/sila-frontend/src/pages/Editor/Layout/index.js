@@ -18,11 +18,15 @@ const items = [
     icon: <DiffOutlined />,
   },
   {
+    label: 'Assgined Articles',
+    key: '/editor/assignedarticleslist',
+    icon: <DiffOutlined />,
+  },
+  {
     label: 'Add Reviewer',
     key: '/editor/addreviewer',
     icon: <DiffOutlined />,
   },
-
 ]
 
 const LayoutEditor = () => {
@@ -48,8 +52,8 @@ const LayoutEditor = () => {
   }
 
   const getSelectedKeys = (pathname) => {
-    if (pathname.startsWith('/editor/assignreviewerdetail')) {
-      return ['/editor'];
+    if (pathname.startsWith('/editor/editorarticle')) {
+      return ['/editor/assignedarticleslist'];
     }
     return [pathname]
   }

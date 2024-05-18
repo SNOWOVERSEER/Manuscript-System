@@ -5,14 +5,13 @@ import { Table, Tag, Space } from 'antd'
 import { EditOutlined } from '@ant-design/icons'
 import { Card, Button } from 'antd'
 import { Link, useNavigate } from "react-router-dom"
-import { ArticleStatus } from "../../../utils/status"
+import { ArticleStatus, getStateTag } from "../../../utils/status"
 import FormModal from "../FormModal"
 import { article_List_API } from "../../../apis/article"
 import { http } from "../../../utils"
 import { formatDate } from "../../../utils/common"
-import { getStateTag } from "../../../utils/status"
 
-const AssignReviewer = ()=>{
+const AssignedArticlesList = ()=>{
     const navigate = useNavigate()
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [articleData, setArticleData] = useState(null);
@@ -42,7 +41,7 @@ const AssignReviewer = ()=>{
         try {
           const response = await http.get(`/Manuscripts/EditorSubmissions/${localStorage.getItem("id")}`);
           console.log(response.data)
-          const res = response.data.filter(article => article.status === 'Submitted').map(article => ({
+          const res = response.data.filter(article => article.status !== 'Submitted').map(article => ({
             ...article,
             id: article.submissionId,
             submissionDate: formatDate(article.submissionDate)
@@ -56,21 +55,7 @@ const AssignReviewer = ()=>{
       fetchAllArticleData()
     }, []);
 
-    const fetchAllArticleData = async () => {
-      try {
-        const response = await http.get(`/Manuscripts/EditorSubmissions/${localStorage.getItem("id")}`);
-        console.log(response.data)
-        const res = response.data.filter(article => article.status === 'Submitted').map(article => ({
-          ...article,
-          id: article.submissionId,
-          submissionDate: formatDate(article.submissionDate)
-        }));
 
-        setAllarticles(res) 
-      } catch (error) {
-        console.error('Fetching article data failed', error);
-      }
-    }
 
     const showModal = async (submission_id) => {
         
@@ -91,7 +76,6 @@ const AssignReviewer = ()=>{
     };
     const handleOk = () => {
         setIsModalOpen(false);
-        fetchAllArticleData()
     }
 
     const handleCancel = () => {
@@ -163,8 +147,8 @@ const AssignReviewer = ()=>{
                 onClick={()=>{navigate(`/editor/assignreviewerdetail/${data.id}`)}}/> 
             */}
             
-            <Button type="primary" onClick={()=>showModal(data.id)}>
-                Assign Reviewer
+            <Button type="primary" onClick={()=>{navigate(`/editor/editorarticle/${data.id}`)}} style={{ backgroundColor: '#80d27f', borderColor: '#80d27f' }}>
+                View details
             </Button>
 
             {/* <Button
@@ -182,19 +166,12 @@ const AssignReviewer = ()=>{
     return (
         <div>
         {/*        */}
-        <Link to="/editor/editorarticle/1">About</Link>
+        <Link to="/editor/editorarticle/15">About</Link>
         
-        <Card title={`Assign reviewers to articles`}>
+        <Card title={`Assigned Articles List`}>
           <Table rowKey="id" columns={columns} dataSource={allarticles} />
         </Card>
-        <FormModal
-            open={isModalOpen}
-            onCancel={handleCancel}
-            onOk={handleOk}
-            articleData={articleData}
-            reviewers={reviewers}
-            // selectedReviewers={[]}
-        />
+        
 
         </div>
 
@@ -202,4 +179,6 @@ const AssignReviewer = ()=>{
     )
 }
 
-export default AssignReviewer
+export default AssignedArticlesList
+
+// editorarticle/id

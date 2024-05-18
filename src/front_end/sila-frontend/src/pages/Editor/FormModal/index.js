@@ -42,16 +42,22 @@ const FormModal = ({ open, onCancel, onOk, articleData, reviewers }) => {
       // console.log(payload)
       const res = await assign_reviewers(payload)
       // console.log(res)
-  } catch (error) {
-      if (error.response) {
-          // such as 400、500
-          message.error(`Error: ${error.response.data.message}`);
-      } else {
-          // such as network error
-          message.error(`Network Error: ${error.message}`);
-      }
-  }
+      message.success('Reviewers assigned successfully');
 
+
+    } catch (error) {
+        if (error.response) {
+            // such as 400、500
+            message.error(`Error: ${error.response.data.message}`);
+        } else {
+            // such as network error
+            message.error(`Network Error: ${error.message}`);
+        }
+    }
+
+    onOk(); // Call onOk to handle additional logic if needed
+    onCancel(); // Close the modal
+    
     // Send POST request
     // fetch('YOUR_API_ENDPOINT', {
     //   method: 'POST',
