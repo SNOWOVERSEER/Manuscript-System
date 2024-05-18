@@ -1,54 +1,69 @@
-// reviewStatusTable.jsx
 import React from "react";
-import { Button, Table, Tag } from "antd";
+import { Table, Button, Tag } from "antd";
 
-const reviewStatusTable = ({ reviewData }) => {
+const ReviewStatusTable = ({ reviewData }) => {
   const columns = [
     {
-      title: "Reviewer’s name",
+      title: "Reviewer’s Name",
       dataIndex: "reviewerName",
       key: "reviewerName",
     },
     {
-      title: "Reviewer’s contact details",
-      dataIndex: "contactDetails",
-      key: "contactDetails",
+      title: "Reviewer’s Contact Details",
+      dataIndex: "reviewerContact",
+      key: "reviewerContact",
     },
     {
       title: "Recommendation",
-      dataIndex: "recommnedation",
-      key: "recommendation",
+      dataIndex: "reviewerRecommendation",
+      key: "reviewerRecommendation",
     },
     {
       title: "Revision",
-      dataIndex: "revision",
-      key: "revision",
+      dataIndex: "isRevision",
+      key: "isRevision",
+      render: (isRevision) => (
+        <Tag color={isRevision ? "green" : "red"}>
+          {isRevision ? "Yes" : "No"}
+        </Tag>
+      ),
     },
+
     {
       title: "Decision Status",
-      dataIndex: "decisionStatus",
-      key: "decisionStatus",
-      render: (status) => {
-        let color = status === "rejected" ? "volcano" : "green";
-        if (status === "pending") {
-          color = "geekblue";
-        }
-        return <Tag color={color}>{status.toUpperCase()}</Tag>;
-      },
+      dataIndex: "isReviewComplete",
+      key: "isReviewComplete",
+      render: (isReviewComplete) => (
+        <Tag color={isReviewComplete ? "green" : "red"}>
+          {isReviewComplete ? "Yes" : "No"}
+        </Tag>
+      ),
     },
     {
       title: "Reviewer Script",
-      dataIndex: "scriptUrl",
-      key: "scriptUrl",
-      render: (url) => (
-        <Button type="primary" href={url} download>
-          Download Script
+      dataIndex: "documentUrl",
+      key: "documentUrl",
+      render: (documentUrl) => (
+        <Button
+          type="primary"
+          href={documentUrl}
+          target="_blank"
+          disabled={documentUrl === "N/A"}
+        >
+          Download
         </Button>
       ),
     },
   ];
 
-  return <Table columns={columns} dataSource={reviewData} pagination={false} />;
+  return (
+    <Table
+      columns={columns}
+      dataSource={reviewData}
+      pagination={false}
+      rowKey={(record) => record.reviewerId}
+    />
+  );
 };
 
-export default reviewStatusTable;
+export default ReviewStatusTable;
