@@ -1,6 +1,5 @@
-// EditorArticle.jsx
 import React, { useState, useEffect } from "react";
-import { Card, Form, Button, Table, Radio } from "antd";
+import { Card, Button, Table, Radio } from "antd";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import logo from "../../../assets/logo.jpg"; // Adjust the path as necessary
@@ -8,46 +7,52 @@ import { editor_review_API } from "../../../apis/editor_review";
 import ReviewStatusTable from "./reviewStatusTable"; // Import the component
 
 const EditorArticle = () => {
-  const [form] = Form.useForm();
   const [comments_to_editor, setEditorComments] = useState("");
   const [comments_to_reviewer, setAuthorComments] = useState("");
   const [data, setData] = useState([]); // State to store fetched data
   const [reviewTableData, setReviewTableData] = useState([]); // State to store review status data
-  const pdfFile = "/A.pdf";
+  const [manuscriptURL, setManuscriptURL] = useState("");
+  const [appendixURL, setAppendixURL] = useState("");
+  const [supplementaryFileURL, setSupplementaryFileURL] = useState("");
 
   useEffect(() => {
     async function fetchReviewData(id) {
       try {
-        const res = await editor_review_API(id);
+        const res = await editor_review_API("15");
+        console.log(res.data);
         if (res && res.data) {
           const {
-            articleTitle,
-            first_reviewer_Name,
-            first_reviewer_contact_Details,
-            targetDate,
-            firstReviewerDecision,
-            secondReviewerDecision,
+            title,
+            category,
+            reviewDeadline,
+            files,
+            reviewers,
             editorComments,
             authorComments,
-            recommendation,
-            willingToReview,
-            reviewStatus,
           } = res.data;
 
+          const manuscriptURL = files[0]?.body || "";
+          const appendixURL = files[0]?.appendix || "";
+          const supplementaryFileURL = files[0]?.others || "";
+
           setData([
-            { key: "1", field: "Article title", value: articleTitle },
-            { key: "2", field: "Target date", value: targetDate },
+            { key: "1", field: "Article title", value: title },
+            { key: "2", field: "Target date", value: reviewDeadline },
+            { key: "3", field: "Category", value: category },
           ]);
           setEditorComments(editorComments);
           setAuthorComments(authorComments);
-          setReviewTableData(reviewStatus); // Assuming reviewStatus contains the necessary data for reviewStatusTable
+          setReviewTableData(reviewers);
+          setManuscriptURL(manuscriptURL);
+          setAppendixURL(appendixURL);
+          setSupplementaryFileURL(supplementaryFileURL);
         }
       } catch (error) {
         console.error("Error fetching review data:", error);
       }
     }
 
-    // editor ID
+    // Fetch review data for the editor using the editor ID
     fetchReviewData(localStorage.getItem("id"));
   }, []);
 
@@ -95,24 +100,27 @@ const EditorArticle = () => {
             <Button
               style={{ marginLeft: "20px" }}
               type="primary"
-              href={pdfFile}
-              download="Manuscript.pdf"
+              href={manuscriptURL}
+              target="_blank"
+              disabled={!manuscriptURL}
             >
               Download Manuscript
             </Button>
             <Button
               style={{ marginLeft: "20px" }}
               type="primary"
-              href={pdfFile}
-              download="Manuscript.pdf"
+              href={appendixURL}
+              target="_blank"
+              disabled={!appendixURL}
             >
               Download Appendix
             </Button>
             <Button
               style={{ marginLeft: "20px" }}
               type="primary"
-              href={pdfFile}
-              download="Manuscript.pdf"
+              href={supplementaryFileURL}
+              target="_blank"
+              disabled={!supplementaryFileURL}
             >
               Download Supplementary File
             </Button>
