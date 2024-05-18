@@ -20,7 +20,6 @@ import ReviewPage from "../pages/Reviewer/ReviewPage"
 import LayoutEditor from "../pages/Editor/Layout"
 import AssignReviewer from "../pages/Editor/AssignReviewer"
 import AddReviewer from "../pages/Editor/AddReviewer"
-import AssignReviewerDetail from "../pages/Editor/AssignReviewerDetail"
 import EditorArticle from "../pages/Editor/EditorArticle"
 import AssignedArticlesList from "../pages/Editor/AssignedArticlesList"
 
