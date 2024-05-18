@@ -10,6 +10,7 @@ namespace SiLA_Backend.DTOs
         public List<Dictionary<string, string>> Files { get; set; }
         public string SubmissionDate { get; set; }
         public string Status { get; set; }
+        public string ReviewDeadline { get; set; }
         public List<ReviewerDTO> Reviewers { get; set; }
         public List<Dictionary<string, string>>? CommentsFromReviewers { get; set; }
     }

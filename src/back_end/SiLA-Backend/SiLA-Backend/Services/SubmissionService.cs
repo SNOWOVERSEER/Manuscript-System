@@ -118,7 +118,8 @@ namespace SiLA_Backend.Services
                     var submission = await _context.Submissions.FindAsync(submissionId);
                     if (submission == null)
                         throw new KeyNotFoundException("Submission not found");
-
+                    submission.Status = SubmissionStatus.ToBeReviewed.ToString();
+                    submission.ReviewDeadline = DateTime.UtcNow.AddDays(7);
                     foreach (var reviewerId in reviewerIds)
                     {
                         var reviewer = await _userManager.FindByIdAsync(reviewerId);
@@ -252,6 +253,7 @@ namespace SiLA_Backend.Services
                 File = preSignedUrls,
                 Declaration = submissionDetail.Manuscript.Declaration,
                 SubmissionDate = submissionDetail.Submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                ReviewDeadline = submissionDetail.Submission.ReviewDeadline!.Value.ToString("yyyy-MM-dd HH:mm:ss"),
                 Status = submissionDetail.Submission.Status
             };
         }
@@ -302,6 +304,7 @@ namespace SiLA_Backend.Services
                 Files = new List<Dictionary<string, string>> { preSignedUrls },
                 Declaration = submission.Manuscript.Declaration,
                 SubmissionDate = submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                ReviewDeadline = submission.ReviewDeadline != null ? submission.ReviewDeadline.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
                 Status = submission.Status,
                 Reviewers = reviewers,
                 CommentsFromReviewers = commentsFromReviewers!

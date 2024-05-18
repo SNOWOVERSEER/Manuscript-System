@@ -32,6 +32,7 @@ namespace SiLA_Backend.Models
         public string Status { get; set; }
 
         public DateTime? RevisedDeadline { get; set; } // 修订截止日期
+        public DateTime? ReviewDeadline { get; set; } // 审稿截止日期
 
         // 引用到对应的Manuscript
         [Required]

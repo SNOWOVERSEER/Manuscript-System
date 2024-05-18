@@ -9,6 +9,7 @@ namespace SiLA_Backend.DTOs
         public string? Declaration { get; set; }
         public Dictionary<string, string> File { get; set; }
         public string SubmissionDate { get; set; }
+        public string ReviewDeadline { get; set; }
         public string Status { get; set; }
     }
 }
