@@ -43,3 +43,11 @@ export function register_reviewer_API(data_){
 export function get_articles_for_review_API() {
   return null
 }
+
+export function get_user_info_API(data_){
+  return http({
+      url: '/User/User',
+      method: 'GET',
+      data: data_
+  })
+}
