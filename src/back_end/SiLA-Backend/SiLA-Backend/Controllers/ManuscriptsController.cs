@@ -29,7 +29,7 @@ namespace SiLA_Backend.Controllers
             _configuration = configuration;
         }
 
-        [Authorize(Roles = "Author")]
+        [Authorize(Roles = "Author , Reviewer, Editor")]
         [HttpPost("uploadfile")]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
