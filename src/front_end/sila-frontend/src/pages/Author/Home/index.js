@@ -5,7 +5,7 @@ import { http } from '../../../utils';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { article_List_API } from '../../../apis/article';
-import { ArticleStatus } from '../../../utils/status';
+import { ArticleStatus, getStateTag } from '../../../utils/status';
 
 
 
@@ -53,21 +53,7 @@ const Home = () => {
         {
           title: 'Status',
           dataIndex: 'status',
-          render: status => {
-            if (status === ArticleStatus.Submitted) {
-                return <Tag color="orange">Submitted</Tag>;
-            } else if(status === ArticleStatus.ToBeReview) {
-                return <Tag color="red">To Be Review</Tag>;
-            } else if(status === ArticleStatus.WaitingFordecision) {
-              return <Tag color="green">Waiting For decision</Tag>;
-            } else if(status === ArticleStatus.Approved) {
-              return <Tag color="yellow">Done</Tag>;
-            } else if(status === ArticleStatus.Rejected) {
-              return <Tag color="purple">Done</Tag>;
-            } else if(status === ArticleStatus.Revised) {
-              return <Tag color="black">Done</Tag>;
-            }
-          },
+          render: status => getStateTag(status)
         },
     ];
 
