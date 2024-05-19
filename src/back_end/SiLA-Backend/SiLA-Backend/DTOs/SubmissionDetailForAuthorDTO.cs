@@ -21,7 +21,6 @@ namespace SiLA_Backend.DTOs
     {
         public int ReviewerIndex { get; set; }
         public Dictionary<string, string>? CommentsToAuthor { get; set; }
-        public string ReviewerRecommendation { get; set; }
         public string DocumentUrl { get; set; }
     }
 
