@@ -15,6 +15,7 @@ namespace SiLA_Backend.Services
         Task<SubmissionDetailForEditorDTO> GetSubmissionDetailForEditorAsync(int submissionId);
         Task<SubmissionDetailForAuthorDTO> submissionDetailForAuthorDTO(int submissionId);
         Task<(bool IsSuccess, string Message)> SubmitReviewAsync(SubmissionReviewDTO model);
+        Task<(bool IsSuccess, string Message)> SubmitEditorDecisionAsync(EditorDecisionDTO model);
 
     }
 }

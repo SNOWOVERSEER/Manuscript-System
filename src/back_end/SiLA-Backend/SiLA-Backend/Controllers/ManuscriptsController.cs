@@ -186,6 +186,18 @@ namespace SiLA_Backend.Controllers
             }
         }
 
+        [Authorize(Roles = "Editor")]
+        [HttpPost("submiteditordecision")]
+        public async Task<IActionResult> SubmitEditorDecision(EditorDecisionDTO model)
+        {
+            var (IsSuccess, Message) = await _submissionService.SubmitEditorDecisionAsync(model);
+            if (IsSuccess)
+            {
+                return Ok(new { state = "success", message = Message });
+            }
+            return BadRequest(new { state = "error", message = Message });
+        }
+
         [Authorize(Roles = "Reviewer")]
         [HttpPost("submitreview")]
         public async Task<IActionResult> SubmitReview(SubmissionReviewDTO model)
@@ -197,11 +209,6 @@ namespace SiLA_Backend.Controllers
             }
             return BadRequest(new { state = "error", message = Message });
         }
-
-
-
-
-
 
 
     }

@@ -460,5 +460,42 @@ namespace SiLA_Backend.Services
 
             return dto;
         }
+
+        public async Task<(bool IsSuccess, string Message)> SubmitEditorDecisionAsync(EditorDecisionDTO model)
+        {
+            try
+            {
+                var submission = await _context.Submissions
+                .Where(s => s.Id == model.SubmissionId)
+                .FirstOrDefaultAsync();
+
+                if (submission == null)
+                    throw new KeyNotFoundException("Submission not found");
+
+                if (model.Decision == SubmissionStatus.Revised.ToString())
+                {
+                    submission.RevisedDeadline = DateTime.Parse(model.RevisedDeadline!);
+                }
+                else if (model.Decision == SubmissionStatus.Approved.ToString() || model.Decision == SubmissionStatus.Rejected.ToString())
+                {
+                    submission.CaseCompleted = true;
+                }
+
+                submission.Status = model.Decision;
+                submission.CommentsFromEditor = model.CommentsFromEditor;
+                await _context.SaveChangesAsync();
+                return (true, "Editor decision submitted successfully");
+
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred: {ex.Message}");
+            }
+
+
+
+
+
+        }
     }
 }
