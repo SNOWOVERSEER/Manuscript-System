@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Table, Space, Card, Button } from 'antd';
+import { Table, Space, Card, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { getStateTag } from "../../../utils/status";
 import FormModal from "../FormModal";
@@ -8,6 +8,7 @@ import { formatDate } from "../../../utils/common";
 
 const AssignReviewer = () => {
   const navigate = useNavigate();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [articleData, setArticleData] = useState(null);
   // Get all articles
@@ -18,49 +19,60 @@ const AssignReviewer = () => {
   useEffect(() => {
     const fetchAllArticleData = async () => {
       try {
-        const response = await http.get(`/Manuscripts/EditorSubmissions/${localStorage.getItem("id")}`);
-        const res = response.data.filter(article => article.status === 'Submitted').map(article => ({
-          ...article,
-          id: article.submissionId,
-          submissionDate: formatDate(article.submissionDate),
-        }));
+        const response = await http.get(
+          `/Manuscripts/EditorSubmissions/${localStorage.getItem("id")}`
+        );
+        const res = response.data
+          .filter((article) => article.status === "Submitted")
+          .map((article) => ({
+            ...article,
+            id: article.submissionId,
+            submissionDate: formatDate(article.submissionDate),
+          }));
         setAllarticles(res);
       } catch (error) {
         console.error("Fetching article data failed", error);
       }
-    }
+    };
     fetchAllArticleData();
   }, []);
 
   const fetchAllArticleData = async () => {
     try {
-      const response = await http.get(`/Manuscripts/EditorSubmissions/${localStorage.getItem("id")}`);
-      const res = response.data.filter(article => article.status === 'Submitted').map(article => ({
-        ...article,
-        id: article.submissionId,
-        submissionDate: formatDate(article.submissionDate)
-      }));
+      const response = await http.get(
+        `/Manuscripts/EditorSubmissions/${localStorage.getItem("id")}`
+      );
+      const res = response.data
+        .filter((article) => article.status === "Submitted")
+        .map((article) => ({
+          ...article,
+          id: article.submissionId,
+          submissionDate: formatDate(article.submissionDate),
+        }));
       setAllarticles(res);
     } catch (error) {
-      console.error('Fetching article data failed', error);
+      console.error("Fetching article data failed", error);
     }
-  }
+  };
 
   const showModal = async (submission_id) => {
     try {
-      const reviewers = await fetchAllReviewers(localStorage.getItem("id"), submission_id);
+      const reviewers = await fetchAllReviewers(
+        localStorage.getItem("id"),
+        submission_id
+      );
       setReviewers(reviewers);
       await fetchArticleDataBySubmissionID(submission_id);
       setIsModalOpen(true);
     } catch (error) {
-      console.error('Error fetching article data:', error);
+      console.error("Error fetching article data:", error);
     }
   };
 
   const handleOk = () => {
     setIsModalOpen(false);
     fetchAllArticleData();
-  }
+  };
 
   const handleCancel = () => {
     setIsModalOpen(false);
@@ -78,7 +90,9 @@ const AssignReviewer = () => {
 
   const fetchArticleDataBySubmissionID = async (submission_id) => {
     try {
-      const response = await http.get(`/Manuscripts/submissionabstract/${submission_id}`);
+      const response = await http.get(
+        `/Manuscripts/submissionabstract/${submission_id}`
+      );
       const modifiedData = { ...response.data, submission_id: submission_id };
       setArticleData(modifiedData);
     } catch (error) {
@@ -100,9 +114,9 @@ const AssignReviewer = () => {
       sorter: (a, b) => a.category.localeCompare(b.category),
     },
     {
-      title: 'STATUS',
-      dataIndex: 'status',
-      render: status => getStateTag(status),
+      title: "STATUS",
+      dataIndex: "status",
+      render: (status) => getStateTag(status),
       sorter: (a, b) => a.status.localeCompare(b.status),
     },
     {
@@ -127,11 +141,11 @@ const AssignReviewer = () => {
   return (
     <div>
       <Card title={`Assign reviewers to articles`}>
-        <Table 
-          rowKey="id" 
-          columns={columns} 
-          dataSource={allarticles} 
-          pagination={{ pageSize: 5 }} 
+        <Table
+          rowKey="id"
+          columns={columns}
+          dataSource={allarticles}
+          pagination={{ pageSize: 5 }}
         />
       </Card>
       <FormModal
@@ -143,6 +157,6 @@ const AssignReviewer = () => {
       />
     </div>
   );
-}
+};
 
 export default AssignReviewer;

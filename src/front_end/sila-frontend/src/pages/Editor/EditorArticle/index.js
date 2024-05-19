@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Table, Radio } from "antd";
-import ReactQuill from "react-quill";
+import { Card, Button, Table } from "antd";
 import "react-quill/dist/quill.snow.css";
 import logo from "../../../assets/logo.jpg"; // Adjust the path as necessary
 import { editor_review_API } from "../../../apis/editor_review";
 import ReviewStatusTable from "./reviewStatusTable"; // Import the component
+import { useParams } from "react-router-dom";
 
 const EditorArticle = () => {
-  const [comments_to_editor, setEditorComments] = useState("");
-  const [comments_to_reviewer, setAuthorComments] = useState("");
+  const [commentsToEditor, setEditorComments] = useState([]);
+  const [commentsToAuthor, setAuthorComments] = useState([]);
   const [data, setData] = useState([]); // State to store fetched data
   const [reviewTableData, setReviewTableData] = useState([]); // State to store review status data
   const [manuscriptURL, setManuscriptURL] = useState("");
   const [appendixURL, setAppendixURL] = useState("");
   const [supplementaryFileURL, setSupplementaryFileURL] = useState("");
 
+  const { submissionID } = useParams();
+
   useEffect(() => {
-    async function fetchReviewData(id) {
+    async function fetchReviewData(submissionID) {
       try {
-        const res = await editor_review_API("15");
+        const res = await editor_review_API(submissionID);
         console.log(res.data);
         if (res && res.data) {
           const {
@@ -27,8 +29,9 @@ const EditorArticle = () => {
             reviewDeadline,
             files,
             reviewers,
-            editorComments,
-            authorComments,
+            commentsFromReviewers,
+            commentsToAuthor,
+            submissionDate,
           } = res.data;
 
           const manuscriptURL = files[0]?.body || "";
@@ -37,11 +40,29 @@ const EditorArticle = () => {
 
           setData([
             { key: "1", field: "Article title", value: title },
-            { key: "2", field: "Target date", value: reviewDeadline },
+            { key: "2", field: "Deadline for reviewer", value: reviewDeadline },
             { key: "3", field: "Category", value: category },
+            { key: "4", field: "Submission date", value: submissionDate },
           ]);
-          setEditorComments(editorComments);
-          setAuthorComments(authorComments);
+
+          // Format comments from reviewers
+          const formattedCommentsToEditor = commentsFromReviewers.map(
+            (comment, index) => ({
+              key: index,
+              reviewer: comment.Reviewer,
+              comments: comment.Comments,
+            })
+          );
+          const formattedCommentsToAuthor = commentsToAuthor.map(
+            (comment, index) => ({
+              key: index,
+              reviewer: comment.Reviewer,
+              comments: comment.Comments,
+            })
+          );
+
+          setEditorComments(formattedCommentsToEditor);
+          setAuthorComments(formattedCommentsToAuthor);
           setReviewTableData(reviewers);
           setManuscriptURL(manuscriptURL);
           setAppendixURL(appendixURL);
@@ -53,15 +74,11 @@ const EditorArticle = () => {
     }
 
     // Fetch review data for the editor using the editor ID
-    fetchReviewData(localStorage.getItem("id"));
-  }, []);
+    fetchReviewData(submissionID);
+  }, [submissionID]);
 
   const handleSubmit = () => {
-    console.log(
-      "Submitting content:",
-      comments_to_editor,
-      comments_to_reviewer
-    );
+    console.log("Submitting content:", commentsToEditor, commentsToAuthor);
   };
 
   const columns = [
@@ -75,6 +92,20 @@ const EditorArticle = () => {
       title: "Value",
       dataIndex: "value",
       key: "value",
+    },
+  ];
+
+  const commentColumns = [
+    {
+      title: "Reviewer",
+      dataIndex: "reviewer",
+      key: "reviewer",
+    },
+    {
+      title: "Comments",
+      dataIndex: "comments",
+      key: "comments",
+      render: (text) => <div dangerouslySetInnerHTML={{ __html: text }} />,
     },
   ];
 
@@ -132,16 +163,13 @@ const EditorArticle = () => {
         </Card>
 
         <Card
-          title="Comments form reviewer to editor."
+          title="Comments from reviewer to editor"
           style={{ paddingBottom: "50px", marginBottom: "30px" }}
         >
-          <ReactQuill
-            className="editor-quill"
-            theme="snow"
-            value={comments_to_editor}
-            readOnly={true}
-            style={{ height: "300px" }}
-            placeholder="Comments form reviewer to editor."
+          <Table
+            columns={commentColumns}
+            dataSource={commentsToEditor}
+            pagination={false}
           />
         </Card>
 
@@ -149,13 +177,10 @@ const EditorArticle = () => {
           title="Comments from reviewer to the Author(s)"
           style={{ paddingBottom: "50px", marginBottom: "30px" }}
         >
-          <ReactQuill
-            className="author-quill"
-            theme="snow"
-            value={comments_to_reviewer}
-            readOnly={true}
-            style={{ height: "300px" }}
-            placeholder="Comments form reviewer to authors."
+          <Table
+            columns={commentColumns}
+            dataSource={commentsToAuthor}
+            pagination={false}
           />
         </Card>
 
@@ -169,7 +194,11 @@ const EditorArticle = () => {
             style={{
               width: "20%",
               height: "40px",
-              backgroundColor: "#34A853",
+              background: "#34A853",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              opacity: "0.9",
             }}
           >
             Accept
@@ -182,7 +211,11 @@ const EditorArticle = () => {
               marginLeft: "5%",
               width: "20%",
               height: "40px",
-              backgroundColor: "#EB4335",
+              background: "#EB4335",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              opacity: "0.9",
             }}
           >
             Reject
@@ -195,7 +228,11 @@ const EditorArticle = () => {
               marginLeft: "5%",
               width: "20%",
               height: "40px",
-              backgroundColor: "#FBBC05",
+              background: "#FBBC05",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              opacity: "0.9",
             }}
           >
             Revised
