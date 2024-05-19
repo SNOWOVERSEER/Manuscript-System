@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Card, Form, Button, Table, Radio } from "antd";
+import { Card, Form, Button, Table, Radio, message } from "antd";
 import { useLocation } from "react-router-dom";
 import ReactQuill from "react-quill";
 import PDFUploader from "../../Author/StartNewSubmission/PDFUploader";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "react-quill/dist/quill.snow.css";
-import { Review_Get_Article } from "../../../apis/reviewerDashbord";
+import { Review_Get_Article, submit_review } from "../../../apis/reviewerDashbord";
 import logo from "../../../assets/logo.jpg"; // Adjust the path as necessary
 import "./index.scss";
 import { useSelector } from "react-redux";
@@ -21,13 +21,15 @@ const ReviewPage = () => {
   const id = query.get("id");
   console.log("id: ", id);
 
-  const { firstName, lastName, email } = useSelector((state) => state.user.userInfo);
+  const { firstName, lastName, email, userId } = useSelector((state) => state.user.userInfo);
+  const reviewerId = localStorage.getItem("id");
   const [form] = Form.useForm();
   const [editorComments, setEditorComments] = useState("");
   const [authorComments, setAuthorComments] = useState("");
   const [recommendation, setRecommendation] = useState(null);
   const [willingToReview, setWillingToReview] = useState(null);
   const [articleData, setArticleData] = useState(null);
+  const [fileUrl, setFileUrl] = useState("");
 
   useEffect(() => {
     async function fetchArticle() {
@@ -48,17 +50,36 @@ const ReviewPage = () => {
     fetchArticle();
   }, [id]);
 
-  const handleSubmit = () => {
-    console.log(
-      "Submitting content:",
-      editorComments,
-      authorComments,
-      recommendation,
-      willingToReview
-    );
-    form.validateFields().then((values) => {
+  const handleSubmit = async () => {
+    try {
+      await form.validateFields();
+      const values = form.getFieldsValue();
       console.log("Received values of form:", values);
-    });
+      const reviewData = {
+        submissionId: id,
+        reviewerId: reviewerId,
+        reviewerName: `${firstName} ${lastName}`,
+        recommendation,
+        willingToReview: willingToReview === "yes", // Convert to boolean
+        commentsToEditor: editorComments || "", // Default to empty string if no comments
+        commentsToAuthor: authorComments,
+        fileUrl,
+      };
+      console.log("Review Data:", reviewData); // Log review data for debugging
+      const response = await submit_review(reviewData);
+      console.log("Review submitted successfully", response);
+
+      // Show success message and refresh the page
+      setTimeout(() => {
+      message.success("Submission successful!");
+      }, 2000); // Delay to allow the user to see the success message
+    } catch (error) {
+      console.error("Error submitting review:", error.response || error);
+      if (error.response && error.response.data) {
+        console.error("Server response data:", error.response.data);
+      }
+      message.error("Error submitting review. Please try again.");
+    }
   };
 
   const handleEditorCommentsChange = (content) => {
@@ -87,6 +108,7 @@ const ReviewPage = () => {
   const handleFileUploaded = (response, id) => {
     if (response && response.path) {
       console.log(`File uploaded for ${id}: ${response.path}`);
+      setFileUrl(response.path); // Update file URL state
     }
   };
 

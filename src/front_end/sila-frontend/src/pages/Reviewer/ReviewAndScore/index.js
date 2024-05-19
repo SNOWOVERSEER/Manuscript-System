@@ -2,11 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Table, Tag, Button, Card, Space } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
-import { ArticleStatus } from "../../../utils/status";
+import { getStateTag } from "../../../utils/status";
 import { Review_List_API } from "../../../apis/reviewerDashbord";
-import { get_user_info_API } from "../../../apis/user";
 
-const ReviewAndScore = () => {
+const History = () => {
     const navigate = useNavigate();
     const [articles, setArticles] = useState([]);
 
@@ -16,8 +15,8 @@ const ReviewAndScore = () => {
             try {
                 const response = await Review_List_API(id); // Assumed to return a promise
                 console.log('API Response:', response); // Log the full response
-                setArticles(response.data); // Update state with fetched data
-                
+                const filteredArticles = response.data.filter(article => article.status === "ToBeReviewed"); // Filter articles with status "Reviewed"
+                setArticles(filteredArticles); // Update state with filtered data
             } catch (error) {
                 console.error("Error fetching articles:", error);
             }
@@ -39,11 +38,7 @@ const ReviewAndScore = () => {
         {
             title: 'STATUS',
             dataIndex: 'status',
-            render: status => (
-                status === ArticleStatus.ToBeReviewed
-                    ? <Tag color="red">To be reviewed</Tag>
-                    : <Tag color="green">Done</Tag>
-            )
+            render: status => getStateTag(status)
         },
         {
             title: 'SUBMISSION DATE',
@@ -56,9 +51,13 @@ const ReviewAndScore = () => {
         {
             title: 'ACTION',
             render: record => (
-                console.log('Record ID:', record.submissionId),
                 <Space size="middle">
-                    <Button type="primary" shape="circle" icon={<EditOutlined />} onClick={() => navigate(`/reviewer/reviewpage?id=${record.submissionId}`)} />
+                    <Button 
+                        type="primary" 
+                        shape="circle" 
+                        icon={<EditOutlined />} 
+                        onClick={() => navigate(`/reviewer/reviewpage?id=${record.submissionId}`)} 
+                    />
                 </Space>
             ),
         },
@@ -67,10 +66,11 @@ const ReviewAndScore = () => {
     return (
         <div>
             <Card title="Articles for Review">
-                <Table rowKey="id" columns={columns} dataSource={articles}  pagination={false} />
+                <Table rowKey="id" columns={columns} dataSource={articles} pagination={false} />
             </Card>
         </div>
     );
 }
 
-export default ReviewAndScore;
+export default History;
+

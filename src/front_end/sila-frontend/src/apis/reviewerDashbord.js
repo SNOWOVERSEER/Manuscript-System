@@ -13,3 +13,11 @@ export function Review_Get_Article(data_) {
         method: 'GET'
     });
 }
+
+export function submit_review(data_) {
+    return http({
+        url: `Manuscripts/submitreview`,
+        method: 'POST',
+        data: data_,
+    });
+}
