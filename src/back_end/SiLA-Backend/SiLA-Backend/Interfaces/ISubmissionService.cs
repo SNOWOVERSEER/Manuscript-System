@@ -13,6 +13,7 @@ namespace SiLA_Backend.Services
         Task<SubmissionAbsDTO> GetSubmissionAbstractAsync(int submissionId);
         Task<SubmissionDetailForReviewerDTO> GetSubmissionDetailForReviewerAsync(int submissionId);
         Task<SubmissionDetailForEditorDTO> GetSubmissionDetailForEditorAsync(int submissionId);
+        Task<SubmissionDetailForAuthorDTO> submissionDetailForAuthorDTO(int submissionId);
         Task<(bool IsSuccess, string Message)> SubmitReviewAsync(SubmissionReviewDTO model);
 
     }

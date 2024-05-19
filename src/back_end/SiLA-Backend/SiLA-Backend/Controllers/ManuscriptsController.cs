@@ -172,6 +172,20 @@ namespace SiLA_Backend.Controllers
             }
         }
 
+        [HttpGet("GetSubmissionDetailForAuthor/{submissionId}")]
+        public async Task<IActionResult> GetSubmissionDetailForAuthor(int submissionId)
+        {
+            try
+            {
+                var submissionDetail = await _submissionService.submissionDetailForAuthorDTO(submissionId);
+                return Ok(new { state = "success", data = submissionDetail });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { state = "error", message = "Submission not found!" });
+            }
+        }
+
         [Authorize(Roles = "Reviewer")]
         [HttpPost("submitreview")]
         public async Task<IActionResult> SubmitReview(SubmissionReviewDTO model)
@@ -183,6 +197,9 @@ namespace SiLA_Backend.Controllers
             }
             return BadRequest(new { state = "error", message = Message });
         }
+
+
+
 
 
 

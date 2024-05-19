@@ -10,6 +10,6 @@ namespace SiLA_Backend.DTOs
         public bool WillingToReview { get; set; }
         public string CommentsToEditor { get; set; }
         public string CommentsToAuthor { get; set; }
-        public string FileUrl { get; set; }
+        public string? FileUrl { get; set; }
     }
 }

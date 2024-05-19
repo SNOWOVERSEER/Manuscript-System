@@ -397,7 +397,6 @@ namespace SiLA_Backend.Services
             {
                 var submission = await _context.Submissions
                     .FirstOrDefaultAsync(s => s.Id == submissionId);
-
                 if (submission != null && submission.Status != SubmissionStatus.WaitingForDecision.ToString())
                 {
                     submission.Status = SubmissionStatus.WaitingForDecision.ToString();
@@ -410,7 +409,56 @@ namespace SiLA_Backend.Services
             }
         }
 
+        public async Task<SubmissionDetailForAuthorDTO> submissionDetailForAuthorDTO(int submissionId)
+        {
+            var submission = await _context.Submissions
+                .Where(s => s.Id == submissionId)
+                .Include(s => s.Manuscript)
+                .Include(s => s.ReviewerSubmissions)
+                .ThenInclude(rs => rs.Reviewer)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
 
+            if (submission == null)
+            {
+                throw new KeyNotFoundException("Submission not found.");
+            }
 
+            var filePaths = JsonSerializer.Deserialize<Dictionary<string, string>>(submission.Manuscript.FilePath);
+
+            Dictionary<string, string> preSignedUrls = new Dictionary<string, string>();
+            foreach (var file in filePaths!)
+            {
+                string presignedUrl = await GeneratePreSignedURLAsync(file.Value);
+                preSignedUrls.Add(file.Key, presignedUrl);
+            }
+
+            var dto = new SubmissionDetailForAuthorDTO
+            {
+                SubmissionId = submission.Id,
+                Title = submission.Manuscript.Title,
+                Category = submission.Manuscript.Category,
+                Declaration = submission.Manuscript.Declaration,
+                Abstract = submission.Manuscript.Abstract,
+                AuthorFiles = new List<Dictionary<string, string>> { preSignedUrls },
+                SubmissionDate = submission.SubmissionDate.ToString("yyyy-MM-dd"),
+                Status = submission.Status,
+                RevisedDeadline = submission.RevisedDeadline != null ? submission.RevisedDeadline.Value.ToString("yyyy-MM-dd") : "N/A",
+                IsRevisedDeadlineConfirmed = submission.IsRevisedDeadlineConfirmed,
+                ReviewerComments = submission.ReviewerSubmissions.Select((rs, index) => new ReviewerCommentsDTO
+                {
+                    ReviewerIndex = index + 1,
+                    CommentsToAuthor = JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToAuthor ?? "{}"),
+                    DocumentUrl = !string.IsNullOrEmpty(rs.FileUrl) ? GeneratePreSignedURLAsync(rs.FileUrl).Result : "N/A"
+                }).ToList(),
+                ReviewerRecommendations = submission.ReviewerSubmissions.Select((rs, index) => new ReviewerRecommendationsDTO
+                {
+                    ReviewerIndex = index + 1, // Assuming you have an ID that can act as an index
+                    Recommendation = rs.Recommendation!
+                }).ToList()
+            };
+
+            return dto;
+        }
     }
 }
