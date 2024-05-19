@@ -443,7 +443,7 @@ namespace SiLA_Backend.Services
                 AuthorFiles = new List<Dictionary<string, string>> { preSignedUrls },
                 SubmissionDate = submission.SubmissionDate.ToString("yyyy-MM-dd"),
                 Status = submission.Status,
-                RevisedDeadline = submission.RevisedDeadline != null ? submission.RevisedDeadline.Value.ToString("yyyy-MM-dd") : "N/A",
+                RevisedDeadline = submission.RevisedDeadline != null ? submission.RevisedDeadline.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
                 IsRevisedDeadlineConfirmed = submission.IsRevisedDeadlineConfirmed,
                 ReviewerComments = submission.ReviewerSubmissions.Select((rs, index) => new ReviewerCommentsDTO
                 {
