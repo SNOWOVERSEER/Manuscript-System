@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Table } from "antd";
+import { Card, Button, Table, Modal, DatePicker, Form, Input } from "antd";
+import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import logo from "../../../assets/logo.jpg"; // Adjust the path as necessary
 import { editor_review_API } from "../../../apis/editor_review";
 import ReviewStatusTable from "./reviewStatusTable"; // Import the component
 import { useParams } from "react-router-dom";
+import dayjs from "dayjs";
+
+const { TextArea } = Input;
 
 const EditorArticle = () => {
   const [commentsToEditor, setEditorComments] = useState([]);
@@ -14,6 +18,8 @@ const EditorArticle = () => {
   const [manuscriptURL, setManuscriptURL] = useState("");
   const [appendixURL, setAppendixURL] = useState("");
   const [supplementaryFileURL, setSupplementaryFileURL] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null); // State to store selected date
+  const [editorCommentsToAuthor, setEditorCommentsToAuthor] = useState(""); // State to store editor comments to author
 
   const { submissionID } = useParams();
 
@@ -78,7 +84,38 @@ const EditorArticle = () => {
   }, [submissionID]);
 
   const handleSubmit = () => {
-    console.log("Submitting content:", commentsToEditor, commentsToAuthor);
+    console.log(
+      "Submitting content:",
+      commentsToEditor,
+      commentsToAuthor,
+      editorCommentsToAuthor
+    );
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
+
+  // Control Date picker
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = () => {
+    form
+      .validateFields()
+      .then((values) => {
+        const formattedDate = dayjs(values.date).format("YYYY-MM-DD HH:mm:ss");
+        setSelectedDate(formattedDate);
+        setIsModalOpen(false);
+      })
+      .catch((info) => {
+        console.log("Validate Failed:", info);
+      });
+  };
+
+  // Cancel Date Picker
+  const handleCancel = () => {
+    setIsModalOpen(false);
   };
 
   const columns = [
@@ -184,6 +221,27 @@ const EditorArticle = () => {
           />
         </Card>
 
+        <Card
+          title="Editor comments to Author"
+          style={{ paddingBottom: "50px", marginBottom: "30px" }}
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="editorCommentsToAuthor"
+              rules={[
+                { required: true, message: "Please provide your comments" },
+              ]}
+            >
+              <ReactQuill
+                className="editorComments"
+                theme="snow"
+                placeholder="Input the comments."
+                style={{ height: 300 }}
+              />
+            </Form.Item>
+          </Form>
+        </Card>
+
         <div
           className="decision buttons"
           style={{ textAlign: "center", padding: "20px" }}
@@ -223,7 +281,7 @@ const EditorArticle = () => {
 
           <Button
             type="primary"
-            onClick={handleSubmit}
+            onClick={showModal}
             style={{
               marginLeft: "5%",
               width: "20%",
@@ -235,8 +293,32 @@ const EditorArticle = () => {
               opacity: "0.9",
             }}
           >
-            Revised
+            {selectedDate ? (
+              <span style={{ fontSize: "12px" }}>
+                {"Revised " + "(" + selectedDate + ")"}
+              </span>
+            ) : (
+              "Revised"
+            )}
           </Button>
+          <Modal
+            title="Select a Date and Time"
+            visible={isModalOpen}
+            onOk={handleOk}
+            onCancel={handleCancel}
+          >
+            <Form form={form}>
+              <Form.Item
+                name="date"
+                label="Date and Time"
+                rules={[
+                  { required: true, message: "Please select a date and time" },
+                ]}
+              >
+                <DatePicker showTime style={{ width: "100%" }} />
+              </Form.Item>
+            </Form>
+          </Modal>
         </div>
       </Card>
     </div>
