@@ -34,7 +34,7 @@ namespace SiLA_Backend.Models
         public DateTime? RevisedDeadline { get; set; } // 修订截止日期
         public DateTime? ReviewDeadline { get; set; } // 审稿截止日期
         public string? CommentsFromEditor { get; set; }
-        public bool IsRevisedDeadlineConfirmed { get; set; }
+        public bool IsExtensionChanceUsed { get; set; }
         public bool CaseCompleted { get; set; }
 
         // 引用到对应的Manuscript

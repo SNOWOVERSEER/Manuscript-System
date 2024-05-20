@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Amazon.S3;
 using Amazon.S3.Model;
 using System.Text.Json;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace SiLA_Backend.Services
 {
@@ -27,14 +28,16 @@ namespace SiLA_Backend.Services
         private readonly IAmazonS3 _amazonS3;
         private readonly string _bucketName = "sila-storage";
         private readonly string _region = "ap-southeast-2";
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public SubmissionService(IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager, IAmazonS3 amazonS3)
+        public SubmissionService(IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager, IAmazonS3 amazonS3, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _tokenManager = tokenManager;
             _hostingEnvironment = hostEnvironment;
             _userManager = userManager;
             _amazonS3 = amazonS3;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<(bool IsSuccess, string Message)> SubmitAsync(ManuscriptSubmissionModel model)
@@ -115,11 +118,25 @@ namespace SiLA_Backend.Services
             {
                 try
                 {
+                    var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
                     var submission = await _context.Submissions.FindAsync(submissionId);
                     if (submission == null)
                         throw new KeyNotFoundException("Submission not found");
+
+                    if (submission.Status != SubmissionStatus.Submitted.ToString())
+                        return (false, "Submission is not in submitted status");
+
+                    if (submission.Status == SubmissionStatus.Withdrawn.ToString())
+                        return (false, "Submission has been withdrawn");
+
+                    if (submission.CaseCompleted)
+                        return (false, "Submission has been completed");
+
                     submission.Status = SubmissionStatus.ToBeReviewed.ToString();
                     submission.ReviewDeadline = DateTime.UtcNow.AddDays(7);
+                    submission.ReviewerId = reviewerIds.ToString();
+                    submission.EditorId = userId;
+
                     foreach (var reviewerId in reviewerIds)
                     {
                         var reviewer = await _userManager.FindByIdAsync(reviewerId);
@@ -235,6 +252,12 @@ namespace SiLA_Backend.Services
             if (submissionDetail == null)
                 throw new KeyNotFoundException("Submission not found");
 
+            if (submissionDetail.Submission.Status == SubmissionStatus.Withdrawn.ToString())
+                throw new InvalidOperationException("Submission has been withdrawn");
+
+            if (submissionDetail.Submission.CaseCompleted)
+                throw new InvalidOperationException("Submission has been completed");
+
             var filePaths = JsonSerializer.Deserialize<Dictionary<string, string>>(submissionDetail.Manuscript.FilePath);
 
             Dictionary<string, string> preSignedUrls = new Dictionary<string, string>();
@@ -329,7 +352,18 @@ namespace SiLA_Backend.Services
 
                     if (reviewerSubmission == null)
                         throw new KeyNotFoundException("Reviewer Submission not found");
+                    if (reviewerSubmission.Status != SubmissionStatus.ToBeReviewed.ToString())
+                        return (false, "Submission has already been reviewed");
+                    if (reviewerSubmission.Deadline < DateTime.UtcNow)
+                    {
+                        reviewerSubmission.Status = SubmissionStatus.Expired.ToString();
+                        return (false, "Review deadline has passed");
+                    }
 
+                    if (reviewerSubmission.Submission.Status == SubmissionStatus.Withdrawn.ToString())
+                        return (false, "Submission has been withdrawn");
+                    if (reviewerSubmission.Submission.CaseCompleted)
+                        return (false, "Submission has been completed");
                     reviewerSubmission.Recommendation = model.Recommendation;
                     reviewerSubmission.IsReviewComplete = true;
                     reviewerSubmission.FileUrl = model.FileUrl;
@@ -367,7 +401,7 @@ namespace SiLA_Backend.Services
         }
 
 
-        public async Task<string> GeneratePreSignedURLAsync(string objectKey)
+        private async Task<string> GeneratePreSignedURLAsync(string objectKey)
         {
             var request = new GetPreSignedUrlRequest
             {
@@ -411,7 +445,9 @@ namespace SiLA_Backend.Services
 
         public async Task<SubmissionDetailForAuthorDTO> submissionDetailForAuthorDTO(int submissionId)
         {
-            var submission = await _context.Submissions
+            try
+            {
+                var submission = await _context.Submissions
                 .Where(s => s.Id == submissionId)
                 .Include(s => s.Manuscript)
                 .Include(s => s.ReviewerSubmissions)
@@ -419,46 +455,62 @@ namespace SiLA_Backend.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
-            if (submission == null)
+                if (submission == null)
+                {
+                    throw new KeyNotFoundException("Submission not found.");
+                }
+
+                if (submission.AuthorId != _httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier))
+                {
+                    throw new UnauthorizedAccessException("Unauthorized to view this submission.");
+                }
+
+                if (submission.Status == SubmissionStatus.Withdrawn.ToString())
+                {
+                    throw new InvalidOperationException("Submission has been withdrawn.");
+                }
+
+                var filePaths = JsonSerializer.Deserialize<Dictionary<string, string>>(submission.Manuscript.FilePath);
+
+                Dictionary<string, string> preSignedUrls = new Dictionary<string, string>();
+                foreach (var file in filePaths!)
+                {
+                    string presignedUrl = await GeneratePreSignedURLAsync(file.Value);
+                    preSignedUrls.Add(file.Key, presignedUrl);
+                }
+
+                var dto = new SubmissionDetailForAuthorDTO
+                {
+                    SubmissionId = submission.Id,
+                    Title = submission.Manuscript.Title,
+                    Category = submission.Manuscript.Category,
+                    Declaration = submission.Manuscript.Declaration,
+                    Abstract = submission.Manuscript.Abstract,
+                    AuthorFiles = new List<Dictionary<string, string>> { preSignedUrls },
+                    SubmissionDate = submission.SubmissionDate.ToString("yyyy-MM-dd"),
+                    Status = submission.Status,
+                    RevisedDeadline = submission.RevisedDeadline != null ? submission.RevisedDeadline.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
+                    IsExtensionChanceUsed = submission.IsExtensionChanceUsed,
+                    ReviewerComments = submission.ReviewerSubmissions.Select((rs, index) => new ReviewerCommentsDTO
+                    {
+                        ReviewerIndex = index + 1,
+                        CommentsToAuthor = JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToAuthor ?? "{}"),
+                        DocumentUrl = !string.IsNullOrEmpty(rs.FileUrl) ? GeneratePreSignedURLAsync(rs.FileUrl).Result : "N/A"
+                    }).ToList(),
+                    ReviewerRecommendations = submission.ReviewerSubmissions.Select((rs, index) => new ReviewerRecommendationsDTO
+                    {
+                        ReviewerIndex = index + 1, // Assuming you have an ID that can act as an index
+                        Recommendation = rs.Recommendation!
+                    }).ToList()
+                };
+
+                return dto;
+            }
+            catch (Exception ex)
             {
-                throw new KeyNotFoundException("Submission not found.");
+                throw new Exception($"An error occurred: {ex.Message}");
             }
 
-            var filePaths = JsonSerializer.Deserialize<Dictionary<string, string>>(submission.Manuscript.FilePath);
-
-            Dictionary<string, string> preSignedUrls = new Dictionary<string, string>();
-            foreach (var file in filePaths!)
-            {
-                string presignedUrl = await GeneratePreSignedURLAsync(file.Value);
-                preSignedUrls.Add(file.Key, presignedUrl);
-            }
-
-            var dto = new SubmissionDetailForAuthorDTO
-            {
-                SubmissionId = submission.Id,
-                Title = submission.Manuscript.Title,
-                Category = submission.Manuscript.Category,
-                Declaration = submission.Manuscript.Declaration,
-                Abstract = submission.Manuscript.Abstract,
-                AuthorFiles = new List<Dictionary<string, string>> { preSignedUrls },
-                SubmissionDate = submission.SubmissionDate.ToString("yyyy-MM-dd"),
-                Status = submission.Status,
-                RevisedDeadline = submission.RevisedDeadline != null ? submission.RevisedDeadline.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
-                IsRevisedDeadlineConfirmed = submission.IsRevisedDeadlineConfirmed,
-                ReviewerComments = submission.ReviewerSubmissions.Select((rs, index) => new ReviewerCommentsDTO
-                {
-                    ReviewerIndex = index + 1,
-                    CommentsToAuthor = JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToAuthor ?? "{}"),
-                    DocumentUrl = !string.IsNullOrEmpty(rs.FileUrl) ? GeneratePreSignedURLAsync(rs.FileUrl).Result : "N/A"
-                }).ToList(),
-                ReviewerRecommendations = submission.ReviewerSubmissions.Select((rs, index) => new ReviewerRecommendationsDTO
-                {
-                    ReviewerIndex = index + 1, // Assuming you have an ID that can act as an index
-                    Recommendation = rs.Recommendation!
-                }).ToList()
-            };
-
-            return dto;
         }
 
         public async Task<(bool IsSuccess, string Message)> SubmitEditorDecisionAsync(EditorDecisionDTO model)
@@ -471,6 +523,16 @@ namespace SiLA_Backend.Services
 
                 if (submission == null)
                     throw new KeyNotFoundException("Submission not found");
+
+                if (submission.Status == SubmissionStatus.Withdrawn.ToString())
+                {
+                    return (false, "Submission has been withdrawn");
+                }
+
+                if (submission.CaseCompleted)
+                {
+                    return (false, "Submission has been completed");
+                }
 
                 if (model.Decision == SubmissionStatus.Revised.ToString())
                 {
@@ -492,10 +554,141 @@ namespace SiLA_Backend.Services
                 return (false, $"An error occurred: {ex.Message}");
             }
 
+        }
 
+        public async Task<(bool IsSuccess, string Message)> SubmitAuthorResponseAsync(AuthorResponseDTO model)
+        {
+            using var transaction = _context.Database.BeginTransaction();
+            try
+            {
 
+                var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var submission = await _context.Submissions
+                    .Where(s => s.Id == model.SubmissionId)
+                    .FirstOrDefaultAsync() ?? throw new KeyNotFoundException("Submission not found");
+                if (submission.AuthorId != userId)
+                {
+                    return (false, "Unauthorized to modify this submission");
+                }
 
+                if (submission.Status == SubmissionStatus.Withdrawn.ToString())
+                {
+                    return (false, "Submission has been withdrawn");
+                }
 
+                if (submission.CaseCompleted)
+                {
+                    return (false, "Submission has been completed");
+                }
+
+                if (submission.Status != SubmissionStatus.Revised.ToString())
+                {
+                    return (false, "Submission is not in revised status");
+                }
+
+                if (DateTime.UtcNow > submission.RevisedDeadline)
+                {
+                    return (false, "Revised deadline has passed");
+                }
+
+                submission.Manuscript.RevisedFilePaths = model.ResponseFile;
+                submission.Status = SubmissionStatus.ToBeReviewed.ToString();
+                foreach (var rs in submission.ReviewerSubmissions)
+                {
+                    rs.Status = SubmissionStatus.ToBeReviewed.ToString();
+                    rs.Deadline = DateTime.UtcNow.AddDays(7);
+                    rs.IsReviewComplete = false;
+                    rs.IsRevision = true;
+                    rs.CommentsToAuthor = "{}";
+                    rs.CommentsToEditor = "{}";
+                    rs.Recommendation = null;
+                    rs.FileUrl = null;
+                }
+
+                await _context.SaveChangesAsync();
+                transaction.Commit();
+                return (true, "Author response submitted successfully");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return (false, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        public async Task<(bool IsSuccess, string Message)> RequestExtensionAsync(int submissionId)
+        {
+
+            try
+            {
+
+                var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var submission = await _context.Submissions
+                    .Where(s => s.Id == submissionId)
+                    .FirstOrDefaultAsync() ?? throw new KeyNotFoundException("Submission not found");
+                if (submission.AuthorId != userId)
+                {
+                    return (false, "Unauthorized to modify this submission");
+                }
+
+                if (submission.Status == SubmissionStatus.Withdrawn.ToString())
+                {
+                    return (false, "Submission has been withdrawn");
+                }
+
+                if (submission.CaseCompleted)
+                {
+                    return (false, "Submission has been completed");
+                }
+
+                if (submission.Status != SubmissionStatus.Revised.ToString())
+                {
+                    return (false, "Submission is not in revised status");
+                }
+
+                if (submission.IsExtensionChanceUsed)
+                {
+                    return (false, "Extension has already been requested");
+                }
+
+                if (DateTime.UtcNow > submission.RevisedDeadline)
+                {
+                    return (false, "Revised deadline has passed");
+                }
+
+                submission.IsExtensionChanceUsed = true;
+                submission.RevisedDeadline = submission.RevisedDeadline!.Value.AddDays(5); // Extend by 5 days
+
+                await _context.SaveChangesAsync();
+                return (true, "Extension requested successfully");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        public async Task<(bool IsSuccess, string Message)> WithdrawAsync(int submissionId)
+        {
+            try
+            {
+                var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var submission = await _context.Submissions
+                    .Where(s => s.Id == submissionId)
+                    .FirstOrDefaultAsync() ?? throw new KeyNotFoundException("Submission not found");
+                if (submission.AuthorId != userId)
+                {
+                    return (false, "Unauthorized to modify this submission");
+                }
+                submission.Status = SubmissionStatus.Withdrawn.ToString();
+                submission.CaseCompleted = true;
+                _context.SaveChanges();
+                return (true, "Submission withdrawn successfully");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"An error occurred: {ex.Message}");
+            }
         }
     }
 }

@@ -210,6 +210,29 @@ namespace SiLA_Backend.Controllers
             return BadRequest(new { state = "error", message = Message });
         }
 
+        [HttpPost("submitrevision")]
+        public async Task<IActionResult> SubmitRevision(AuthorResponseDTO model)
+        {
+            var (IsSuccess, Message) = await _submissionService.SubmitAuthorResponseAsync(model);
+            if (IsSuccess)
+            {
+                return Ok(new { state = "success", message = Message });
+            }
+            return BadRequest(new { state = "error", message = Message });
+        }
+
+        [HttpPost("withdraw/{submissionId}")]
+        public async Task<IActionResult> Withdraw(int submissionId)
+        {
+            var (IsSuccess, Message) = await _submissionService.WithdrawAsync(submissionId);
+            if (IsSuccess)
+            {
+                return Ok(new { state = "success", message = Message });
+            }
+            return BadRequest(new { state = "error", message = Message });
+        }
+
+
 
     }
 }

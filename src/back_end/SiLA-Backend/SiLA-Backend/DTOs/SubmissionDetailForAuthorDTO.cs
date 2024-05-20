@@ -14,7 +14,7 @@ namespace SiLA_Backend.DTOs
         public List<ReviewerCommentsDTO> ReviewerComments { get; set; }
         public List<ReviewerRecommendationsDTO> ReviewerRecommendations { get; set; }
         public string? RevisedDeadline { get; set; }
-        public bool IsRevisedDeadlineConfirmed { get; set; }
+        public bool IsExtensionChanceUsed { get; set; }
     }
 
     public class ReviewerCommentsDTO

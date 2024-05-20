@@ -11,6 +11,7 @@ using Amazon.S3;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,12 +51,13 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = false,
         ValidateAudience = false,
         ClockSkew = TimeSpan.Zero,
-        ValidateLifetime = true
+        ValidateLifetime = true,
     };
     options.Events = new JwtBearerEvents
     {
         OnTokenValidated = async context =>
         {
+            var claims = context.Principal.Claims.ToList();
             var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenManager>();
             var token = context.SecurityToken as JsonWebToken;
 
@@ -91,7 +93,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenManager, TokenManager>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<IUserService, UserService>();
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
