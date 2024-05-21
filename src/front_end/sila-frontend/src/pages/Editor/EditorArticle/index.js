@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from "react";
-<<<<<<< HEAD
-import { Card, Button, Table } from "antd";
-=======
 import {
   Card,
   Button,
@@ -12,7 +9,6 @@ import {
   Input,
   message,
 } from "antd";
->>>>>>> origin/editor-review-article-DH
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import logo from "../../../assets/logo.jpg"; // Adjust the path as necessary
@@ -22,10 +18,7 @@ import {
 } from "../../../apis/editor_review";
 import ReviewStatusTable from "./reviewStatusTable"; // Import the component
 import { useParams } from "react-router-dom";
-<<<<<<< HEAD
-=======
 import dayjs from "dayjs";
->>>>>>> origin/editor-review-article-DH
 
 const EditorArticle = () => {
   const [commentsToEditor, setEditorComments] = useState([]);
@@ -40,12 +33,11 @@ const EditorArticle = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFormDisabled, setIsFormDisabled] = useState(false); // State to store form disabled status
   const [decision, setDecision] = useState(""); // State to store the decision
+  const [canDecide, setCanDecide] = useState(false); // State to control button enabling
 
   const { submissionID } = useParams();
   const [form] = Form.useForm();
   const [modalForm] = Form.useForm();
-
-  const { submissionID } = useParams();
 
   useEffect(() => {
     async function fetchReviewData(submissionID) {
@@ -62,6 +54,8 @@ const EditorArticle = () => {
             commentsFromReviewers,
             commentsToAuthor,
             submissionDate,
+            status, // Get the status from the response
+            editorComment,
           } = res.data;
 
           const manuscriptURL = files[0]?.body || "";
@@ -76,18 +70,6 @@ const EditorArticle = () => {
           ]);
 
           // Format comments from reviewers
-<<<<<<< HEAD
-          const formattedCommentsToEditor = commentsFromReviewers.map((comment, index) => ({
-            key: index,
-            reviewer: comment.Reviewer,
-            comments: comment.Comments,
-          }));
-          const formattedCommentsToAuthor = commentsToAuthor.map((comment, index) => ({
-            key: index,
-            reviewer: comment.Reviewer,
-            comments: comment.Comments,
-          }));
-=======
           const formattedCommentsToEditor = commentsFromReviewers.map(
             (comment, index) => ({
               key: index,
@@ -102,7 +84,11 @@ const EditorArticle = () => {
               comments: comment.Comments,
             })
           );
->>>>>>> origin/editor-review-article-DH
+
+          if (editorComment) {
+            setEditorCommentsToAuthor(editorComment);
+            form.setFieldsValue({ editorCommentsToAuthor: editorComment });
+          }
 
           setEditorComments(formattedCommentsToEditor);
           setAuthorComments(formattedCommentsToAuthor);
@@ -110,6 +96,11 @@ const EditorArticle = () => {
           setManuscriptURL(manuscriptURL);
           setAppendixURL(appendixURL);
           setSupplementaryFileURL(supplementaryFileURL);
+
+          // Enable buttons only if the status is "WaitingForDecision"
+          if (status === "WaitingForDecision") {
+            setCanDecide(true);
+          }
         }
       } catch (error) {
         console.error("Error fetching review data:", error);
@@ -120,14 +111,6 @@ const EditorArticle = () => {
     fetchReviewData(submissionID);
   }, [submissionID]);
 
-<<<<<<< HEAD
-  const handleSubmit = () => {
-    console.log(
-      "Submitting content:",
-      commentsToEditor,
-      commentsToAuthor
-    );
-=======
   const handleDecision = (decision) => {
     setDecision(decision);
     form.setFieldsValue({ decision }); // Set decision in the form
@@ -139,6 +122,8 @@ const EditorArticle = () => {
   };
 
   const handleRevised = () => {
+    setDecision("Revised");
+    form.setFieldsValue({ decision: "Revised" }); // Set decision in the form
     setIsModalOpen(true);
   };
 
@@ -148,7 +133,7 @@ const EditorArticle = () => {
       console.log(values);
       const data = {
         submissionId: submissionID,
-        revisedDeadline: values.selectedDate,
+        revisedDeadline: values.selectedDate || null, // Send null if no date selected
         decision: values.decision,
         commentsFromEditor: values.editorCommentsToAuthor,
       };
@@ -157,31 +142,30 @@ const EditorArticle = () => {
       await editor_submit_decison_API(data);
       message.success("Decision submitted successfully!");
       setIsFormDisabled(true); // Disable form after submission
+      setCanDecide(false); // Disable buttons after submission
     } catch (error) {
       console.error("Error submitting decision:", error);
       message.error("Failed to submit decision. Please try again.");
     }
   };
 
-  const handleOk = () => {
-    modalForm
-      .validateFields()
-      .then((values) => {
-        const formattedDate = dayjs(values.date).format("YYYY-MM-DD HH:mm:ss");
-        setSelectedDate(formattedDate);
-        form.setFieldsValue({ selectedDate: formattedDate }); // Set selected date in the form
-        setIsModalOpen(false);
-        handleDecision(`Revised (${formattedDate})`);
-      })
-      .catch((info) => {
-        console.log("Validate Failed:", info);
-      });
+  const handleOk = async () => {
+    try {
+      const values = await modalForm.validateFields();
+      const formattedDate = dayjs(values.date).format("YYYY-MM-DD HH:mm:ss");
+      setSelectedDate(formattedDate);
+      form.setFieldsValue({ selectedDate: formattedDate }); // Set selected date in the form
+      setIsModalOpen(false);
+      handleSubmit(); // Trigger form submission after setting date
+    } catch (error) {
+      console.log("Validate Failed:", error);
+    }
   };
 
   // Cancel Date Picker
   const handleCancel = () => {
     setIsModalOpen(false);
->>>>>>> origin/editor-review-article-DH
+    handleDecision("Revised");
   };
 
   const columns = [
@@ -325,7 +309,7 @@ const EditorArticle = () => {
 
             <Button
               type="primary"
-              onClick={() => handleDecision("Accept")}
+              onClick={() => handleDecision("Accepted")}
               style={{
                 width: "20%",
                 height: "40px",
@@ -335,16 +319,16 @@ const EditorArticle = () => {
                 cursor: "pointer",
                 opacity: "0.9",
               }}
-              disabled={isFormDisabled}
+              disabled={!canDecide}
             >
-              {isFormDisabled && decision.includes("Accept")
+              {isFormDisabled && decision.includes("Accepted")
                 ? "Accepted"
                 : "Accept"}
             </Button>
 
             <Button
               type="primary"
-              onClick={() => handleDecision("Reject")}
+              onClick={() => handleDecision("Rejected")}
               style={{
                 marginLeft: "5%",
                 width: "20%",
@@ -355,9 +339,9 @@ const EditorArticle = () => {
                 cursor: "pointer",
                 opacity: "0.9",
               }}
-              disabled={isFormDisabled}
+              disabled={!canDecide}
             >
-              {isFormDisabled && decision.includes("Reject")
+              {isFormDisabled && decision.includes("Rejected")
                 ? "Rejected"
                 : "Reject"}
             </Button>
@@ -375,16 +359,16 @@ const EditorArticle = () => {
                 cursor: "pointer",
                 opacity: "0.9",
               }}
-              disabled={isFormDisabled}
+              disabled={!canDecide}
             >
               {selectedDate ? (
                 <span style={{ fontSize: "12px" }}>
                   {"Revised " + "(" + selectedDate + ")"}
                 </span>
               ) : isFormDisabled && decision.includes("Revised") ? (
-                "Revised"
+                "Revise"
               ) : (
-                "Revised"
+                "Revise"
               )}
             </Button>
           </Form>

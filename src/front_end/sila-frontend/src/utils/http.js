@@ -5,7 +5,7 @@ import router from "../router"
 const http = axios.create({
     // baseURL: "http://localhost:5266/",
     // baseURL: "http://localhost:3001/yzl",
-    baseURL: "http://13.211.202.4:5266/",
+    baseURL: "http://3.27.174.20:5266/",
     timeout: 5000
 })
 

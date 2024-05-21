@@ -5,10 +5,10 @@ const ArticleStatus = {
   ToBeReviewed: "ToBeReviewed",
   Reviewed: "Reviewed",
   WaitingForDecision: "WaitingForDecision",
-  Approved: "Approved",
+  Accepted: "Accepted",
   Rejected: "Rejected",
   Revised: "Revised",
-  Withdraw: "Withdrawn"
+  Withdrawn: "Withdrawn"
 }
 export function getStateTag(status) {
   if (status === ArticleStatus.Submitted) {
@@ -19,14 +19,14 @@ export function getStateTag(status) {
     return <Tag color="violet">Reviewed</Tag>;
   } else if (status === ArticleStatus.WaitingForDecision) {
     return <Tag color="green">Waiting For Decision</Tag>;
-  } else if (status === ArticleStatus.Approved) {
-    return <Tag color="yellow">Approved</Tag>;
+  } else if (status === ArticleStatus.Accepted) {
+    return <Tag color="yellow">Accepted</Tag>;
   } else if (status === ArticleStatus.Rejected) {
     return <Tag color="purple">Rejected</Tag>;
   } else if (status === ArticleStatus.Revised) {
     return <Tag color="black">Revised</Tag>;
-  } else if (status === ArticleStatus.Withdraw) {
-    return <Tag color="#66ccff">Withdraw</Tag>;
+  } else if (status === ArticleStatus.Withdrawn) {
+    return <Tag color="#66ccff">Withdrawn</Tag>;
   }
 }
 // Submitted
