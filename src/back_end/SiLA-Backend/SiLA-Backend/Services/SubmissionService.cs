@@ -134,7 +134,6 @@ namespace SiLA_Backend.Services
 
                     submission.Status = SubmissionStatus.ToBeReviewed.ToString();
                     submission.ReviewDeadline = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(7); // Set review deadline to 7 days from now
-                    submission.ReviewerId = reviewerIds.ToString();
                     submission.EditorId = userId;
 
                     foreach (var reviewerId in reviewerIds)
@@ -689,6 +688,10 @@ namespace SiLA_Backend.Services
                 }
                 submission.Status = SubmissionStatus.Withdrawn.ToString();
                 submission.CaseCompleted = true;
+                foreach (var rs in submission.ReviewerSubmissions)
+                {
+                    rs.Status = SubmissionStatus.Expired.ToString();
+                }
                 _context.SaveChanges();
                 return (true, "Submission withdrawn successfully");
             }

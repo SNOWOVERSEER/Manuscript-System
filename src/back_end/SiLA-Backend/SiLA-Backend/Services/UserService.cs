@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SiLA_Backend.DTOs;
 using System.Globalization;
+using SiLA_Backend.Utilities;
 
 namespace SiLA_Backend.Services
 {
@@ -90,7 +91,7 @@ namespace SiLA_Backend.Services
                     Email = r.Email,
                     Name = r.FirstName + " " + r.LastName,
                     Category = r.Category ?? "N/A",
-                    NumberOfTasksAssigned = 0
+                    NumberOfTasksAssigned = r.ReviewSubmissions.Count(rs => rs.Status == SubmissionStatus.ToBeReviewed.ToString())
 
                 }).ToList();
             }
