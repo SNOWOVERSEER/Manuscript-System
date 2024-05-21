@@ -356,14 +356,13 @@ namespace SiLA_Backend.Services
                         throw new KeyNotFoundException("Reviewer Submission not found");
                     if (reviewerSubmission.Status != SubmissionStatus.ToBeReviewed.ToString())
                         return (false, "Submission has already been reviewed");
+                    if (reviewerSubmission.Submission.Status == SubmissionStatus.Withdrawn.ToString())
+                        return (false, "Submission has been withdrawn");
                     if (reviewerSubmission.Deadline < UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow))
                     {
                         reviewerSubmission.Status = SubmissionStatus.Expired.ToString();
-                        return (false, "Review deadline has passed");
+                        return (false, "Review deadline has passed or submission has been closed");
                     }
-
-                    if (reviewerSubmission.Submission.Status == SubmissionStatus.Withdrawn.ToString())
-                        return (false, "Submission has been withdrawn");
                     if (reviewerSubmission.Submission.CaseCompleted)
                         return (false, "Submission has been completed");
                     reviewerSubmission.Recommendation = model.Recommendation;
