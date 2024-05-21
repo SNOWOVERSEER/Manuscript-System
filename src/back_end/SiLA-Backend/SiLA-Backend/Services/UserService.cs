@@ -92,8 +92,6 @@ namespace SiLA_Backend.Services
                 var reviewSubmissions = await _context.ReviewerSubmissions
                     .Where(rs => reviewerIds.Contains(rs.ReviewerId) && rs.Status == SubmissionStatus.ToBeReviewed.ToString())
                     .ToListAsync();
-
-                // 构建每个 Reviewer 的任务数量
                 var reviewerInfoList = reviewers.Select(r => new ReviewerInfoDTO
                 {
                     Id = r.Id,
