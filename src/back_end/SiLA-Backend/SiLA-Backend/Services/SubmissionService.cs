@@ -628,8 +628,9 @@ namespace SiLA_Backend.Services
 
                 var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var submission = await _context.Submissions
-                    .Where(s => s.Id == submissionId)
-                    .FirstOrDefaultAsync() ?? throw new KeyNotFoundException("Submission not found");
+                    .Include(s => s.Manuscript)
+                    .Include(s => s.ReviewerSubmissions)
+                    .FirstOrDefaultAsync(s => s.Id == submissionId) ?? throw new KeyNotFoundException("Submission not found");
                 if (submission.AuthorId != userId)
                 {
                     return (false, "Unauthorized to modify this submission");
@@ -680,8 +681,9 @@ namespace SiLA_Backend.Services
             {
                 var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var submission = await _context.Submissions
-                    .Where(s => s.Id == submissionId)
-                    .FirstOrDefaultAsync() ?? throw new KeyNotFoundException("Submission not found");
+                    .Include(s => s.Manuscript)
+                    .Include(s => s.ReviewerSubmissions)
+                    .FirstOrDefaultAsync(s => s.Id == submissionId) ?? throw new KeyNotFoundException("Submission not found");
                 if (submission.AuthorId != userId)
                 {
                     return (false, "Unauthorized to modify this submission");
