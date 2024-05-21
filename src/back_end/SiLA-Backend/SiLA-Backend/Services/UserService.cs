@@ -13,16 +13,19 @@ using System.Threading.Tasks;
 using SiLA_Backend.DTOs;
 using System.Globalization;
 using SiLA_Backend.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace SiLA_Backend.Services
 {
     public class UserService : IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public UserService(UserManager<ApplicationUser> userManager)
+        public UserService(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             _userManager = userManager;
+            _context = context;
         }
         public async Task<UserDTO> GetUserInfoAsync(string userId)
         {
@@ -85,15 +88,22 @@ namespace SiLA_Backend.Services
             try
             {
                 var reviewers = await _userManager.GetUsersInRoleAsync("Reviewer");
-                return reviewers.Select(r => new ReviewerInfoDTO
+                var reviewerIds = reviewers.Select(r => r.Id).ToList();
+                var reviewSubmissions = await _context.ReviewerSubmissions
+                    .Where(rs => reviewerIds.Contains(rs.ReviewerId) && rs.Status == SubmissionStatus.ToBeReviewed.ToString())
+                    .ToListAsync();
+
+                // 构建每个 Reviewer 的任务数量
+                var reviewerInfoList = reviewers.Select(r => new ReviewerInfoDTO
                 {
                     Id = r.Id,
                     Email = r.Email,
                     Name = r.FirstName + " " + r.LastName,
                     Category = r.Category ?? "N/A",
-                    NumberOfTasksAssigned = r.ReviewSubmissions?.Count(rs => rs.Status == SubmissionStatus.ToBeReviewed.ToString()) ?? 0
-
+                    NumberOfTasksAssigned = reviewSubmissions.Count(rs => rs.ReviewerId == r.Id)
                 }).ToList();
+
+                return reviewerInfoList;
             }
             catch (Exception ex)
             {
