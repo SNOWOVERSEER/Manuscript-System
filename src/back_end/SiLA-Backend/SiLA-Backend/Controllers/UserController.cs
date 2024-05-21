@@ -54,7 +54,7 @@ namespace SiLA_Backend.Controllers
             }
         }
 
-        [Authorize(Roles = "Editor")]
+        // [Authorize(Roles = "Editor")]
         [HttpGet("reviewersinfo")]
         public async Task<IActionResult> GetReviewersInfo()
         {

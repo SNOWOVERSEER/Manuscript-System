@@ -91,7 +91,7 @@ namespace SiLA_Backend.Services
                     Email = r.Email,
                     Name = r.FirstName + " " + r.LastName,
                     Category = r.Category ?? "N/A",
-                    NumberOfTasksAssigned = r.ReviewSubmissions.Count(rs => rs.Status == SubmissionStatus.ToBeReviewed.ToString())
+                    NumberOfTasksAssigned = r.ReviewSubmissions?.Count(rs => rs.Status == SubmissionStatus.ToBeReviewed.ToString()) ?? 0
 
                 }).ToList();
             }
