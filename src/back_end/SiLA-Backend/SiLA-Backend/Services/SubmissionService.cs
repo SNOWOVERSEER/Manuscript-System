@@ -349,9 +349,8 @@ namespace SiLA_Backend.Services
                 try
                 {
                     var reviewerSubmission = await _context.ReviewerSubmissions
-                        .Where(rs => rs.SubmissionId == model.SubmissionId && rs.ReviewerId == model.ReviewerId)
-                        .FirstOrDefaultAsync();
-
+                        .Include(rs => rs.Submission)
+                        .FirstOrDefaultAsync(rs => rs.SubmissionId == model.SubmissionId && rs.ReviewerId == model.ReviewerId);
                     if (reviewerSubmission == null)
                         throw new KeyNotFoundException("Reviewer Submission not found");
                     if (reviewerSubmission.Status != SubmissionStatus.ToBeReviewed.ToString())
