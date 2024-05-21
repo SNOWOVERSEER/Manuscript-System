@@ -232,6 +232,17 @@ namespace SiLA_Backend.Controllers
             return BadRequest(new { state = "error", message = Message });
         }
 
+        [HttpPost("requestextension/{submissionId}")]
+        public async Task<IActionResult> RequestExtension(int submissionId)
+        {
+            var (IsSuccess, Message) = await _submissionService.RequestExtensionAsync(submissionId);
+            if (IsSuccess)
+            {
+                return Ok(new { state = "success", message = Message });
+            }
+            return BadRequest(new { state = "error", message = Message });
+        }
+
 
 
     }
