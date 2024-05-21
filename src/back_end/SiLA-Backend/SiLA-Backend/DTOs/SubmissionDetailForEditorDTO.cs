@@ -11,6 +11,7 @@ namespace SiLA_Backend.DTOs
         public string SubmissionDate { get; set; }
         public string Status { get; set; }
         public string ReviewDeadline { get; set; }
+        public string? RevisedDeadline { get; set; }
         public List<ReviewerDTO> Reviewers { get; set; }
         public List<Dictionary<string, string>>? CommentsFromReviewers { get; set; }
         public List<Dictionary<string, string>>? CommentsToAuthor { get; set; }

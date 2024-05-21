@@ -332,6 +332,7 @@ namespace SiLA_Backend.Services
                 Declaration = submission.Manuscript.Declaration,
                 SubmissionDate = submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
                 ReviewDeadline = submission.ReviewDeadline != null ? submission.ReviewDeadline.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
+                RevisedDeadline = submission.RevisedDeadline != null ? submission.RevisedDeadline.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
                 Status = submission.Status,
                 Reviewers = reviewers,
                 CommentsFromReviewers = commentsFromReviewers!,
@@ -467,10 +468,10 @@ namespace SiLA_Backend.Services
                     throw new UnauthorizedAccessException("Unauthorized to view this submission.");
                 }
 
-                if (submission.Status == SubmissionStatus.Withdrawn.ToString())
-                {
-                    throw new InvalidOperationException("Submission has been withdrawn.");
-                }
+                // if (submission.Status == SubmissionStatus.Withdrawn.ToString())
+                // {
+                //     throw new InvalidOperationException("Submission has been withdrawn.");
+                // }
 
                 var filePaths = JsonSerializer.Deserialize<Dictionary<string, string>>(submission.Manuscript.FilePath);
 
@@ -591,6 +592,7 @@ namespace SiLA_Backend.Services
 
                 if (UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow) > submission.RevisedDeadline)
                 {
+
                     return (false, "Revised deadline has passed");
                 }
 
@@ -656,6 +658,8 @@ namespace SiLA_Backend.Services
 
                 if (UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow) > submission.RevisedDeadline)
                 {
+                    submission.Status = SubmissionStatus.Expired.ToString();
+                    submission.CaseCompleted = true;
                     return (false, "Revised deadline has passed");
                 }
 
