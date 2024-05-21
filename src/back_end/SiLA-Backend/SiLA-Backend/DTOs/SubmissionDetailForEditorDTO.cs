@@ -14,6 +14,7 @@ namespace SiLA_Backend.DTOs
         public List<ReviewerDTO> Reviewers { get; set; }
         public List<Dictionary<string, string>>? CommentsFromReviewers { get; set; }
         public List<Dictionary<string, string>>? CommentsToAuthor { get; set; }
+        public string? EditorComment { get; set; }
     }
 
     public class ReviewerDTO

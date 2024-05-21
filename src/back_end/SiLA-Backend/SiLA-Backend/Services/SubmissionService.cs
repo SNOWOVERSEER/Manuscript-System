@@ -335,7 +335,9 @@ namespace SiLA_Backend.Services
                 Status = submission.Status,
                 Reviewers = reviewers,
                 CommentsFromReviewers = commentsFromReviewers!,
-                CommentsToAuthor = commentsToAuthor!
+                CommentsToAuthor = commentsToAuthor!,
+                EditorComment = submission.CommentsFromEditor ?? null
+
             };
             return submissionDetail;
         }
