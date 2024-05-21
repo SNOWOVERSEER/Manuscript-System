@@ -501,7 +501,8 @@ namespace SiLA_Backend.Services
                     {
                         ReviewerIndex = index + 1, // Assuming you have an ID that can act as an index
                         Recommendation = rs.Recommendation!
-                    }).ToList()
+                    }).ToList(),
+                    CommentsFromEditor = submission.CommentsFromEditor?.ToString() ?? "N/A"
                 };
 
                 return dto;
@@ -538,7 +539,7 @@ namespace SiLA_Backend.Services
                 {
                     submission.RevisedDeadline = DateTime.Parse(model.RevisedDeadline!);
                 }
-                else if (model.Decision == SubmissionStatus.Approved.ToString() || model.Decision == SubmissionStatus.Rejected.ToString())
+                else if (model.Decision == SubmissionStatus.Accepted.ToString() || model.Decision == SubmissionStatus.Rejected.ToString())
                 {
                     submission.CaseCompleted = true;
                 }

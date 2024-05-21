@@ -13,6 +13,7 @@ namespace SiLA_Backend.DTOs
         public string Status { get; set; }
         public List<ReviewerCommentsDTO> ReviewerComments { get; set; }
         public List<ReviewerRecommendationsDTO> ReviewerRecommendations { get; set; }
+        public string CommentsFromEditor { get; set; }
         public string? RevisedDeadline { get; set; }
         public bool IsExtensionChanceUsed { get; set; }
     }
