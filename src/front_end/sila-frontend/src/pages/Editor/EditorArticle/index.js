@@ -39,6 +39,13 @@ const EditorArticle = () => {
   const [modalForm] = Form.useForm();
 
   useEffect(() => {
+    const savedFormDisabled = localStorage.getItem(
+      `isFormDisabled_${submissionID}`
+    );
+    if (savedFormDisabled === "true") {
+      setIsFormDisabled(true);
+    }
+
     async function fetchReviewData(submissionID) {
       try {
         const res = await editor_review_API(submissionID);
@@ -127,6 +134,7 @@ const EditorArticle = () => {
       await editor_submit_decison_API(data);
       message.success("Decision submitted successfully!");
       setIsFormDisabled(true); // Disable form after submission
+      localStorage.setItem(`isFormDisabled_${submissionID}`, "true"); // Save form disabled status
     } catch (error) {
       console.error("Error submitting decision:", error);
       message.error("Failed to submit decision. Please try again.");
