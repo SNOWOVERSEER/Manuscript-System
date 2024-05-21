@@ -71,7 +71,7 @@ const ReviewPage = () => {
 
       // Show success message and refresh the page
       setTimeout(() => {
-      message.success("Submission successful!");
+        message.success("Submission successful!");
       }, 2000); // Delay to allow the user to see the success message
     } catch (error) {
       console.error("Error submitting review:", error.response || error);
@@ -174,7 +174,7 @@ const ReviewPage = () => {
       />
 
       <div style={{ textAlign: "left", margin: "20px 0" }}>
-        <Button type="primary" href={articleData ? articleData.file.body : '#'} download="Manuscript.pdf">
+        <Button type="primary" href={articleData ? articleData.file.body : '#'} target="_blank" download="Manuscript.pdf">
           Download Manuscript
         </Button>
       </div>

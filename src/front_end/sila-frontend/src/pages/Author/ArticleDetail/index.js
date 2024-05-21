@@ -1,46 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link} from 'react-router-dom';
-import { Typography, List, Card, Button, Space, Divider } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Typography, List, Card, Button, Space, Divider, Form, Modal, message, Tag } from 'antd';
+import { CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, ReloadOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-import Publish from '../StartNewSubmission';
-
+import PDFUploader from '../StartNewSubmission/PDFUploader';
+import { article_Detail_API } from '../../../apis/article';
+import { getStateTag } from '../../../utils/status';
 
 const { Title, Paragraph, Text } = Typography;
 
-const articles = [
-    {
-        id: 2,
-        title: 'Article 1',
-        abstract: 'Abstract of Article 1',
-        ddl:'12-31-2024',
-        content: '/111.pdf', // This assumes 111.pdf is in the public directory
-        imageUrl: '/path/to/image1.jpg',
-        reviewerComments: [
-            { reviewer: 'Reviewer A', comment: 'Needs more references to recent studies.' },
-            { reviewer: 'Reviewer B', comment: 'Well-written but the methodology section is unclear.' }
-        ],
-        editorComments: [
-            'The topic is relevant but needs more depth in the analysis.',
-            'Consider adding more comparative data.'
-        ],
-        editorDecision: 'Revise and Resubmit'
-    },
-    // More articles...
-];
+const getTagColor = (decision) => {
+    switch (decision.toLowerCase()) {
+        case 'accept':
+            return 'green';
+        case 'revise resubmit':
+            return 'blue';
+        case 'minor revisions':
+            return 'orange';
+        case 'reject':
+            return 'red';
+        default:
+            return 'gray';
+    }
+};
 
 const ArticleDetail = () => {
     const { id } = useParams();
     const [article, setArticle] = useState(null);
-    const navigate = useNavigate();
+    const [isModalVisible, setIsModalVisible] = useState(false);
     const defaultLayoutPluginInstance = defaultLayoutPlugin();
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchedArticle = articles.find(article => article.id.toString() === id);
-        setArticle(fetchedArticle);
+        const fetchArticle = async () => {
+            try {
+                const response = await article_Detail_API(id);
+                const articleData = response.data;
+
+                // Mask reviewer names
+                articleData.reviewerComments = articleData.reviewerComments.map((comment, index) => ({
+                    ...comment,
+                    commentsToAuthor: {
+                        ...comment.commentsToAuthor,
+                        Reviewer: `Author ${index + 1}`
+                    }
+                }));
+
+                setArticle(articleData);
+            } catch (error) {
+                message.error('Failed to fetch article details.');
+            }
+        };
+        fetchArticle();
     }, [id]);
 
     if (!article) {
@@ -49,39 +63,87 @@ const ArticleDetail = () => {
 
     // Function to handle the resubmission action
     const handleResubmit = () => {
-        // alert('Article resubmitted.'); // Alert or other logic before navigating
-        navigate('/startnewsubmission'); // Navigate to the submission form page
+        setIsModalVisible(true);
+    };
+
+    const handleCancel = () => {
+        setIsModalVisible(false);
+    };
+
+    // Function to handle file list change in the PDFUploader
+    const handleFileListChange = (fileList) => {
+        console.log(fileList);
+    };
+
+    // Function to handle file upload in the PDFUploader
+    const handleFileUploaded = (file) => {
+        console.log(file);
+    };
+
+    // Function to handle submission
+    const handleSubmit = () => {
+        // Handle the submission logic here
+        alert('Manuscript resubmitted.');
+        setIsModalVisible(false);
+    };
+
+    // Normalize file input event
+    const normFile = (e) => {
+        if (Array.isArray(e)) {
+            return e;
+        }
+        return e?.fileList;
     };
 
     return (
         <div>
             <Title>Article Details - {article.title}</Title>
-            <Paragraph><strong>Abstract:</strong> {article.abstract}</Paragraph>
-            <Paragraph><strong>Deadline:</strong> {article.ddl}</Paragraph>
-            <div style={{ height: '500px' }}>
-                <strong>PDF Content:</strong>
-                <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js`}>
-                    <Viewer
-                        // fileUrl={`${process.env.PUBLIC_URL}/${article.content}`}
-                        fileUrl="/A.pdf"
-                        plugins={[defaultLayoutPluginInstance]}
-                    />
-                </Worker>
-            </div>
-            <Divider orientation="left"></Divider>
-            <List
-                header={<strong>Reviewer Comments</strong>}
-                bordered
-                dataSource={article.reviewerComments}
-                renderItem={item => (
-                    <List.Item>
-                        <Text>{item.reviewer}: {item.comment}</Text>
-                    </List.Item>
-                )}
-            />
-            <Divider orientation="left"></Divider>
-              <Card>
+            <Paragraph><strong>Abstract:</strong> <div dangerouslySetInnerHTML={{ __html: article.abstract }} /></Paragraph>
+            <Paragraph><strong>Deadline:</strong> {article.revisedDeadline || article.ddl}</Paragraph>
+
+            <Card style={{ marginBottom: '30px' }}>
+                <Paragraph><strong>Reviewer Comments:</strong></Paragraph>
+                <Divider />
+                <List
+                    dataSource={article.reviewerComments}
+                    renderItem={item => (
+                        <List.Item>
+                            <Text><b>{item.commentsToAuthor.Reviewer}</b>: <div dangerouslySetInnerHTML={{ __html: item.commentsToAuthor.Comments }} /></Text>
+                            {item.documentUrl && (
+                                <Button
+                                    type="link"
+                                    icon={<DownloadOutlined />}
+                                    href={item.documentUrl}
+                                    target="_blank"
+                                    style={{ marginRight: 8 }}
+                                >
+                                    Download PDF
+                                </Button>
+                            )}
+                        </List.Item>
+                    )}
+                />
+            </Card>
+
+            <Card style={{ marginBottom: '30px' }}>
+                <Paragraph><strong>Reviewer Recommendations:</strong></Paragraph>
+                <Divider />
+                <List
+                    dataSource={article.reviewerRecommendations}
+                    renderItem={item => (
+                        <List.Item>
+                            <Text>
+                                <b>Author {item.reviewerIndex}</b>: 
+                                <Tag color={getTagColor(item.recommendation)}>{item.recommendation}</Tag>
+                            </Text>
+                        </List.Item>
+                    )}
+                />
+            </Card>
+
+            <Card style={{ marginBottom: '30px' }}>
                 <Paragraph><strong>Editor's Comments:</strong></Paragraph>
+                <Divider />
                 <List
                     dataSource={article.editorComments}
                     renderItem={comment => (
@@ -90,30 +152,63 @@ const ArticleDetail = () => {
                         </List.Item>
                     )}
                 />
-               
             </Card>
+
             <Card
-                    bordered
-                    style={{ background: '#ffffcc', margin: '10px 0' }}  // Highlight with a light yellow background
-                >
-                    <Paragraph><strong>Editor Decision:</strong> {article.editorDecision}</Paragraph>
+                bordered
+                style={{ background: '#ffffff', margin: '10px 0', marginBottom: '30px' }}  // Keep background white
+            >
+                <Paragraph><strong>Editor Decision:</strong></Paragraph>
+                <Divider />
+                <Paragraph>
+                    {getStateTag(article.status)}
+                </Paragraph>
             </Card>
-            <Space>
-                <Button type="primary" icon={<CheckCircleOutlined />} onClick={() => alert('Deadline accepted.')}>
-                    Accept New Deadline
-                </Button>
-                <Button type="default" icon={<ClockCircleOutlined />} onClick={() => alert('Extension requested.')}>
-                    Request Extension
-                </Button>
+
+            <Space direction="horizontal" style={{ width: '100%' }}>
                 <Button type="default" icon={<CloseCircleOutlined />} onClick={() => alert('Submission withdrawn.')}>
                     Withdraw Submission
                 </Button>
-                {article.editorDecision === 'Revise and Resubmit' && (
-                    <Button type="default" icon={<ReloadOutlined />} onClick={handleResubmit}>
-                        Resubmit Article
-                    </Button>
+                {article.status === 'revise and resubmit' && (
+                    <>
+                        <Button type="default" icon={<CheckCircleOutlined />} onClick={() => alert('Deadline accepted.')}>
+                            Accept New Deadline
+                        </Button>
+                        <Button type="default" icon={<ClockCircleOutlined />} onClick={() => alert('Extension requested.')}>
+                            Request Extension
+                        </Button>
+                        <Button type="default" icon={<ReloadOutlined />} onClick={handleResubmit}>
+                            Resubmit Article
+                        </Button>
+                    </>
                 )}
             </Space>
+
+            <Modal
+                title="Resubmit Manuscript"
+                visible={isModalVisible}
+                onCancel={handleCancel}
+                footer={[
+                    <Button key="back" onClick={handleCancel}>
+                        Cancel
+                    </Button>,
+                    <Button key="submit" type="primary" onClick={handleSubmit}>
+                        Submit
+                    </Button>,
+                ]}
+            >
+                <Form.Item
+                    name="uploadedFile"
+                    valuePropName="fileList"
+                    getValueFromEvent={normFile}
+                >
+                    <PDFUploader
+                        id={"Reviewed"}
+                        onFileListChange={handleFileListChange}
+                        onFileUploaded={handleFileUploaded}
+                    />
+                </Form.Item>
+            </Modal>
         </div>
     );
 };
