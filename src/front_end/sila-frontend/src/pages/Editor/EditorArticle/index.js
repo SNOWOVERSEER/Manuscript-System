@@ -1,11 +1,31 @@
 import React, { useState, useEffect } from "react";
+<<<<<<< HEAD
 import { Card, Button, Table } from "antd";
+=======
+import {
+  Card,
+  Button,
+  Table,
+  Modal,
+  DatePicker,
+  Form,
+  Input,
+  message,
+} from "antd";
+>>>>>>> origin/editor-review-article-DH
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import logo from "../../../assets/logo.jpg"; // Adjust the path as necessary
-import { editor_review_API } from "../../../apis/editor_review";
+import {
+  editor_review_API,
+  editor_submit_decison_API,
+} from "../../../apis/editor_review";
 import ReviewStatusTable from "./reviewStatusTable"; // Import the component
 import { useParams } from "react-router-dom";
+<<<<<<< HEAD
+=======
+import dayjs from "dayjs";
+>>>>>>> origin/editor-review-article-DH
 
 const EditorArticle = () => {
   const [commentsToEditor, setEditorComments] = useState([]);
@@ -15,6 +35,15 @@ const EditorArticle = () => {
   const [manuscriptURL, setManuscriptURL] = useState("");
   const [appendixURL, setAppendixURL] = useState("");
   const [supplementaryFileURL, setSupplementaryFileURL] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null); // State to store selected date
+  const [editorCommentsToAuthor, setEditorCommentsToAuthor] = useState(""); // State to store editor comments to author
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFormDisabled, setIsFormDisabled] = useState(false); // State to store form disabled status
+  const [decision, setDecision] = useState(""); // State to store the decision
+
+  const { submissionID } = useParams();
+  const [form] = Form.useForm();
+  const [modalForm] = Form.useForm();
 
   const { submissionID } = useParams();
 
@@ -47,6 +76,7 @@ const EditorArticle = () => {
           ]);
 
           // Format comments from reviewers
+<<<<<<< HEAD
           const formattedCommentsToEditor = commentsFromReviewers.map((comment, index) => ({
             key: index,
             reviewer: comment.Reviewer,
@@ -57,6 +87,22 @@ const EditorArticle = () => {
             reviewer: comment.Reviewer,
             comments: comment.Comments,
           }));
+=======
+          const formattedCommentsToEditor = commentsFromReviewers.map(
+            (comment, index) => ({
+              key: index,
+              reviewer: comment.Reviewer,
+              comments: comment.Comments,
+            })
+          );
+          const formattedCommentsToAuthor = commentsToAuthor.map(
+            (comment, index) => ({
+              key: index,
+              reviewer: comment.Reviewer,
+              comments: comment.Comments,
+            })
+          );
+>>>>>>> origin/editor-review-article-DH
 
           setEditorComments(formattedCommentsToEditor);
           setAuthorComments(formattedCommentsToAuthor);
@@ -74,12 +120,68 @@ const EditorArticle = () => {
     fetchReviewData(submissionID);
   }, [submissionID]);
 
+<<<<<<< HEAD
   const handleSubmit = () => {
     console.log(
       "Submitting content:",
       commentsToEditor,
       commentsToAuthor
     );
+=======
+  const handleDecision = (decision) => {
+    setDecision(decision);
+    form.setFieldsValue({ decision }); // Set decision in the form
+    Modal.confirm({
+      title: "Confirm Decision",
+      content: `Are you sure you want to ${decision.toLowerCase()} this submission?`,
+      onOk: handleSubmit,
+    });
+  };
+
+  const handleRevised = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      console.log(values);
+      const data = {
+        submissionId: submissionID,
+        revisedDeadline: values.selectedDate,
+        decision: values.decision,
+        commentsFromEditor: values.editorCommentsToAuthor,
+      };
+      console.log(data);
+
+      await editor_submit_decison_API(data);
+      message.success("Decision submitted successfully!");
+      setIsFormDisabled(true); // Disable form after submission
+    } catch (error) {
+      console.error("Error submitting decision:", error);
+      message.error("Failed to submit decision. Please try again.");
+    }
+  };
+
+  const handleOk = () => {
+    modalForm
+      .validateFields()
+      .then((values) => {
+        const formattedDate = dayjs(values.date).format("YYYY-MM-DD HH:mm:ss");
+        setSelectedDate(formattedDate);
+        form.setFieldsValue({ selectedDate: formattedDate }); // Set selected date in the form
+        setIsModalOpen(false);
+        handleDecision(`Revised (${formattedDate})`);
+      })
+      .catch((info) => {
+        console.log("Validate Failed:", info);
+      });
+  };
+
+  // Cancel Date Picker
+  const handleCancel = () => {
+    setIsModalOpen(false);
+>>>>>>> origin/editor-review-article-DH
   };
 
   const columns = [
@@ -134,7 +236,7 @@ const EditorArticle = () => {
               type="primary"
               href={manuscriptURL}
               target="_blank"
-              disabled={!manuscriptURL}
+              disabled={!manuscriptURL || isFormDisabled}
             >
               Download Manuscript
             </Button>
@@ -143,7 +245,7 @@ const EditorArticle = () => {
               type="primary"
               href={appendixURL}
               target="_blank"
-              disabled={!appendixURL}
+              disabled={!appendixURL || isFormDisabled}
             >
               Download Appendix
             </Button>
@@ -152,7 +254,7 @@ const EditorArticle = () => {
               type="primary"
               href={supplementaryFileURL}
               target="_blank"
-              disabled={!supplementaryFileURL}
+              disabled={!supplementaryFileURL || isFormDisabled}
             >
               Download Supplementary File
             </Button>
@@ -185,47 +287,131 @@ const EditorArticle = () => {
           />
         </Card>
 
+        <Card
+          title="Editor comments to Author"
+          style={{ paddingBottom: "50px", marginBottom: "30px" }}
+        >
+          <Form form={form} layout="vertical" disabled={isFormDisabled}>
+            <Form.Item
+              name="editorCommentsToAuthor"
+              rules={[
+                { required: true, message: "Please provide your comments" },
+              ]}
+            >
+              <ReactQuill
+                className="editorComments"
+                theme="snow"
+                placeholder="Input the comments."
+                style={{ height: 300 }}
+                value={editorCommentsToAuthor}
+                onChange={setEditorCommentsToAuthor}
+                readOnly={isFormDisabled}
+              />
+            </Form.Item>
+          </Form>
+        </Card>
+
         <div
           className="decision buttons"
           style={{ textAlign: "center", padding: "20px" }}
         >
-          <Button
-            type="primary"
-            onClick={handleSubmit}
-            style={{
-              width: "20%",
-              height: "40px",
-              backgroundColor: "#34A853",
-            }}
-          >
-            Accept
-          </Button>
+          <Form form={form} layout="vertical" disabled={isFormDisabled}>
+            <Form.Item name="decision" style={{ display: "none" }}>
+              <Input type="hidden" />
+            </Form.Item>
+            <Form.Item name="selectedDate" style={{ display: "none" }}>
+              <Input type="hidden" />
+            </Form.Item>
 
-          <Button
-            type="primary"
-            onClick={handleSubmit}
-            style={{
-              marginLeft: "5%",
-              width: "20%",
-              height: "40px",
-              backgroundColor: "#EB4335",
-            }}
-          >
-            Reject
-          </Button>
+            <Button
+              type="primary"
+              onClick={() => handleDecision("Accept")}
+              style={{
+                width: "20%",
+                height: "40px",
+                background: "#34A853",
+                fontSize: "16px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                opacity: "0.9",
+              }}
+              disabled={isFormDisabled}
+            >
+              {isFormDisabled && decision.includes("Accept")
+                ? "Accepted"
+                : "Accept"}
+            </Button>
 
-          <Button
-            type="primary"
-            onClick={handleSubmit}
-            style={{
-              marginLeft: "5%",
-              width: "20%",
-              height: "40px",
-              backgroundColor: "#FBBC05",
-            }}
+            <Button
+              type="primary"
+              onClick={() => handleDecision("Reject")}
+              style={{
+                marginLeft: "5%",
+                width: "20%",
+                height: "40px",
+                background: "#EB4335",
+                fontSize: "16px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                opacity: "0.9",
+              }}
+              disabled={isFormDisabled}
+            >
+              {isFormDisabled && decision.includes("Reject")
+                ? "Rejected"
+                : "Reject"}
+            </Button>
+
+            <Button
+              type="primary"
+              onClick={handleRevised}
+              style={{
+                marginLeft: "5%",
+                width: "20%",
+                height: "40px",
+                background: "#FBBC05",
+                fontSize: "16px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                opacity: "0.9",
+              }}
+              disabled={isFormDisabled}
+            >
+              {selectedDate ? (
+                <span style={{ fontSize: "12px" }}>
+                  {"Revised " + "(" + selectedDate + ")"}
+                </span>
+              ) : isFormDisabled && decision.includes("Revised") ? (
+                "Revised"
+              ) : (
+                "Revised"
+              )}
+            </Button>
+          </Form>
+
+          <Modal
+            title="Select a Date and Time"
+            visible={isModalOpen}
+            onOk={handleOk}
+            onCancel={handleCancel}
+            okText="Submit"
           >
-            Revised
-          </Button>
+            <Form form={modalForm}>
+              <Form.Item
+                name="date"
+                label="Date and Time"
+                rules={[
+                  { required: true, message: "Please select a date and time" },
+                ]}
+              >
+                <DatePicker
+                  showTime
+                  style={{ width: "100%" }}
+                  disabled={isFormDisabled}
+                />
+              </Form.Item>
+            </Form>
+          </Modal>
         </div>
       </Card>
     </div>

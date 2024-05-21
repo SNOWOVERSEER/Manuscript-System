@@ -18,6 +18,7 @@ const ReviewStatusTable = ({ reviewData }) => {
       dataIndex: "reviewerRecommendation",
       key: "reviewerRecommendation",
     },
+
     {
       title: "Revision",
       dataIndex: "isRevision",
@@ -28,16 +29,27 @@ const ReviewStatusTable = ({ reviewData }) => {
         </Tag>
       ),
     },
-
     {
-      title: "Decision Status",
-      dataIndex: "isReviewComplete",
-      key: "isReviewComplete",
-      render: (isReviewComplete) => (
-        <Tag color={isReviewComplete ? "green" : "red"}>
-          {isReviewComplete ? "Yes" : "No"}
-        </Tag>
-      ),
+      title: "Revision Status",
+      dataIndex: "reviewerStatus",
+      key: "reviewerStatus",
+      render: (reviewerStatus) => {
+        let color;
+        switch (reviewerStatus) {
+          case "Reviewed":
+            color = "green";
+            break;
+          case "ToBeReviewed":
+            color = "orange";
+            break;
+          case "Expired":
+            color = "red";
+            break;
+          default:
+            color = "gray";
+        }
+        return <Tag color={color}>{reviewerStatus}</Tag>;
+      },
     },
     {
       title: "Reviewer Script",
