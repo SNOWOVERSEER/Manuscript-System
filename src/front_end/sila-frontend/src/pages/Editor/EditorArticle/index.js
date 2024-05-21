@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+<<<<<<< HEAD
+import { Card, Button, Table } from "antd";
+=======
 import {
   Card,
   Button,
@@ -9,6 +12,7 @@ import {
   Input,
   message,
 } from "antd";
+>>>>>>> origin/editor-review-article-DH
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import logo from "../../../assets/logo.jpg"; // Adjust the path as necessary
@@ -18,7 +22,10 @@ import {
 } from "../../../apis/editor_review";
 import ReviewStatusTable from "./reviewStatusTable"; // Import the component
 import { useParams } from "react-router-dom";
+<<<<<<< HEAD
+=======
 import dayjs from "dayjs";
+>>>>>>> origin/editor-review-article-DH
 
 const EditorArticle = () => {
   const [commentsToEditor, setEditorComments] = useState([]);
@@ -37,6 +44,8 @@ const EditorArticle = () => {
   const { submissionID } = useParams();
   const [form] = Form.useForm();
   const [modalForm] = Form.useForm();
+
+  const { submissionID } = useParams();
 
   useEffect(() => {
     const savedFormDisabled = localStorage.getItem(
@@ -74,6 +83,18 @@ const EditorArticle = () => {
           ]);
 
           // Format comments from reviewers
+<<<<<<< HEAD
+          const formattedCommentsToEditor = commentsFromReviewers.map((comment, index) => ({
+            key: index,
+            reviewer: comment.Reviewer,
+            comments: comment.Comments,
+          }));
+          const formattedCommentsToAuthor = commentsToAuthor.map((comment, index) => ({
+            key: index,
+            reviewer: comment.Reviewer,
+            comments: comment.Comments,
+          }));
+=======
           const formattedCommentsToEditor = commentsFromReviewers.map(
             (comment, index) => ({
               key: index,
@@ -88,6 +109,7 @@ const EditorArticle = () => {
               comments: comment.Comments,
             })
           );
+>>>>>>> origin/editor-review-article-DH
 
           setEditorComments(formattedCommentsToEditor);
           setAuthorComments(formattedCommentsToAuthor);
@@ -105,6 +127,14 @@ const EditorArticle = () => {
     fetchReviewData(submissionID);
   }, [submissionID]);
 
+<<<<<<< HEAD
+  const handleSubmit = () => {
+    console.log(
+      "Submitting content:",
+      commentsToEditor,
+      commentsToAuthor
+    );
+=======
   const handleDecision = (decision) => {
     setDecision(decision);
     form.setFieldsValue({ decision }); // Set decision in the form
@@ -159,6 +189,7 @@ const EditorArticle = () => {
   // Cancel Date Picker
   const handleCancel = () => {
     setIsModalOpen(false);
+>>>>>>> origin/editor-review-article-DH
   };
 
   const columns = [

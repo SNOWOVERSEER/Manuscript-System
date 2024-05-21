@@ -7,7 +7,8 @@ const ArticleStatus = {
   WaitingForDecision: "WaitingForDecision",
   Approved: "Approved",
   Rejected: "Rejected",
-  Revised: "Revised"
+  Revised: "Revised",
+  Withdraw: "Withdrawn"
 }
 export function getStateTag(status) {
   if (status === ArticleStatus.Submitted) {
@@ -24,6 +25,8 @@ export function getStateTag(status) {
     return <Tag color="purple">Rejected</Tag>;
   } else if (status === ArticleStatus.Revised) {
     return <Tag color="black">Revised</Tag>;
+  } else if (status === ArticleStatus.Withdraw) {
+    return <Tag color="#66ccff">Withdraw</Tag>;
   }
 }
 // Submitted
