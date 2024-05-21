@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getToken, removeID, removeToken } from "./token";
 import router from "../router";
-
+export const URL = "http://3.27.174.20:5266/";
 const http = axios.create({
   // baseURL: "http://localhost:5266/",
   // baseURL: "http://localhost:3001/yzl",
