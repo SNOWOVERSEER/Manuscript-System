@@ -2,6 +2,7 @@ using SiLA_Backend.Models;
 using SiLA_Backend.Data;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SiLA_Backend.Utilities;
 
 namespace SiLA_Backend.Services
 {
@@ -19,7 +20,7 @@ namespace SiLA_Backend.Services
             var blacklistedToken = new BlacklistedToken
             {
                 Token = token,
-                DateBlacklisted = DateTime.UtcNow
+                DateBlacklisted = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow)
             };
             _context.BlacklistedTokens.Add(blacklistedToken);
             await _context.SaveChangesAsync();

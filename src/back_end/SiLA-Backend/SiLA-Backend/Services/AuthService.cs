@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using SiLA_Backend.DTOs;
+using SiLA_Backend.Utilities;
 
 namespace SiLA_Backend.Services
 {
@@ -154,7 +155,7 @@ namespace SiLA_Backend.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(1),   // Token expires after 1 day
+                Expires = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(1),   // Token expires after 1 day
                 SigningCredentials = credentials
             };
 

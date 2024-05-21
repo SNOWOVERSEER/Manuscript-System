@@ -23,7 +23,7 @@ namespace SiLA_Backend.Models
         [Required]
         public string FilePath { get; set; } // 存储文件位置
 
-        public string RevisedFilePaths { get; set; } // 存储文件位置
+        public string? RevisedFilePaths { get; set; } // 存储文件位置
 
         // 添加作者的ID和关联
         [Required]

@@ -65,7 +65,7 @@ namespace SiLA_Backend.Services
                     {
                         ManuscriptId = manuscript.Id,
                         AuthorId = manuscript.AuthorId,
-                        SubmissionDate = DateTime.UtcNow,
+                        SubmissionDate = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow),
                         Status = SubmissionStatus.Submitted.ToString(),
                         Title = model.Title,
                         Category = model.Category
@@ -133,7 +133,7 @@ namespace SiLA_Backend.Services
                         return (false, "Submission has been completed");
 
                     submission.Status = SubmissionStatus.ToBeReviewed.ToString();
-                    submission.ReviewDeadline = DateTime.UtcNow.AddDays(7);
+                    submission.ReviewDeadline = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(7); // Set review deadline to 7 days from now
                     submission.ReviewerId = reviewerIds.ToString();
                     submission.EditorId = userId;
 
@@ -148,7 +148,7 @@ namespace SiLA_Backend.Services
                             SubmissionId = submissionId,
                             ReviewerId = reviewerId,
                             Status = SubmissionStatus.ToBeReviewed.ToString(),
-                            Deadline = DateTime.UtcNow.AddDays(7),
+                            Deadline = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(7),
                             IsRevision = false,
                             IsReviewComplete = false,
                             CommentsToEditor = JsonSerializer.Serialize(new Dictionary<string, string>()),
@@ -356,7 +356,7 @@ namespace SiLA_Backend.Services
                         throw new KeyNotFoundException("Reviewer Submission not found");
                     if (reviewerSubmission.Status != SubmissionStatus.ToBeReviewed.ToString())
                         return (false, "Submission has already been reviewed");
-                    if (reviewerSubmission.Deadline < DateTime.UtcNow)
+                    if (reviewerSubmission.Deadline < UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow))
                     {
                         reviewerSubmission.Status = SubmissionStatus.Expired.ToString();
                         return (false, "Review deadline has passed");
@@ -375,7 +375,7 @@ namespace SiLA_Backend.Services
                         {
                             { "Reviewer", model.ReviewerName },
                             { "ReviewerId", model.ReviewerId },
-                            { "LastEditDate", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
+                            { "LastEditDate", UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).ToString("yyyy-MM-dd HH:mm:ss")},
                             { "Comments", model.CommentsToEditor }
                         }
                     );
@@ -384,7 +384,7 @@ namespace SiLA_Backend.Services
                         {
                             { "Reviewer", model.ReviewerName },
                             { "ReviewerId", model.ReviewerId },
-                            { "LastEditDate", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")},
+                            { "LastEditDate", UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).ToString("yyyy-MM-dd HH:mm:ss")},
                             { "Comments", model.CommentsToAuthor }
                         }
                     );
@@ -409,7 +409,7 @@ namespace SiLA_Backend.Services
             {
                 BucketName = _bucketName,
                 Key = objectKey,
-                Expires = DateTime.UtcNow.AddMinutes(60)
+                Expires = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddMinutes(60)
             };
 
             try
@@ -589,7 +589,7 @@ namespace SiLA_Backend.Services
                     return (false, "Submission is not in revised status");
                 }
 
-                if (DateTime.UtcNow > submission.RevisedDeadline)
+                if (UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow) > submission.RevisedDeadline)
                 {
                     return (false, "Revised deadline has passed");
                 }
@@ -599,7 +599,7 @@ namespace SiLA_Backend.Services
                 foreach (var rs in submission.ReviewerSubmissions)
                 {
                     rs.Status = SubmissionStatus.ToBeReviewed.ToString();
-                    rs.Deadline = DateTime.UtcNow.AddDays(7);
+                    rs.Deadline = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(7);
                     rs.IsReviewComplete = false;
                     rs.IsRevision = true;
                     rs.CommentsToAuthor = "{}";
@@ -654,7 +654,7 @@ namespace SiLA_Backend.Services
                     return (false, "Extension has already been requested");
                 }
 
-                if (DateTime.UtcNow > submission.RevisedDeadline)
+                if (UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow) > submission.RevisedDeadline)
                 {
                     return (false, "Revised deadline has passed");
                 }
