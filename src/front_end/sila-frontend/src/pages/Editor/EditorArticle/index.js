@@ -114,7 +114,7 @@ const EditorArticle = () => {
 
   const handleSubmit = async () => {
     try {
-      const values = form.getFieldsValue();
+      const values = await form.validateFields();
       console.log(values);
       const data = {
         submissionId: submissionID,
