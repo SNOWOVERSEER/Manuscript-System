@@ -72,7 +72,7 @@ const router = createBrowserRouter([
 
             {path:"assignedarticleslist", element: <AssignedArticlesList />},
             {path:"addreviewer", element: <AddReviewer />},
-            {path:"editorarticle/:id", element: <EditorArticle />}
+            {path:"editorarticle/:submissionID", element: <EditorArticle />}
         ]
     }
 
