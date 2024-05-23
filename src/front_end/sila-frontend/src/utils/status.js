@@ -10,6 +10,7 @@ const ArticleStatus = {
   Revised: "Revised",
   Withdrawn: "Withdrawn",
 };
+
 export function getStateTag(status) {
   if (status === ArticleStatus.Submitted) {
     return <Tag color="orange">Submitted</Tag>;
