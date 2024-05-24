@@ -11,6 +11,10 @@ using System.Text;
 using System.Threading.Tasks;
 using SiLA_Backend.DTOs;
 using SiLA_Backend.Utilities;
+using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace SiLA_Backend.Services
 {
@@ -20,8 +24,16 @@ namespace SiLA_Backend.Services
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly ITokenManager _tokenManager;
+        private readonly MailService _mailService;
+        private readonly IUrlHelperFactory _urlHelperFactory;
+        private readonly IActionContextAccessor _actionContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AuthService(
+            IHttpContextAccessor httpContextAccessor,
+            IUrlHelperFactory urlHelperFactory,
+            IActionContextAccessor actionContextAccessor,
+            MailService mailService,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IConfiguration configuration,
@@ -31,10 +43,12 @@ namespace SiLA_Backend.Services
             _signInManager = signInManager;
             _configuration = configuration;
             _tokenManager = tokenManager;
+            _mailService = mailService;
+            _urlHelperFactory = urlHelperFactory;
+            _actionContextAccessor = actionContextAccessor;
+            _httpContextAccessor = httpContextAccessor;
 
         }
-
-
 
         public async Task<(bool IsSuccess, string Message)> RegisterAsync(RegisterModel model)
         {
@@ -56,6 +70,36 @@ namespace SiLA_Backend.Services
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, "Author");
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var scheme = _httpContextAccessor.HttpContext?.Request.Scheme;
+                var host = _httpContextAccessor.HttpContext?.Request.Host.Value;
+
+                var urlHelper = _urlHelperFactory.GetUrlHelper(_actionContextAccessor.ActionContext);
+                var confirmationLink = urlHelper.Action(
+                    "ConfirmEmail",
+                    "Auth",
+                    new { token, email = user.Email },
+                    scheme,
+                    host);
+                // Send email to user
+                _ = Task.Run(async () =>
+                {
+                    await _mailService.SendEmailAsync(new Email_Model
+                    {
+                        To = user.Email,
+                        ToName = $"{user.FirstName} {user.LastName}",
+                        Subject = "Welcome to SiLA!",
+                        TemplateId = 5992833,
+                        Variables = new JObject
+                        {
+                            { "name", $"{user.FirstName} {user.LastName}"},
+                            { "username", user.Email},
+                            { "role", "Author"},
+                            { "confirmationLink", confirmationLink}
+                        }
+                    });
+
+                });
                 return (true, "User registered successfully!");
             }
             else
@@ -91,6 +135,37 @@ namespace SiLA_Backend.Services
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, "Reviewer");
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var scheme = _httpContextAccessor.HttpContext?.Request.Scheme;
+                var host = _httpContextAccessor.HttpContext?.Request.Host.Value;
+
+                var urlHelper = _urlHelperFactory.GetUrlHelper(_actionContextAccessor.ActionContext);
+                var confirmationLink = urlHelper.Action(
+                    "ConfirmEmail",
+                    "Auth",
+                    new { token, email = user.Email },
+                    scheme,
+                    host);
+                Console.WriteLine(confirmationLink);
+                // Send email to user
+                _ = Task.Run(async () =>
+                {
+                    await _mailService.SendEmailAsync(new Email_Model
+                    {
+                        To = user.Email,
+                        ToName = $"{user.FirstName} {user.LastName}",
+                        Subject = "Welcome to SiLA!",
+                        TemplateId = 5992833,
+                        Variables = new JObject
+                        {
+                            { "name", $"{user.FirstName} {user.LastName}"},
+                            { "username", user.Email},
+                            { "role", "Reviewer"},
+                            { "confirmationLink", confirmationLink}
+                        }
+                    });
+
+                });
                 return (true, "New Reviewer User registered successfully!");
             }
             else

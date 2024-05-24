@@ -16,6 +16,8 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using System.Text.Json;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Newtonsoft.Json.Linq;
+using Mailjet.Client.Resources;
 
 namespace SiLA_Backend.Services
 {
@@ -29,8 +31,10 @@ namespace SiLA_Backend.Services
         private readonly string _bucketName = "sila-storage";
         private readonly string _region = "ap-southeast-2";
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly MailService _mailService;
 
-        public SubmissionService(IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager, IAmazonS3 amazonS3, IHttpContextAccessor httpContextAccessor)
+
+        public SubmissionService(MailService mailService, IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager, IAmazonS3 amazonS3, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _tokenManager = tokenManager;
@@ -38,8 +42,8 @@ namespace SiLA_Backend.Services
             _userManager = userManager;
             _amazonS3 = amazonS3;
             _httpContextAccessor = httpContextAccessor;
+            _mailService = mailService;
         }
-
         public async Task<(bool IsSuccess, string Message)> SubmitAsync(ManuscriptSubmissionModel model)
         {
 
@@ -76,7 +80,57 @@ namespace SiLA_Backend.Services
 
                     await transaction.CommitAsync();
 
+                    _ = Task.Run(async () =>
+                    {
+                        var user = await _userManager.FindByIdAsync(model.AuthorId);
+                        if (user == null)
+                            throw new KeyNotFoundException("User not found");
 
+                        var variables = new JObject
+                        {
+                            { "name", $"{user.FirstName} {user.LastName}"},
+                            { "Title", model.Title },
+                            { "SubmissionDate", UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).ToString("yyyy-MM-dd") },
+                            { "ManucriptId", manuscript.Id.ToString()}
+                        };
+
+
+                        await _mailService.SendEmailAsync(new Email_Model
+                        {
+                            To = user.Email!,
+                            ToName = $"{user.FirstName} {user.LastName}",
+                            Subject = "Dear [[data:name:\"\"]], you have new notification on SILA",
+                            TemplateId = 5984828, // Template ID
+                            Variables = variables
+                        });
+                    });
+
+                    _ = Task.Run(async () =>
+                    {
+                        // Send email to the all editor, which has the role of "Editor"
+                        var editors = await _userManager.GetUsersInRoleAsync("Editor");
+                        foreach (var editor in editors)
+                        {
+                            var variables = new JObject
+                            {
+                                { "name", $"{editor.FirstName} {editor.LastName}"},
+                                // submissions awaiting assignment
+                                { "needToAssign", (await _context.Submissions.Where(s => s.Status == SubmissionStatus.Submitted.ToString()).CountAsync()).ToString()},
+
+                                // awaiting decision
+                                { "needToDecision", (await _context.Submissions.Where(s => s.Status == SubmissionStatus.WaitingForDecision.ToString()).CountAsync()).ToString()}
+                            };
+
+                            await _mailService.SendEmailAsync(new Email_Model
+                            {
+                                To = editor.Email!,
+                                ToName = $"{editor.FirstName} {editor.LastName}",
+                                Subject = "Dear [[data:name:\"\"]], you have new notification on SILA",
+                                TemplateId = 5984505, // Template ID
+                                Variables = variables
+                            });
+                        }
+                    });
                     return (true, "Submission successful");
                 }
                 catch (Exception ex)
@@ -84,7 +138,6 @@ namespace SiLA_Backend.Services
                     await transaction.RollbackAsync();
                     // Log the error
                     return (false, $"An error occurred: {ex.Message}");
-
                 }
             }
         }
@@ -159,6 +212,61 @@ namespace SiLA_Backend.Services
                     await _context.SaveChangesAsync();
 
                     await transaction.CommitAsync();
+
+                    _ = Task.Run(async () =>
+                    {
+                        var author = await _userManager.FindByIdAsync(submission.AuthorId);
+                        if (author != null)
+                        {
+                            var variables = new JObject
+                            {
+                                    { "name", $"{author.FirstName} {author.LastName}"},
+                                    { "Title", submission.Title },
+                                    { "Status", SubmissionStatus.ToBeReviewed.ToString()}
+                            };
+
+                            await _mailService.SendEmailAsync(new Email_Model
+                            {
+                                To = author.Email!,
+                                ToName = $"{author.FirstName} {author.LastName}",
+                                Subject = "Your submission has been assigned to reviewers",
+                                TemplateId = 5984821, // Template ID
+                                Variables = variables
+                            });
+                        }
+                    });
+
+
+                    foreach (var reviewerId in reviewerIds)
+                    {
+                        _ = Task.Run(async () =>
+                        {
+                            var reviewer = await _userManager.FindByIdAsync(reviewerId);
+                            if (reviewer != null)
+                            {
+                                // Count the number of tasks assigned to the reviewer, which has "ToBeReviewed" status
+                                var reviewerTasks = await _context.ReviewerSubmissions
+                                    .Where(rs => rs.ReviewerId == reviewerId && rs.Status == SubmissionStatus.ToBeReviewed.ToString())
+                                    .ToListAsync();
+
+                                var variables = new JObject
+                                {
+                                        { "name", $"{reviewer.FirstName} {reviewer.LastName}"},
+                                        { "NumberOfTask", reviewerTasks.Count.ToString()},
+                                };
+
+                                await _mailService.SendEmailAsync(new Email_Model
+                                {
+                                    To = reviewer.Email!,
+                                    ToName = $"{reviewer.FirstName} {reviewer.LastName}",
+                                    Subject = "New review tasks assigned to you",
+                                    TemplateId = 5984822, // Template ID
+                                    Variables = variables
+                                });
+                            }
+                        });
+                    }
+
 
                     return (true, "Reviewers assigned successfully");
                 }
@@ -390,6 +498,7 @@ namespace SiLA_Backend.Services
                     await UpdateSubmissionStatusIfNeeded(model.SubmissionId);
                     await transaction.CommitAsync();
 
+
                     return (true, "Review submitted successfully");
                 }
                 catch (Exception ex)
@@ -437,8 +546,34 @@ namespace SiLA_Backend.Services
                     _context.Submissions.Update(submission);
                     await _context.SaveChangesAsync();
 
-                    // 可以添加一些逻辑来通知相关的用户状态已更改
-                    // 例如发送电子邮件或消息通知
+                    _ = Task.Run(async () =>
+                    {
+                        // Send email to the all editor, which has the role of "Editor"
+                        var editors = await _userManager.GetUsersInRoleAsync("Editor");
+                        foreach (var editor in editors)
+                        {
+                            var variables = new JObject
+                            {
+                                { "name", $"{editor.FirstName} {editor.LastName}"},
+                                // submissions awaiting assignment
+                                { "needToAssign", (await _context.Submissions.Where(s => s.Status == SubmissionStatus.Submitted.ToString()).CountAsync()).ToString()},
+
+                                // awaiting decision
+                                { "needToDecision", (await _context.Submissions.Where(s => s.Status == SubmissionStatus.WaitingForDecision.ToString()).CountAsync()).ToString()},
+
+
+                            };
+
+                            await _mailService.SendEmailAsync(new Email_Model
+                            {
+                                To = editor.Email!,
+                                ToName = $"{editor.FirstName} {editor.LastName}",
+                                Subject = "Dear [[data:name:\"\"]], you have new notification on SILA",
+                                TemplateId = 5984505, // Template ID
+                                Variables = variables
+                            });
+                        }
+                    });
                 }
             }
         }
