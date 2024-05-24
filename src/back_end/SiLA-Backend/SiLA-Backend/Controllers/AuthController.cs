@@ -4,6 +4,7 @@ using SiLA_Backend.DTOs;
 using SiLA_Backend.Services;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace SiLA_Backend.Controllers
 {
@@ -12,10 +13,14 @@ namespace SiLA_Backend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AuthController(IAuthService authService)
+
+
+        public AuthController(IAuthService authService, UserManager<ApplicationUser> userManager)
         {
             _authService = authService;
+            _userManager = userManager;
         }
 
         [HttpPost("register")]
@@ -27,6 +32,32 @@ namespace SiLA_Backend.Controllers
                 return Ok(new { state = "success", message = Message });
             }
             return BadRequest(new { state = "error", message = Message });
+        }
+
+        [HttpGet]
+        [Route("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string token, string email)
+        {
+            if (token == null || email == null)
+            {
+                return BadRequest("Invalid email confirmation request.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return BadRequest("Invalid email confirmation request.");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (result.Succeeded)
+            {
+                return Ok("Email confirmed successfully!");
+            }
+            else
+            {
+                return BadRequest("Error confirming your email.");
+            }
         }
 
         [Authorize(Roles = "Editor")]

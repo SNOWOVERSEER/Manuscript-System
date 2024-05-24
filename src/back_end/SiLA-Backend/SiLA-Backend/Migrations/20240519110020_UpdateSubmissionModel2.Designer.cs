@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SiLA_Backend.Data;
 
@@ -11,9 +12,11 @@ using SiLA_Backend.Data;
 namespace SiLA_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240519110020_UpdateSubmissionModel2")]
+    partial class UpdateSubmissionModel2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -305,9 +308,6 @@ namespace SiLA_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("RevisedFilePaths")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -378,13 +378,10 @@ namespace SiLA_Backend.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("CommentsFromEditor")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("EditorId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<bool>("IsExtensionChanceUsed")
+                    b.Property<bool>("IsRevisedDeadlineConfirmed")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<int>("ManuscriptId")

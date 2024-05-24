@@ -11,6 +11,10 @@ using Amazon.S3;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Security.Claims;
+using SiLA_Backend.Utilities;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +36,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         new MySqlServerVersion(new Version(8, 3, 0))));
 
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -50,12 +54,13 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = false,
         ValidateAudience = false,
         ClockSkew = TimeSpan.Zero,
-        ValidateLifetime = true
+        ValidateLifetime = true,
     };
     options.Events = new JwtBearerEvents
     {
         OnTokenValidated = async context =>
         {
+            var claims = context.Principal.Claims.ToList();
             var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenManager>();
             var token = context.SecurityToken as JsonWebToken;
 
@@ -74,9 +79,6 @@ builder.Services.AddAuthentication(options =>
 });
 
 
-
-
-
 // Add the missing using directive
 
 builder.Services.AddAWSService<IAmazonS3>(new AWSOptions
@@ -87,11 +89,15 @@ builder.Services.AddAWSService<IAmazonS3>(new AWSOptions
         builder.Configuration["AWS:SecretAccessKey"])
 });
 builder.Services.AddControllers();
+builder.Services.Configure<MailjetSettings>(builder.Configuration.GetSection("Mailjet"));
+builder.Services.AddSingleton<MailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenManager, TokenManager>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<IUserService, UserService>();
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();

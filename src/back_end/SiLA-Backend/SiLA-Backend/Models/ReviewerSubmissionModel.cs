@@ -11,10 +11,15 @@ namespace SiLA_Backend.Models
         [Required]
         public int SubmissionId { get; set; }
         public Submission Submission { get; set; }
+        public string? FileUrl { get; set; }
+        public string? Recommendation { get; set; }
+        public bool IsRevision { get; set; }
+        public bool IsReviewComplete { get; set; }
 
-        public DateTime? Deadline { get; set; }
+        public DateTime Deadline { get; set; }
 
-        public string Comment { get; set; }
+        public string? CommentsToEditor { get; set; }
+        public string? CommentsToAuthor { get; set; }
 
         public string Status { get; set; }
 
