@@ -8,8 +8,9 @@ const ArticleStatus = {
   Accepted: "Accepted",
   Rejected: "Rejected",
   Revised: "Revised",
-  Withdrawn: "Withdrawn"
-}
+  Withdrawn: "Withdrawn",
+};
+
 export function getStateTag(status) {
   if (status === ArticleStatus.Submitted) {
     return <Tag color="orange">Submitted</Tag>;
@@ -31,10 +32,10 @@ export function getStateTag(status) {
 }
 // Submitted
 // ToBeReview
-// WaitingFordecision      (review完成后，等待editor决定)  
+// WaitingFordecision      (review完成后，等待editor决定)
 // Reviewed
 // Approved         (editor的决定)
 // Rejected   （editor的决定）
-// Revised    (editor的决定)  
+// Revised    (editor的决定)
 
 export { ArticleStatus };

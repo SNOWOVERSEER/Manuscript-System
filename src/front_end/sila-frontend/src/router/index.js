@@ -6,7 +6,7 @@ import Login from "../pages/Login";
 // Author
 import Home from "../pages/Author/Home";
 import Layout from "../pages/Author/Layout";
-import Submitted from "../pages/Author/Submitted";
+import Submitted from "../pages/Author/Profile";
 import StartNewSubmission from "../pages/Author/StartNewSubmission";
 import ArticleDetail from "../pages/Author/ArticleDetail";
 // Reviewer

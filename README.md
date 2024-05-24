@@ -3,15 +3,25 @@
 <h1 align="center">SiLA - Wombat</h1>
 
 
-Welcome to our website repository! This repo is the implementation of the project SiLA (code: SI), associated with the course COMP90082_2024_SM1 of the University of Melbourne. It currently including the following folders:
-1. docs: the documents related to our project are included in the "docs" folder, such as Project Personan, Goal Model and ER disgram.
-2. src: the src folder serves as the primary container for our project's codebase, including both the client-side and server-side components.
+Welcome to our website repository! This repo is the implementation of the project SiLA (code: SI), associated with the course COMP90082_2024_SM1 of the University of Melbourne. This project aims to develop an Online Manuscript Submission and Peer Review Platform for the Studies in Language Assessment (SiLA) journal, operated by the Association for Language Testing and Assessment of Australia and New Zealand (ALTAANZ). The envisioned platform will replace the current email-based manuscript submission and review process with a comprehensive, streamlined, online system. This initiative seeks to enhance the efficiency of manuscript handling, review assignments, editorial decision-making, and communication among authors, reviewers, and editors.
+
+You are welcome to access our system via http://3.27.174.20/login.
+
+
 
 | Version |
 |---|
-| `2.0.0` |
+| `3.0.0` |
 
 # Updates
+*5/24/2024 (Sprint 3)*
+
+1. the editor now can check/download revision from author and review from reviewer.
+2. the editor can now send comments to the author.
+3. the reviewer can submit comments of an assigned manuscript.
+4. the review history has creatred for the reviewer.
+5. the author is able to view comments from reviewer and submit revisied manuscript.
+
 *5/05/2024 (Sprint 2)*
 
 1. add Author Dashboard, new submition page, and article detail page.
@@ -39,6 +49,7 @@ Welcome to our website repository! This repo is the implementation of the projec
 2. update the ReadMe file.
 
 # Release 
+- Third release[May 24, 2024]:COMP90082_2024_SM1_SI_Wombat_BL_SPRINT3
 - Second relsease[May 3, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT2
 [![Sprint 2 demonstration video](./docs/images/sprint_2_demonstration.png)](https://youtu.be/m-Q2aA_KJoA?feature=shared)
 - First relsease [March 22, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT1
