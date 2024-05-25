@@ -46,8 +46,7 @@ namespace SiLA_Backend.Services
         }
         public async Task<(bool IsSuccess, string Message)> SubmitAsync(ManuscriptSubmissionModel model)
         {
-
-            using (var transaction = _context.Database.BeginTransaction())
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
@@ -79,58 +78,82 @@ namespace SiLA_Backend.Services
                     await _context.SaveChangesAsync();
 
                     await transaction.CommitAsync();
+                    var user = await _userManager.FindByIdAsync(model.AuthorId);
+                    if (user == null)
+                        throw new KeyNotFoundException("User not found");
 
+                    var editors = await _userManager.GetUsersInRoleAsync("Editor");
+                    var editorEmails = editors.Select(editor => new
+                    {
+                        editor.Email,
+                        editor.FirstName,
+                        editor.LastName
+                    }).ToList();
+
+                    var submissionsToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString());
+                    var submissionsToDecisionCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.WaitingForDecision.ToString());
+
+                    // 异步发送邮件给作者
                     _ = Task.Run(async () =>
                     {
-                        var user = await _userManager.FindByIdAsync(model.AuthorId);
-                        if (user == null)
-                            throw new KeyNotFoundException("User not found");
-
-                        var variables = new JObject
+                        try
                         {
-                            { "name", $"{user.FirstName} {user.LastName}"},
-                            { "Title", model.Title },
-                            { "SubmissionDate", UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).ToString("yyyy-MM-dd") },
-                            { "ManucriptId", manuscript.Id.ToString()}
-                        };
-
-
-                        await _mailService.SendEmailAsync(new Email_Model
-                        {
-                            To = user.Email!,
-                            ToName = $"{user.FirstName} {user.LastName}",
-                            Subject = "Dear [[data:name:\"\"]], you have new notification on SILA",
-                            TemplateId = 5984828, // Template ID
-                            Variables = variables
-                        });
-                    });
-
-                    _ = Task.Run(async () =>
-                    {
-                        // Send email to the all editor, which has the role of "Editor"
-                        var editors = await _userManager.GetUsersInRoleAsync("Editor");
-                        foreach (var editor in editors)
-                        {
+                            Console.WriteLine("Sending email to author");
                             var variables = new JObject
                             {
-                                { "name", $"{editor.FirstName} {editor.LastName}"},
-                                // submissions awaiting assignment
-                                { "needToAssign", (await _context.Submissions.Where(s => s.Status == SubmissionStatus.Submitted.ToString()).CountAsync()).ToString()},
-
-                                // awaiting decision
-                                { "needToDecision", (await _context.Submissions.Where(s => s.Status == SubmissionStatus.WaitingForDecision.ToString()).CountAsync()).ToString()}
+                                { "name", $"{user.FirstName} {user.LastName}" },
+                                { "Title", model.Title },
+                                { "SubmissionDate", UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).ToString("yyyy-MM-dd") },
+                                { "ManucriptId", manuscript.Id.ToString() }
                             };
 
                             await _mailService.SendEmailAsync(new Email_Model
                             {
-                                To = editor.Email!,
-                                ToName = $"{editor.FirstName} {editor.LastName}",
+                                To = user.Email!,
+                                ToName = $"{user.FirstName} {user.LastName}",
                                 Subject = "Dear [[data:name:\"\"]], you have new notification on SILA",
-                                TemplateId = 5984505, // Template ID
+                                TemplateId = 5984828, // Template ID
                                 Variables = variables
                             });
                         }
+                        catch (Exception ex)
+                        {
+                            // Log the error if needed
+                            Console.WriteLine($"Error sending email to author: {ex.Message}");
+                        }
                     });
+
+                    // 异步发送邮件给编辑
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            foreach (var editor in editorEmails)
+                            {
+                                var variables = new JObject
+                                {
+                                    { "name", $"{editor.FirstName} {editor.LastName}" },
+                                    { "needToAssign", submissionsToAssignCount.ToString() },
+                                    { "needToDecision", submissionsToDecisionCount.ToString() }
+                                };
+
+                                await _mailService.SendEmailAsync(new Email_Model
+                                {
+                                    To = editor.Email!,
+                                    ToName = $"{editor.FirstName} {editor.LastName}",
+                                    Subject = "Dear [[data:name:\"\"]], you have new notification on SILA",
+                                    TemplateId = 5984505, // Template ID
+                                    Variables = variables
+                                });
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the error if needed
+                            Console.WriteLine($"Error sending email to editors: {ex.Message}");
+                        }
+                    });
+
                     return (true, "Submission successful");
                 }
                 catch (Exception ex)
@@ -141,6 +164,8 @@ namespace SiLA_Backend.Services
                 }
             }
         }
+
+
 
         public async Task<List<AuthorDashBoardDTO>> GetAuthorDashBoardAsync(string authorId)
         {
@@ -167,7 +192,7 @@ namespace SiLA_Backend.Services
 
         public async Task<(bool IsSuccess, string Message)> AssignReviewersAsync(int submissionId, List<string> reviewerIds)
         {
-            using (var transaction = _context.Database.BeginTransaction())
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
@@ -189,6 +214,8 @@ namespace SiLA_Backend.Services
                     submission.ReviewDeadline = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(7); // Set review deadline to 7 days from now
                     submission.EditorId = userId;
 
+                    var reviewerSubmissions = new List<ReviewerSubmission>();
+
                     foreach (var reviewerId in reviewerIds)
                     {
                         var reviewer = await _userManager.FindByIdAsync(reviewerId);
@@ -207,66 +234,63 @@ namespace SiLA_Backend.Services
                             CommentsToAuthor = JsonSerializer.Serialize(new Dictionary<string, string>())
                         };
 
+                        reviewerSubmissions.Add(reviewerSubmission);
                         _context.ReviewerSubmissions.Add(reviewerSubmission);
                     }
                     await _context.SaveChangesAsync();
 
                     await transaction.CommitAsync();
 
+                    var author = await _userManager.FindByIdAsync(submission.AuthorId);
+                    var authorVariables = new JObject
+                        {
+                            { "name", $"{author.FirstName} {author.LastName}"},
+                            { "Title", submission.Title },
+                            { "Status", SubmissionStatus.ToBeReviewed.ToString()}
+                        };
+
+                    // 异步发送邮件给作者
                     _ = Task.Run(async () =>
                     {
-                        var author = await _userManager.FindByIdAsync(submission.AuthorId);
                         if (author != null)
                         {
-                            var variables = new JObject
-                            {
-                                    { "name", $"{author.FirstName} {author.LastName}"},
-                                    { "Title", submission.Title },
-                                    { "Status", SubmissionStatus.ToBeReviewed.ToString()}
-                            };
-
                             await _mailService.SendEmailAsync(new Email_Model
                             {
                                 To = author.Email!,
                                 ToName = $"{author.FirstName} {author.LastName}",
-                                Subject = "Your submission has been assigned to reviewers",
+                                Subject = $"Hi {author.FirstName}, your submission has been assigned to reviewers",
                                 TemplateId = 5984821, // Template ID
-                                Variables = variables
+                                Variables = authorVariables
                             });
                         }
                     });
 
-
+                    // 获取每个审稿人的任务数量并发送邮件
                     foreach (var reviewerId in reviewerIds)
                     {
-                        _ = Task.Run(async () =>
+                        var reviewer = await _userManager.FindByIdAsync(reviewerId);
+                        if (reviewer != null)
                         {
-                            var reviewer = await _userManager.FindByIdAsync(reviewerId);
-                            if (reviewer != null)
+                            var reviewerTasks = reviewerSubmissions.Where(rs => rs.ReviewerId == reviewerId && rs.Status == SubmissionStatus.ToBeReviewed.ToString()).ToList();
+                            var reviewerVariables = new JObject
                             {
-                                // Count the number of tasks assigned to the reviewer, which has "ToBeReviewed" status
-                                var reviewerTasks = await _context.ReviewerSubmissions
-                                    .Where(rs => rs.ReviewerId == reviewerId && rs.Status == SubmissionStatus.ToBeReviewed.ToString())
-                                    .ToListAsync();
+                                { "name", $"{reviewer.FirstName} {reviewer.LastName}"},
+                                { "NumberOfTask", reviewerTasks.Count.ToString()},
+                            };
 
-                                var variables = new JObject
-                                {
-                                        { "name", $"{reviewer.FirstName} {reviewer.LastName}"},
-                                        { "NumberOfTask", reviewerTasks.Count.ToString()},
-                                };
-
+                            _ = Task.Run(async () =>
+                            {
                                 await _mailService.SendEmailAsync(new Email_Model
                                 {
                                     To = reviewer.Email!,
                                     ToName = $"{reviewer.FirstName} {reviewer.LastName}",
                                     Subject = "New review tasks assigned to you",
                                     TemplateId = 5984822, // Template ID
-                                    Variables = variables
+                                    Variables = reviewerVariables
                                 });
-                            }
-                        });
+                            });
+                        }
                     }
-
 
                     return (true, "Reviewers assigned successfully");
                 }
@@ -277,6 +301,7 @@ namespace SiLA_Backend.Services
                 }
             }
         }
+
 
         public async Task<List<ReviewerDashBoardDTO>> GetReviewerDashBoardAsync(string ReviewerId)
         {
@@ -540,43 +565,92 @@ namespace SiLA_Backend.Services
             {
                 var submission = await _context.Submissions
                     .FirstOrDefaultAsync(s => s.Id == submissionId);
+
                 if (submission != null && submission.Status != SubmissionStatus.WaitingForDecision.ToString())
                 {
                     submission.Status = SubmissionStatus.WaitingForDecision.ToString();
                     _context.Submissions.Update(submission);
                     await _context.SaveChangesAsync();
 
+                    // 获取编辑和作者的数据并计算所需的变量
+                    var editors = await _userManager.GetUsersInRoleAsync("Editor");
+                    var editorEmails = editors.Select(editor => new
+                    {
+                        editor.Email,
+                        editor.FirstName,
+                        editor.LastName
+                    }).ToList();
+
+                    var author = await _userManager.FindByIdAsync(submission.AuthorId);
+                    var needToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString());
+                    var needToDecisionCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.WaitingForDecision.ToString());
+
+                    // 异步发送邮件给编辑
                     _ = Task.Run(async () =>
                     {
-                        // Send email to the all editor, which has the role of "Editor"
-                        var editors = await _userManager.GetUsersInRoleAsync("Editor");
-                        foreach (var editor in editors)
+                        try
                         {
-                            var variables = new JObject
+                            foreach (var editor in editorEmails)
                             {
-                                { "name", $"{editor.FirstName} {editor.LastName}"},
-                                // submissions awaiting assignment
-                                { "needToAssign", (await _context.Submissions.Where(s => s.Status == SubmissionStatus.Submitted.ToString()).CountAsync()).ToString()},
+                                var variables = new JObject
+                                {
+                                    { "name", $"{editor.FirstName} {editor.LastName}" },
+                                    { "needToAssign", needToAssignCount.ToString() },
+                                    { "needToDecision", needToDecisionCount.ToString() }
+                                };
 
-                                // awaiting decision
-                                { "needToDecision", (await _context.Submissions.Where(s => s.Status == SubmissionStatus.WaitingForDecision.ToString()).CountAsync()).ToString()},
+                                await _mailService.SendEmailAsync(new Email_Model
+                                {
+                                    To = editor.Email!,
+                                    ToName = $"{editor.FirstName} {editor.LastName}",
+                                    Subject = $"Hi Editor {editor.FirstName}, you have new notification on SILA",
+                                    TemplateId = 5984505, // Template ID
+                                    Variables = variables
+                                });
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the error if needed
+                            Console.WriteLine($"Error sending email to editors: {ex.Message}");
+                        }
+                    });
 
-
-                            };
-
-                            await _mailService.SendEmailAsync(new Email_Model
+                    // 异步发送邮件给作者
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            if (author != null)
                             {
-                                To = editor.Email!,
-                                ToName = $"{editor.FirstName} {editor.LastName}",
-                                Subject = "Dear [[data:name:\"\"]], you have new notification on SILA",
-                                TemplateId = 5984505, // Template ID
-                                Variables = variables
-                            });
+                                var variables = new JObject
+                                {
+                                    { "name", $"{author.FirstName} {author.LastName}" },
+                                    { "Title", submission.Title },
+                                    { "Status", SubmissionStatus.WaitingForDecision.ToString() }
+                                };
+
+                                await _mailService.SendEmailAsync(new Email_Model
+                                {
+                                    To = author.Email!,
+                                    ToName = $"{author.FirstName} {author.LastName}",
+                                    Subject = $"Dear {author.FirstName}, your submission status has been updated",
+                                    TemplateId = 5984821, // Template ID
+                                    Variables = variables
+                                });
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the error if needed
+                            Console.WriteLine($"Error sending email to author: {ex.Message}");
                         }
                     });
                 }
             }
         }
+
+
 
         public async Task<SubmissionDetailForAuthorDTO> submissionDetailForAuthorDTO(int submissionId)
         {
@@ -634,7 +708,7 @@ namespace SiLA_Backend.Services
                     }).ToList(),
                     ReviewerRecommendations = submission.ReviewerSubmissions.Select((rs, index) => new ReviewerRecommendationsDTO
                     {
-                        ReviewerIndex = index + 1, // Assuming you have an ID that can act as an index
+                        ReviewerIndex = index + 1,
                         Recommendation = rs.Recommendation!
                     }).ToList(),
                     CommentsFromEditor = submission.CommentsFromEditor?.ToString() ?? "N/A"
@@ -654,8 +728,8 @@ namespace SiLA_Backend.Services
             try
             {
                 var submission = await _context.Submissions
-                .Where(s => s.Id == model.SubmissionId)
-                .FirstOrDefaultAsync();
+                    .Where(s => s.Id == model.SubmissionId)
+                    .FirstOrDefaultAsync();
 
                 if (submission == null)
                     throw new KeyNotFoundException("Submission not found");
@@ -682,27 +756,61 @@ namespace SiLA_Backend.Services
                 submission.Status = model.Decision;
                 submission.CommentsFromEditor = model.CommentsFromEditor;
                 await _context.SaveChangesAsync();
-                return (true, "Editor decision submitted successfully");
 
+                var author = await _userManager.FindByIdAsync(submission.AuthorId);
+
+                // 异步发送邮件给作者
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (author != null)
+                        {
+                            string sendingstatus = model.Decision == SubmissionStatus.Revised.ToString() ? $"Revised by {model.RevisedDeadline}" : model.Decision;
+                            var variables = new JObject
+                            {
+                                { "name", $"{author.FirstName} {author.LastName}" },
+                                { "Title", submission.Title },
+                                { "Status", sendingstatus }
+                            };
+
+                            await _mailService.SendEmailAsync(new Email_Model
+                            {
+                                To = author.Email!,
+                                ToName = $"{author.FirstName} {author.LastName}",
+                                Subject = $"Hi {author.FirstName}, your submission status has been updated",
+                                TemplateId = 5984828, // Template ID
+                                Variables = variables
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the error if needed
+                        Console.WriteLine($"Error sending email to author: {ex.Message}");
+                    }
+                });
+
+                return (true, "Editor decision submitted successfully");
             }
             catch (Exception ex)
             {
                 return (false, $"An error occurred: {ex.Message}");
             }
-
         }
+
 
         public async Task<(bool IsSuccess, string Message)> SubmitAuthorResponseAsync(AuthorResponseDTO model)
         {
-            using var transaction = _context.Database.BeginTransaction();
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-
                 var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var submission = await _context.Submissions
                     .Include(s => s.Manuscript)
                     .Include(s => s.ReviewerSubmissions)
                     .FirstOrDefaultAsync(s => s.Id == model.SubmissionId) ?? throw new KeyNotFoundException("Submission not found");
+
                 if (submission.AuthorId != userId)
                 {
                     return (false, "Unauthorized to modify this submission");
@@ -725,7 +833,6 @@ namespace SiLA_Backend.Services
 
                 if (UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow) > submission.RevisedDeadline)
                 {
-
                     return (false, "Revised deadline has passed");
                 }
 
@@ -744,7 +851,38 @@ namespace SiLA_Backend.Services
                 }
 
                 await _context.SaveChangesAsync();
-                transaction.Commit();
+                await transaction.CommitAsync();
+
+                // 获取审稿人数据
+                var reviewerIds = submission.ReviewerSubmissions.Select(rs => rs.ReviewerId).Distinct().ToList();
+                var reviewers = await _userManager.Users
+                    .Where(u => reviewerIds.Contains(u.Id))
+                    .ToListAsync();
+
+                foreach (var reviewer in reviewers)
+                {
+                    var reviewerTasks = submission.ReviewerSubmissions
+                        .Where(rs => rs.ReviewerId == reviewer.Id && rs.Status == SubmissionStatus.ToBeReviewed.ToString())
+                        .ToList();
+
+                    var reviewerVariables = new JObject
+                    {
+                        { "name", $"{reviewer.FirstName} {reviewer.LastName}" },
+                        { "NumberOfTask", reviewerTasks.Count.ToString() }
+                    };
+
+                    _ = Task.Run(async () =>
+                    {
+                        await _mailService.SendEmailAsync(new Email_Model
+                        {
+                            To = reviewer.Email!,
+                            ToName = $"{reviewer.FirstName} {reviewer.LastName}",
+                            Subject = $"Hi {reviewer.FirstName}, new review tasks assigned to you",
+                            TemplateId = 5984822, // Template ID
+                            Variables = reviewerVariables
+                        });
+                    });
+                }
                 return (true, "Author response submitted successfully");
             }
             catch (Exception ex)
