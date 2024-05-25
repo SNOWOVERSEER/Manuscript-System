@@ -779,7 +779,7 @@ namespace SiLA_Backend.Services
                                 To = author.Email!,
                                 ToName = $"{author.FirstName} {author.LastName}",
                                 Subject = $"Hi {author.FirstName}, your submission status has been updated",
-                                TemplateId = 5984828, // Template ID
+                                TemplateId = 5984821, // Template ID
                                 Variables = variables
                             });
                         }
