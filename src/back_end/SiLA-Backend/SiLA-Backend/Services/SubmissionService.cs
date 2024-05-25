@@ -111,7 +111,7 @@ namespace SiLA_Backend.Services
                             {
                                 To = user.Email!,
                                 ToName = $"{user.FirstName} {user.LastName}",
-                                Subject = "Dear [[data:name:\"\"]], you have new notification on SILA",
+                                Subject = $"Hi Author, you have new notification on SILA",
                                 TemplateId = 5984828, // Template ID
                                 Variables = variables
                             });
@@ -141,7 +141,7 @@ namespace SiLA_Backend.Services
                                 {
                                     To = editor.Email!,
                                     ToName = $"{editor.FirstName} {editor.LastName}",
-                                    Subject = "Dear [[data:name:\"\"]], you have new notification on SILA",
+                                    Subject = $"Dear Editor, you have new notification on SILA",
                                     TemplateId = 5984505, // Template ID
                                     Variables = variables
                                 });
@@ -284,7 +284,7 @@ namespace SiLA_Backend.Services
                                 {
                                     To = reviewer.Email!,
                                     ToName = $"{reviewer.FirstName} {reviewer.LastName}",
-                                    Subject = "New review tasks assigned to you",
+                                    Subject = "Hi, new review tasks assigned to you",
                                     TemplateId = 5984822, // Template ID
                                     Variables = reviewerVariables
                                 });
@@ -603,7 +603,7 @@ namespace SiLA_Backend.Services
                                 {
                                     To = editor.Email!,
                                     ToName = $"{editor.FirstName} {editor.LastName}",
-                                    Subject = $"Hi Editor {editor.FirstName}, you have new notification on SILA",
+                                    Subject = $"Hi Editor, you have new notification on SILA",
                                     TemplateId = 5984505, // Template ID
                                     Variables = variables
                                 });
@@ -634,7 +634,7 @@ namespace SiLA_Backend.Services
                                 {
                                     To = author.Email!,
                                     ToName = $"{author.FirstName} {author.LastName}",
-                                    Subject = $"Dear {author.FirstName}, your submission status has been updated",
+                                    Subject = $"Hi, your submission status has been updated",
                                     TemplateId = 5984821, // Template ID
                                     Variables = variables
                                 });
