@@ -5,7 +5,7 @@
 
 Welcome to our website repository! This repo is the implementation of the project SiLA (code: SI), associated with the course COMP90082_2024_SM1 of the University of Melbourne. This project aims to develop an Online Manuscript Submission and Peer Review Platform for the Studies in Language Assessment (SiLA) journal, operated by the Association for Language Testing and Assessment of Australia and New Zealand (ALTAANZ). The envisioned platform will replace the current email-based manuscript submission and review process with a comprehensive, streamlined, online system. This initiative seeks to enhance the efficiency of manuscript handling, review assignments, editorial decision-making, and communication among authors, reviewers, and editors.
 
-You are welcome to access our system via http://3.106.139.56/login.
+You are welcome to access our system via http://ec2-3-106-139-56.ap-southeast-2.compute.amazonaws.com.
 
 
 
