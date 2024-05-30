@@ -17,7 +17,7 @@ const PDFUploader = ({ onFileListChange, onFileUploaded, id }) => {
       case "others":
         return "Supplementary materials (if applicable)";
       case "Reviewed":
-        return "Upload PDF for your local review";
+        return "Upload PDF or Word file for your local review";
       default:
         return "Click or drag file to this area to upload";
     }
