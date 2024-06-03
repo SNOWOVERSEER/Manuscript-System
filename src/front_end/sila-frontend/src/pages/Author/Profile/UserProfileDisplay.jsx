@@ -1,6 +1,6 @@
 // UserProfileDisplay.jsx
-import React from 'react';
-import './UserProfileDisplay.scss';
+import React from "react";
+import "./UserProfileDisplay.scss";
 
 const UserProfileDisplay = ({ userData, onEdit }) => {
   return (
@@ -8,7 +8,7 @@ const UserProfileDisplay = ({ userData, onEdit }) => {
       <div className="profile-header">Account</div>
       <div className="profile-section">
         <div className="profile-section-header">Profile</div>
-        
+
         <div className="profile-detail">{userData.firstName}</div>
       </div>
       <div className="profile-section">
@@ -25,28 +25,14 @@ const UserProfileDisplay = ({ userData, onEdit }) => {
           <span>{userData.email}</span>
           <span className="primary-tag">Primary</span>
         </div>
-        <div className="profile-detail">
-          <span className="profile-detail-label">Address: </span>
-          <span>{userData.address}</span>
-        </div>
-        <div className="profile-detail">
-          <span className="profile-detail-label">Phone Number: </span>
-          <span>{userData.phone}</span>
-        </div>
-        <div className="profile-detail">
-          <span className="profile-detail-label">Gender: </span>
-          <span>{userData.gender}</span>
-        </div>
-        <div className="profile-detail">
-          <span className="profile-detail-label">Date of Birth: </span>
-          <span>{userData.birthDate}</span>
-        </div>
         <div className="profile-detail profile-detail-bio">
           <span className="profile-detail-label">Bio: </span>
           <span>{userData.bio}</span>
         </div>
       </div>
-      <button className="edit-button" onClick={onEdit}>Edit</button>
+      <button className="edit-button" onClick={onEdit}>
+        Edit
+      </button>
     </div>
   );
 };

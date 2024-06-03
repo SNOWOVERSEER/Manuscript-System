@@ -30,7 +30,7 @@ const ReviewStatusTable = ({ reviewData }) => {
       ),
     },
     {
-      title: "Revision Status",
+      title: "Review Status",
       dataIndex: "reviewerStatus",
       key: "reviewerStatus",
       render: (reviewerStatus) => {
