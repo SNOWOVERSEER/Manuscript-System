@@ -90,7 +90,7 @@ namespace SiLA_Backend.Services
                         editor.LastName
                     }).ToList();
 
-                    var submissionsToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString());
+                    var submissionsToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString() || s.Status == SubmissionStatus.Resubmitted.ToString());
                     var submissionsToDecisionCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.WaitingForDecision.ToString());
 
                     // 异步发送邮件给作者
@@ -200,7 +200,7 @@ namespace SiLA_Backend.Services
                 if (submission == null)
                     throw new KeyNotFoundException("Submission not found");
 
-                if (submission.Status != SubmissionStatus.Submitted.ToString())
+                if (submission.Status != SubmissionStatus.Submitted.ToString() && submission.Status != SubmissionStatus.Resubmitted.ToString())
                     return (false, "Submission is not in submitted status");
 
                 if (submission.Status == SubmissionStatus.Withdrawn.ToString())
@@ -616,7 +616,7 @@ namespace SiLA_Backend.Services
                     }).ToList();
 
                     var author = await _userManager.FindByIdAsync(submission.AuthorId);
-                    var needToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString());
+                    var needToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString() || s.Status == SubmissionStatus.Resubmitted.ToString());
                     var needToDecisionCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.WaitingForDecision.ToString());
 
                     // 异步发送邮件给编辑
