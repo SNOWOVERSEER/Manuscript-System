@@ -10,6 +10,7 @@ namespace SiLA_Backend.Utilities
         Accepted,           // Approved by editor
         Rejected,           // Rejected by editor
         Revised,             // Revised by author
+        Resubmitted,        // Resubmitted by author
         Withdrawn           // Withdrawn by author
     }
 

@@ -60,17 +60,7 @@ namespace SiLA_Backend.Services
 
             user.FirstName = userDto.FirstName;
             user.LastName = userDto.LastName;
-            if (DateOnly.TryParseExact(userDto.BirthDate, "dd/MM/yyyy", null, DateTimeStyles.None, out DateOnly parsedDate))
-            {
-                user.BirthDate = parsedDate;
-            }
-            else
-            {
-                return (false, "Invalid birth date format");
-            }
             user.Gender = userDto.Gender;
-            user.Address = userDto.Address;
-            user.Phone = userDto.Phone;
             user.Bio = userDto.Bio;
             user.ProfilePicture = userDto.ProfilePicture;
             user.Education = userDto.Education;

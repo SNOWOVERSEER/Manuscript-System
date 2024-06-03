@@ -8,6 +8,7 @@ namespace SiLA_Backend.DTOs
         public string Category { get; set; }
         public string? Declaration { get; set; }
         public List<Dictionary<string, string>> Files { get; set; }
+        public string? RevisedFileUrl { get; set; }
         public string SubmissionDate { get; set; }
         public string Status { get; set; }
         public string ReviewDeadline { get; set; }
