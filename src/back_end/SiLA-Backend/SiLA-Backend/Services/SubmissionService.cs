@@ -428,6 +428,7 @@ namespace SiLA_Backend.Services
                 Title = submissionDetail.Submission.Title,
                 Category = submissionDetail.Submission.Category,
                 File = preSignedUrls,
+                RevisedFileUrl = submissionDetail.Manuscript.RevisedFilePaths,
                 Declaration = submissionDetail.Manuscript.Declaration,
                 SubmissionDate = submissionDetail.Submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
                 ReviewDeadline = submissionDetail.Submission.ReviewDeadline!.Value.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -478,10 +479,12 @@ namespace SiLA_Backend.Services
             var reviewers = await Task.WhenAll(reviewerTasks);
 
             var commentsFromReviewers = submission.ReviewerSubmissions
+                .Where(rs => !rs.IsTicketClosed)
                 .Select(rs => JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToEditor ?? "{}"))
                 .ToList();
 
             var commentsToAuthor = submission.ReviewerSubmissions
+                .Where(rs => !rs.IsTicketClosed)
                 .Select(rs => JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToAuthor ?? "{}"))
                 .ToList();
 
@@ -491,6 +494,7 @@ namespace SiLA_Backend.Services
                 Title = submission.Manuscript.Title,
                 Category = submission.Manuscript.Category,
                 Files = new List<Dictionary<string, string>> { preSignedUrls },
+                RevisedFileUrl = submission.Manuscript.RevisedFilePaths,
                 Declaration = submission.Manuscript.Declaration,
                 SubmissionDate = submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
                 ReviewDeadline = submission.ReviewDeadline?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A",
@@ -867,7 +871,7 @@ namespace SiLA_Backend.Services
                 }
 
                 submission.Manuscript.RevisedFilePaths = model.ResponseFile;
-                submission.Status = SubmissionStatus.Submitted.ToString();
+                submission.Status = SubmissionStatus.Resubmitted.ToString();
                 foreach (var rs in submission.ReviewerSubmissions)
                 {
                     rs.IsTicketClosed = true;
@@ -884,7 +888,7 @@ namespace SiLA_Backend.Services
                     editor.LastName
                 }).ToList();
 
-                var submissionsToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString());
+                var submissionsToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString() || s.Status == SubmissionStatus.Resubmitted.ToString());
                 var submissionsToDecisionCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.WaitingForDecision.ToString());
 
                 // 异步发送邮件给编辑
