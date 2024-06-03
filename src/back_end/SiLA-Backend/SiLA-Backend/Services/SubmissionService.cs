@@ -422,13 +422,15 @@ namespace SiLA_Backend.Services
                 preSignedUrls.Add("body", presignedUrl);
             }
 
+            string? revisedFilePaths = submissionDetail.Manuscript.RevisedFilePaths == null ? null : await GeneratePreSignedURLAsync(submissionDetail.Manuscript.RevisedFilePaths);
+
             return new SubmissionDetailForReviewerDTO
             {
                 SubmissionId = submissionDetail.Submission.Id,
                 Title = submissionDetail.Submission.Title,
                 Category = submissionDetail.Submission.Category,
                 File = preSignedUrls,
-                RevisedFileUrl = submissionDetail.Manuscript.RevisedFilePaths,
+                RevisedFileUrl = revisedFilePaths,
                 Declaration = submissionDetail.Manuscript.Declaration,
                 SubmissionDate = submissionDetail.Submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
                 ReviewDeadline = submissionDetail.Submission.ReviewDeadline!.Value.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -488,13 +490,16 @@ namespace SiLA_Backend.Services
                 .Select(rs => JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToAuthor ?? "{}"))
                 .ToList();
 
+            string? revisedFilePaths = submission.Manuscript.RevisedFilePaths == null ? null : await GeneratePreSignedURLAsync(submission.Manuscript.RevisedFilePaths);
+
+
             var submissionDetail = new SubmissionDetailForEditorDTO
             {
                 SubmissionId = submission.Id,
                 Title = submission.Manuscript.Title,
                 Category = submission.Manuscript.Category,
                 Files = new List<Dictionary<string, string>> { preSignedUrls },
-                RevisedFileUrl = submission.Manuscript.RevisedFilePaths,
+                RevisedFileUrl = revisedFilePaths,
                 Declaration = submission.Manuscript.Declaration,
                 SubmissionDate = submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
                 ReviewDeadline = submission.ReviewDeadline?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A",
