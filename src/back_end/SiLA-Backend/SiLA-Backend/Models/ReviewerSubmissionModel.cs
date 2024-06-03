@@ -15,7 +15,7 @@ namespace SiLA_Backend.Models
         public string? Recommendation { get; set; }
         public bool IsRevision { get; set; }
         public bool IsReviewComplete { get; set; }
-
+        public bool IsTicketClosed { get; set; }
         public DateTime Deadline { get; set; }
 
         public string? CommentsToEditor { get; set; }
