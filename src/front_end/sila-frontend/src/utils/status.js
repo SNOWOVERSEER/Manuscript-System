@@ -9,6 +9,7 @@ const ArticleStatus = {
   Rejected: "Rejected",
   Revised: "Revised",
   Withdrawn: "Withdrawn",
+  Resubmitted: "Resubmitted",
 };
 
 export function getStateTag(status) {

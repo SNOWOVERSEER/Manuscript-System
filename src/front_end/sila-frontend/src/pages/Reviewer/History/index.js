@@ -54,32 +54,12 @@ const History = () => {
       dataIndex: "reviewDeadline",
       sorter: (a, b) => new Date(a.reviewDeadline) - new Date(b.reviewDeadline),
     },
-    {
-      title: "ACTION",
-      render: (record) => (
-        <Space size="middle">
-          <Button
-            type="primary"
-            shape="circle"
-            icon={<EditOutlined />}
-            onClick={() =>
-              navigate(`/reviewer/reviewpage?id=${record.submissionId}`)
-            }
-          />
-        </Space>
-      ),
-    },
   ];
 
   return (
     <div>
       <Card title="Articles for Review">
-        <Table
-          rowKey="id"
-          columns={columns}
-          dataSource={articles}
-          pagination={false}
-        />
+        <Table rowKey="id" columns={columns} dataSource={articles} />
       </Card>
     </div>
   );

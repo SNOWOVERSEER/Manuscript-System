@@ -231,7 +231,6 @@ const ArticleDetail = () => {
         <Divider />
         <div dangerouslySetInnerHTML={{ __html: article.commentsFromEditor }} />
       </Card>
-
       <Card
         bordered
         style={{
@@ -244,7 +243,12 @@ const ArticleDetail = () => {
           <strong>Editor Decision:</strong>
         </Paragraph>
         <Divider />
-        <Paragraph>{getStateTag(article.status)}</Paragraph>
+        {(article.status === "Accepted" ||
+          article.status === "Rejected" ||
+          article.status === "Revised" ||
+          article.status === "WaitingForDecision") && (
+          <Paragraph>{getStateTag(article.status)}</Paragraph>
+        )}
       </Card>
 
       <Space direction="horizontal" style={{ width: "100%" }}>

@@ -28,6 +28,7 @@ const EditorArticle = () => {
   const [manuscriptURL, setManuscriptURL] = useState("");
   const [appendixURL, setAppendixURL] = useState("");
   const [supplementaryFileURL, setSupplementaryFileURL] = useState("");
+  const [resubmittedFileURL, setResubmittedFileURL] = useState("");
   const [selectedDate, setSelectedDate] = useState(null); // State to store selected date
   const [editorCommentsToAuthor, setEditorCommentsToAuthor] = useState(""); // State to store editor comments to author
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,6 +57,7 @@ const EditorArticle = () => {
             submissionDate,
             status, // Get the status from the response
             editorComment,
+            revisedFileUrl,
           } = res.data;
 
           const manuscriptURL = files[0]?.body || "";
@@ -96,6 +98,7 @@ const EditorArticle = () => {
           setManuscriptURL(manuscriptURL);
           setAppendixURL(appendixURL);
           setSupplementaryFileURL(supplementaryFileURL);
+          setResubmittedFileURL(revisedFileUrl);
 
           // Enable buttons only if the status is "WaitingForDecision"
           if (status === "WaitingForDecision") {
@@ -244,6 +247,26 @@ const EditorArticle = () => {
             </Button>
           </div>
         </Card>
+
+        {resubmittedFileURL && (
+          <Card
+            title="Revised/Resubmitted Manuscript"
+            style={{ marginBottom: "30px" }}
+          >
+            <div>
+              <div>
+                <Button
+                  style={{ marginLeft: "20px" }}
+                  type="primary"
+                  href={resubmittedFileURL}
+                  target="_blank"
+                >
+                  Download Revised/resubmitted Article
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
 
         <Card className="reviewStatusTable" style={{ marginBottom: "30px" }}>
           <ReviewStatusTable reviewData={reviewTableData} />

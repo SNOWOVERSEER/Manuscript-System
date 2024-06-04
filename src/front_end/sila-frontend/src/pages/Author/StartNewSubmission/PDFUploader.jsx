@@ -1,4 +1,3 @@
-// PDFUploader.jsx
 import React, { useState } from "react";
 import { Upload, message } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
@@ -18,7 +17,7 @@ const PDFUploader = ({ onFileListChange, onFileUploaded, id }) => {
       case "others":
         return "Supplementary materials (if applicable)";
       case "Reviewed":
-        return "Upload PDF for you local review";
+        return "Upload PDF or Word file for your local review";
       default:
         return "Click or drag file to this area to upload";
     }
@@ -31,7 +30,7 @@ const PDFUploader = ({ onFileListChange, onFileUploaded, id }) => {
     headers: {
       authorization: `Bearer ${localStorage.getItem("token")}`,
     },
-    accept: ".pdf",
+    accept: ".pdf,.doc,.docx", // Accept PDF and Word documents
     fileList,
     onChange(info) {
       if (info.file.status === "done") {
@@ -50,14 +49,21 @@ const PDFUploader = ({ onFileListChange, onFileUploaded, id }) => {
         message.error("Only one file can be uploaded!");
         return Upload.LIST_IGNORE; // Ignore the file, do not add to list
       }
-      return file.type === "application/pdf" || Upload.LIST_IGNORE;
+      const isPdfOrWord =
+        file.type === "application/pdf" ||
+        file.type === "application/msword" ||
+        file.type ===
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      if (!isPdfOrWord) {
+        message.error("You can only upload PDF or Word document files!");
+        return Upload.LIST_IGNORE;
+      }
+      return isPdfOrWord;
     },
   };
 
   return (
     <div style={{ marginBottom: "20px" }}>
-      {" "}
-      {/* Inline style for margin between components */}
       <Dragger {...draggerProps}>
         <p className="ant-upload-drag-icon">
           <InboxOutlined />
