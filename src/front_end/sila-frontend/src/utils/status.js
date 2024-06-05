@@ -29,6 +29,8 @@ export function getStateTag(status) {
     return <Tag color="black">Revised</Tag>;
   } else if (status === ArticleStatus.Withdrawn) {
     return <Tag color="#66ccff">Withdrawn</Tag>;
+  } else if (status === ArticleStatus.Resubmitted) {
+    return <Tag color="orange">Resubmitted</Tag>;
   }
 }
 // Submitted

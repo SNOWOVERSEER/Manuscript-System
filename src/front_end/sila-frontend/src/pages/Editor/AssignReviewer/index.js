@@ -23,7 +23,7 @@ const AssignReviewer = () => {
           `/Manuscripts/EditorSubmissions/${localStorage.getItem("id")}`
         );
         const res = response.data
-          .filter((article) => article.status === "Submitted")
+          .filter((article) => article.status === "Submitted" || article.status === "Resubmitted")
           .map((article) => ({
             ...article,
             id: article.submissionId,

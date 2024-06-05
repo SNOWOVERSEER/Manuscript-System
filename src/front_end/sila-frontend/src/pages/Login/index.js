@@ -17,18 +17,19 @@ const Login = () => {
       navigate("/")
       message.success("sign in success !!!")
     } catch (error) {
+      
       if (error.message && error.message.includes("timeout..")) {
         message.error(
-          "Login timeout, please check your network connection and try again."
+          "Login timeout, please check your network connection and try again.", 5
         );
       } else if (
         error.response &&
         error.response.data &&
         error.response.data.message
       ) {
-        message.error(error.response.data.message);
+        message.error(error.response.data.message, 5);
       } else {
-        message.error("Login failed, please try again.");
+        message.error("Login failed, please try again.", 5);
       }
     }
   };
