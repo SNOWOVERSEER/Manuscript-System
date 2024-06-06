@@ -2,6 +2,7 @@ namespace SiLA_Backend.DTOs
 {
     public class ForgotPasswordModel
     {
-        public string Id { get; set; }
+        public string? UserId { get; set; }
+        public string? Email { get; set; }
     }
 }

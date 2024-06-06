@@ -99,12 +99,20 @@ namespace SiLA_Backend.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
         {
-            var result = await _authService.ForgotPasswordAsync(model.Id);
+            if (string.IsNullOrEmpty(model.UserId) && string.IsNullOrEmpty(model.Email))
+            {
+                return BadRequest("Either userId or email must be provided");
+            }
+
+            var result = await _authService.ForgotPasswordAsync(model.UserId, model.Email);
             if (result.IsSuccess)
             {
                 return Ok(result.Message);
             }
-            return BadRequest(result.Message);
+            else
+            {
+                return BadRequest(result.Message);
+            }
         }
 
         [HttpPost("reset-password")]

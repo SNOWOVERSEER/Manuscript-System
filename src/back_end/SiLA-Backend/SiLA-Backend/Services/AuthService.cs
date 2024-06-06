@@ -239,9 +239,19 @@ namespace SiLA_Backend.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public async Task<(bool IsSuccess, string Message)> ForgotPasswordAsync(string id)
+        public async Task<(bool IsSuccess, string Message)> ForgotPasswordAsync(string? userId, string? email)
         {
-            var user = await _userManager.FindByIdAsync(id);
+            ApplicationUser? user = null;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                user = await _userManager.FindByIdAsync(userId);
+            }
+            else if (!string.IsNullOrEmpty(email))
+            {
+                user = await _userManager.FindByEmailAsync(email);
+            }
+
             if (user == null)
             {
                 return (false, "User not found");
