@@ -95,5 +95,29 @@ namespace SiLA_Backend.Controllers
 
             return Ok(new { state = "success", message = "User logged out successfully!" });
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
+        {
+            var result = await _authService.ForgotPasswordAsync(model.Id);
+            if (result.IsSuccess)
+            {
+                return Ok(result.Message);
+            }
+            return BadRequest(result.Message);
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
+        {
+            var result = await _authService.ResetPasswordAsync(model);
+            if (result.IsSuccess)
+            {
+                return Ok(result.Message);
+            }
+            return BadRequest(result.Message);
+        }
+
+
     }
 }
