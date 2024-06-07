@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 
 import Register from "../pages/Register";
 import Login from "../pages/Login";
+import Restpassword from "../pages/Register/resetpassword";
 // Author
 import Home from "../pages/Author/Home";
 import Layout from "../pages/Author/Layout";
@@ -40,6 +41,16 @@ const router = createBrowserRouter([
         {" "}
         <Register />{" "}
       </AuthRouteForLoginPage>
+    ),
+  },
+
+  {
+    path: "/resetpassword",
+    element: (
+      // <AuthRouteForLoginPage>
+        
+        <Restpassword />
+      // </AuthRouteForLoginPage>
     ),
   },
 
