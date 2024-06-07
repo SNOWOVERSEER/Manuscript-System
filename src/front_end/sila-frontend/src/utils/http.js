@@ -3,9 +3,6 @@ import { getToken, removeID, removeToken } from "./token";
 import router from "../router";
 export const URL = "http://ec2-3-106-139-56.ap-southeast-2.compute.amazonaws.com:5266/";
 const http = axios.create({
-
-  // baseURL: "http://localhost:5266/",
-  // baseURL: "http://localhost:3001/yzl",
   baseURL: "http://ec2-3-106-139-56.ap-southeast-2.compute.amazonaws.com:5266/",
   timeout: 5000,
 });
