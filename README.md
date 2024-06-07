@@ -54,7 +54,7 @@ You are welcome to access our system via http://3.106.139.56/login.
 2. update the ReadMe file.
 
 # Release 
-- Forth release[June 7, 2024]:COMP90082_2024_SM1_SI_Wombat_BL_SPRINT4
+- Fourth release[June 7, 2024]:COMP90082_2024_SM1_SI_Wombat_BL_SPRINT4
 - Third release[May 24, 2024]:COMP90082_2024_SM1_SI_Wombat_BL_SPRINT3
 - Second relsease[May 3, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT2
 [![Sprint 2 demonstration video](./docs/images/sprint_2_demonstration.png)](https://youtu.be/m-Q2aA_KJoA?feature=shared)
