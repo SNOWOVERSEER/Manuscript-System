@@ -172,6 +172,7 @@ namespace SiLA_Backend.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("GetSubmissionDetailForAuthor/{submissionId}")]
         public async Task<IActionResult> GetSubmissionDetailForAuthor(int submissionId)
         {
@@ -210,6 +211,7 @@ namespace SiLA_Backend.Controllers
             return BadRequest(new { state = "error", message = Message });
         }
 
+        [Authorize]
         [HttpPost("submitrevision")]
         public async Task<IActionResult> SubmitRevision(AuthorResponseDTO model)
         {
@@ -221,6 +223,7 @@ namespace SiLA_Backend.Controllers
             return BadRequest(new { state = "error", message = Message });
         }
 
+        [Authorize]
         [HttpPost("withdraw/{submissionId}")]
         public async Task<IActionResult> Withdraw(int submissionId)
         {
@@ -232,6 +235,7 @@ namespace SiLA_Backend.Controllers
             return BadRequest(new { state = "error", message = Message });
         }
 
+        [Authorize]
         [HttpPost("requestextension/{submissionId}")]
         public async Task<IActionResult> RequestExtension(int submissionId)
         {
