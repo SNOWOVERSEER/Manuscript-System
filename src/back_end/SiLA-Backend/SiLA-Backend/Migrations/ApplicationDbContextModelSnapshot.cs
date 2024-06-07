@@ -345,6 +345,9 @@ namespace SiLA_Backend.Migrations
                     b.Property<bool>("IsRevision")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("IsTicketClosed")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Recommendation")
                         .HasColumnType("longtext");
 

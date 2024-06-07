@@ -18,6 +18,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Newtonsoft.Json.Linq;
 using Mailjet.Client.Resources;
+using Microsoft.Extensions.Configuration;
 
 namespace SiLA_Backend.Services
 {
@@ -28,13 +29,12 @@ namespace SiLA_Backend.Services
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAmazonS3 _amazonS3;
-        private readonly string _bucketName = "sila-storage";
-        private readonly string _region = "ap-southeast-2";
+        private readonly string _bucketName;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly MailService _mailService;
 
 
-        public SubmissionService(MailService mailService, IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager, IAmazonS3 amazonS3, IHttpContextAccessor httpContextAccessor)
+        public SubmissionService(IConfiguration configuration, MailService mailService, IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager, IAmazonS3 amazonS3, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _tokenManager = tokenManager;
@@ -43,6 +43,7 @@ namespace SiLA_Backend.Services
             _amazonS3 = amazonS3;
             _httpContextAccessor = httpContextAccessor;
             _mailService = mailService;
+            _bucketName = configuration["AWS:BucketName"];
         }
         public async Task<(bool IsSuccess, string Message)> SubmitAsync(ManuscriptSubmissionModel model)
         {
@@ -90,7 +91,7 @@ namespace SiLA_Backend.Services
                         editor.LastName
                     }).ToList();
 
-                    var submissionsToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString());
+                    var submissionsToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString() || s.Status == SubmissionStatus.Resubmitted.ToString());
                     var submissionsToDecisionCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.WaitingForDecision.ToString());
 
                     // 异步发送邮件给作者
@@ -192,36 +193,55 @@ namespace SiLA_Backend.Services
 
         public async Task<(bool IsSuccess, string Message)> AssignReviewersAsync(int submissionId, List<string> reviewerIds)
         {
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                try
+                var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var submission = await _context.Submissions.FindAsync(submissionId);
+                if (submission == null)
+                    throw new KeyNotFoundException("Submission not found");
+
+                if (submission.Status != SubmissionStatus.Submitted.ToString() && submission.Status != SubmissionStatus.Resubmitted.ToString())
+                    return (false, "Submission is not in submitted status");
+
+                if (submission.Status == SubmissionStatus.Withdrawn.ToString())
+                    return (false, "Submission has been withdrawn");
+
+                if (submission.CaseCompleted)
+                    return (false, "Submission has been completed");
+
+                submission.Status = SubmissionStatus.ToBeReviewed.ToString();
+                submission.ReviewDeadline = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(7); // Set review deadline to 7 days from now
+                submission.EditorId = userId;
+
+                var reviewerSubmissions = await _context.ReviewerSubmissions
+                    .Where(rs => rs.SubmissionId == submissionId)
+                    .ToListAsync();
+
+                foreach (var reviewerId in reviewerIds)
                 {
-                    var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                    var submission = await _context.Submissions.FindAsync(submissionId);
-                    if (submission == null)
-                        throw new KeyNotFoundException("Submission not found");
+                    var reviewer = await _userManager.FindByIdAsync(reviewerId);
+                    if (reviewer == null)
+                        throw new KeyNotFoundException("One or several Reviewer(s) not found");
 
-                    if (submission.Status != SubmissionStatus.Submitted.ToString())
-                        return (false, "Submission is not in submitted status");
+                    var existingReviewerSubmission = reviewerSubmissions.FirstOrDefault(rs => rs.ReviewerId == reviewerId);
 
-                    if (submission.Status == SubmissionStatus.Withdrawn.ToString())
-                        return (false, "Submission has been withdrawn");
-
-                    if (submission.CaseCompleted)
-                        return (false, "Submission has been completed");
-
-                    submission.Status = SubmissionStatus.ToBeReviewed.ToString();
-                    submission.ReviewDeadline = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(7); // Set review deadline to 7 days from now
-                    submission.EditorId = userId;
-
-                    var reviewerSubmissions = new List<ReviewerSubmission>();
-
-                    foreach (var reviewerId in reviewerIds)
+                    if (existingReviewerSubmission != null)
                     {
-                        var reviewer = await _userManager.FindByIdAsync(reviewerId);
-                        if (reviewer == null)
-                            throw new KeyNotFoundException("One or several Reviewer(s) not found");
+                        existingReviewerSubmission.IsTicketClosed = false;
+                        existingReviewerSubmission.Status = SubmissionStatus.ToBeReviewed.ToString();
+                        existingReviewerSubmission.Deadline = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(7);
+                        existingReviewerSubmission.IsRevision = true;
+                        existingReviewerSubmission.IsReviewComplete = false;
+                        existingReviewerSubmission.CommentsToEditor = JsonSerializer.Serialize(new Dictionary<string, string>());
+                        existingReviewerSubmission.CommentsToAuthor = JsonSerializer.Serialize(new Dictionary<string, string>());
+                        existingReviewerSubmission.Recommendation = null;
+                        existingReviewerSubmission.FileUrl = null;
 
+                        _context.ReviewerSubmissions.Update(existingReviewerSubmission);
+                    }
+                    else
+                    {
                         var reviewerSubmission = new ReviewerSubmission
                         {
                             SubmissionId = submissionId,
@@ -230,75 +250,78 @@ namespace SiLA_Backend.Services
                             Deadline = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(7),
                             IsRevision = false,
                             IsReviewComplete = false,
+                            IsTicketClosed = false,
                             CommentsToEditor = JsonSerializer.Serialize(new Dictionary<string, string>()),
                             CommentsToAuthor = JsonSerializer.Serialize(new Dictionary<string, string>())
                         };
 
-                        reviewerSubmissions.Add(reviewerSubmission);
                         _context.ReviewerSubmissions.Add(reviewerSubmission);
                     }
-                    await _context.SaveChangesAsync();
+                }
 
-                    await transaction.CommitAsync();
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-                    var author = await _userManager.FindByIdAsync(submission.AuthorId);
-                    var authorVariables = new JObject
-                        {
-                            { "name", $"{author.FirstName} {author.LastName}"},
-                            { "Title", submission.Title },
-                            { "Status", SubmissionStatus.ToBeReviewed.ToString()}
-                        };
+                var author = await _userManager.FindByIdAsync(submission.AuthorId);
+                var authorVariables = new JObject
+                {
+                    { "name", $"{author.FirstName} {author.LastName}"},
+                    { "Title", submission.Title },
+                    { "Status", SubmissionStatus.ToBeReviewed.ToString()}
+                };
 
-                    // 异步发送邮件给作者
-                    _ = Task.Run(async () =>
+                // 异步发送邮件给作者
+                _ = Task.Run(async () =>
+                {
+                    if (author != null)
                     {
-                        if (author != null)
+                        await _mailService.SendEmailAsync(new Email_Model
                         {
-                            await _mailService.SendEmailAsync(new Email_Model
-                            {
-                                To = author.Email!,
-                                ToName = $"{author.FirstName} {author.LastName}",
-                                Subject = $"Hi {author.FirstName}, your submission has been assigned to reviewers",
-                                TemplateId = 5984821, // Template ID
-                                Variables = authorVariables
-                            });
-                        }
-                    });
+                            To = author.Email!,
+                            ToName = $"{author.FirstName} {author.LastName}",
+                            Subject = $"Hi {author.FirstName}, your submission has been assigned to reviewers",
+                            TemplateId = 5984821, // Template ID
+                            Variables = authorVariables
+                        });
+                    }
+                });
 
-                    // 获取每个审稿人的任务数量并发送邮件
-                    foreach (var reviewerId in reviewerIds)
+                // 获取每个审稿人的任务数量并发送邮件
+                foreach (var reviewerId in reviewerIds)
+                {
+                    _ = Task.Run(async () =>
                     {
                         var reviewer = await _userManager.FindByIdAsync(reviewerId);
                         if (reviewer != null)
                         {
-                            var reviewerTasks = reviewerSubmissions.Where(rs => rs.ReviewerId == reviewerId && rs.Status == SubmissionStatus.ToBeReviewed.ToString()).ToList();
+                            var reviewerTasks = reviewerSubmissions
+                                .Where(rs => rs.ReviewerId == reviewerId && rs.Status == SubmissionStatus.ToBeReviewed.ToString())
+                                .ToList();
+
                             var reviewerVariables = new JObject
                             {
                                 { "name", $"{reviewer.FirstName} {reviewer.LastName}"},
                                 { "NumberOfTask", reviewerTasks.Count.ToString()},
                             };
 
-                            _ = Task.Run(async () =>
+                            await _mailService.SendEmailAsync(new Email_Model
                             {
-                                await _mailService.SendEmailAsync(new Email_Model
-                                {
-                                    To = reviewer.Email!,
-                                    ToName = $"{reviewer.FirstName} {reviewer.LastName}",
-                                    Subject = "Hi, new review tasks assigned to you",
-                                    TemplateId = 5984822, // Template ID
-                                    Variables = reviewerVariables
-                                });
+                                To = reviewer.Email!,
+                                ToName = $"{reviewer.FirstName} {reviewer.LastName}",
+                                Subject = "Hi, new review tasks assigned to you",
+                                TemplateId = 5984822, // Template ID
+                                Variables = reviewerVariables
                             });
                         }
-                    }
+                    });
+                }
 
-                    return (true, "Reviewers assigned successfully");
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    return (false, $"An error occurred: {ex.Message}");
-                }
+                return (true, "Reviewers assigned successfully");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return (false, $"An error occurred: {ex.Message}");
             }
         }
 
@@ -400,12 +423,15 @@ namespace SiLA_Backend.Services
                 preSignedUrls.Add("body", presignedUrl);
             }
 
+            string? revisedFilePaths = submissionDetail.Manuscript.RevisedFilePaths == null ? null : await GeneratePreSignedURLAsync(submissionDetail.Manuscript.RevisedFilePaths);
+
             return new SubmissionDetailForReviewerDTO
             {
                 SubmissionId = submissionDetail.Submission.Id,
                 Title = submissionDetail.Submission.Title,
                 Category = submissionDetail.Submission.Category,
                 File = preSignedUrls,
+                RevisedFileUrl = revisedFilePaths,
                 Declaration = submissionDetail.Manuscript.Declaration,
                 SubmissionDate = submissionDetail.Submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
                 ReviewDeadline = submissionDetail.Submission.ReviewDeadline!.Value.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -427,33 +453,46 @@ namespace SiLA_Backend.Services
 
             var filePaths = JsonSerializer.Deserialize<Dictionary<string, string>>(submission.Manuscript.FilePath);
 
-            Dictionary<string, string> preSignedUrls = new Dictionary<string, string>();
-            foreach (var file in filePaths!)
+            var preSignedUrlTasks = filePaths.Select(async file =>
             {
                 string presignedUrl = await GeneratePreSignedURLAsync(file.Value);
-                preSignedUrls.Add(file.Key, presignedUrl);
-            }
+                return new KeyValuePair<string, string>(file.Key, presignedUrl);
+            });
 
-            var reviewers = submission.ReviewerSubmissions
-                .Select(rs => new ReviewerDTO
+            var preSignedUrls = (await Task.WhenAll(preSignedUrlTasks)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+            var reviewerTasks = submission.ReviewerSubmissions
+                .Where(rs => !rs.IsTicketClosed)
+                .Select(async rs =>
                 {
-                    ReviewerId = rs.Reviewer.Id,
-                    ReviewerName = $"{rs.Reviewer.FirstName} {rs.Reviewer.LastName}",
-                    ReviewerContact = rs.Reviewer.Email!,
-                    ReviewerRecommendation = rs.Recommendation ?? "N/A", //rs.Recommendation
-                    IsRevision = rs.IsRevision, //rs.IsRevision
-                    IsReviewComplete = rs.IsReviewComplete, //rs.IsReviewComplete
-                    ReviewerStatus = rs.Status,
-                    DocumentUrl = !string.IsNullOrEmpty(rs.FileUrl) ? GeneratePreSignedURLAsync(rs.FileUrl).Result : "N/A"
-                })
-                .ToList();
+                    var documentUrl = string.IsNullOrEmpty(rs.FileUrl) ? "N/A" : await GeneratePreSignedURLAsync(rs.FileUrl);
+                    return new ReviewerDTO
+                    {
+                        ReviewerId = rs.Reviewer.Id,
+                        ReviewerName = $"{rs.Reviewer.FirstName} {rs.Reviewer.LastName}",
+                        ReviewerContact = rs.Reviewer.Email!,
+                        ReviewerRecommendation = rs.Recommendation ?? "N/A",
+                        IsRevision = rs.IsRevision,
+                        IsReviewComplete = rs.IsReviewComplete,
+                        ReviewerStatus = rs.Status,
+                        DocumentUrl = documentUrl
+                    };
+                });
+
+            var reviewers = await Task.WhenAll(reviewerTasks);
 
             var commentsFromReviewers = submission.ReviewerSubmissions
+                .Where(rs => !rs.IsTicketClosed)
                 .Select(rs => JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToEditor ?? "{}"))
                 .ToList();
+
             var commentsToAuthor = submission.ReviewerSubmissions
+                .Where(rs => !rs.IsTicketClosed)
                 .Select(rs => JsonSerializer.Deserialize<Dictionary<string, string>>(rs.CommentsToAuthor ?? "{}"))
                 .ToList();
+
+            string? revisedFilePaths = submission.Manuscript.RevisedFilePaths == null ? null : await GeneratePreSignedURLAsync(submission.Manuscript.RevisedFilePaths);
+
 
             var submissionDetail = new SubmissionDetailForEditorDTO
             {
@@ -461,17 +500,18 @@ namespace SiLA_Backend.Services
                 Title = submission.Manuscript.Title,
                 Category = submission.Manuscript.Category,
                 Files = new List<Dictionary<string, string>> { preSignedUrls },
+                RevisedFileUrl = revisedFilePaths,
                 Declaration = submission.Manuscript.Declaration,
                 SubmissionDate = submission.SubmissionDate.ToString("yyyy-MM-dd HH:mm:ss"),
-                ReviewDeadline = submission.ReviewDeadline != null ? submission.ReviewDeadline.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
-                RevisedDeadline = submission.RevisedDeadline != null ? submission.RevisedDeadline.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
+                ReviewDeadline = submission.ReviewDeadline?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A",
+                RevisedDeadline = submission.RevisedDeadline?.ToString("yyyy-MM-dd HH:mm:ss"),
                 Status = submission.Status,
-                Reviewers = reviewers,
+                Reviewers = [.. reviewers],
                 CommentsFromReviewers = commentsFromReviewers!,
                 CommentsToAuthor = commentsToAuthor!,
-                EditorComment = submission.CommentsFromEditor ?? null
-
+                EditorComment = submission.CommentsFromEditor
             };
+
             return submissionDetail;
         }
 
@@ -582,7 +622,7 @@ namespace SiLA_Backend.Services
                     }).ToList();
 
                     var author = await _userManager.FindByIdAsync(submission.AuthorId);
-                    var needToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString());
+                    var needToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString() || s.Status == SubmissionStatus.Resubmitted.ToString());
                     var needToDecisionCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.WaitingForDecision.ToString());
 
                     // 异步发送邮件给编辑
@@ -747,6 +787,7 @@ namespace SiLA_Backend.Services
                 if (model.Decision == SubmissionStatus.Revised.ToString())
                 {
                     submission.RevisedDeadline = DateTime.Parse(model.RevisedDeadline!);
+                    submission.IsExtensionChanceUsed = false;
                 }
                 else if (model.Decision == SubmissionStatus.Accepted.ToString() || model.Decision == SubmissionStatus.Rejected.ToString())
                 {
@@ -837,52 +878,56 @@ namespace SiLA_Backend.Services
                 }
 
                 submission.Manuscript.RevisedFilePaths = model.ResponseFile;
-                submission.Status = SubmissionStatus.ToBeReviewed.ToString();
+                submission.Status = SubmissionStatus.Resubmitted.ToString();
                 foreach (var rs in submission.ReviewerSubmissions)
                 {
-                    rs.Status = SubmissionStatus.ToBeReviewed.ToString();
-                    rs.Deadline = UtilitiesFunctions.ConvertUtcToAest(DateTime.UtcNow).AddDays(7);
-                    rs.IsReviewComplete = false;
-                    rs.IsRevision = true;
-                    rs.CommentsToAuthor = "{}";
-                    rs.CommentsToEditor = "{}";
-                    rs.Recommendation = null;
-                    rs.FileUrl = null;
+                    rs.IsTicketClosed = true;
                 }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // 获取审稿人数据
-                var reviewerIds = submission.ReviewerSubmissions.Select(rs => rs.ReviewerId).Distinct().ToList();
-                var reviewers = await _userManager.Users
-                    .Where(u => reviewerIds.Contains(u.Id))
-                    .ToListAsync();
-
-                foreach (var reviewer in reviewers)
+                var editors = await _userManager.GetUsersInRoleAsync("Editor");
+                var editorEmails = editors.Select(editor => new
                 {
-                    var reviewerTasks = submission.ReviewerSubmissions
-                        .Where(rs => rs.ReviewerId == reviewer.Id && rs.Status == SubmissionStatus.ToBeReviewed.ToString())
-                        .ToList();
+                    editor.Email,
+                    editor.FirstName,
+                    editor.LastName
+                }).ToList();
 
-                    var reviewerVariables = new JObject
-                    {
-                        { "name", $"{reviewer.FirstName} {reviewer.LastName}" },
-                        { "NumberOfTask", reviewerTasks.Count.ToString() }
-                    };
+                var submissionsToAssignCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.Submitted.ToString() || s.Status == SubmissionStatus.Resubmitted.ToString());
+                var submissionsToDecisionCount = await _context.Submissions.CountAsync(s => s.Status == SubmissionStatus.WaitingForDecision.ToString());
 
-                    _ = Task.Run(async () =>
+                // 异步发送邮件给编辑
+                _ = Task.Run(async () =>
+                {
+                    try
                     {
-                        await _mailService.SendEmailAsync(new Email_Model
+                        foreach (var editor in editorEmails)
                         {
-                            To = reviewer.Email!,
-                            ToName = $"{reviewer.FirstName} {reviewer.LastName}",
-                            Subject = $"Hi {reviewer.FirstName}, new review tasks assigned to you",
-                            TemplateId = 5984822, // Template ID
-                            Variables = reviewerVariables
-                        });
-                    });
-                }
+                            var variables = new JObject
+                            {
+                                    { "name", $"{editor.FirstName} {editor.LastName}" },
+                                    { "needToAssign", submissionsToAssignCount.ToString() },
+                                    { "needToDecision", submissionsToDecisionCount.ToString() }
+                            };
+
+                            await _mailService.SendEmailAsync(new Email_Model
+                            {
+                                To = editor.Email!,
+                                ToName = $"{editor.FirstName} {editor.LastName}",
+                                Subject = $"Dear Editor, you have new notification on SILA",
+                                TemplateId = 5984505, // Template ID
+                                Variables = variables
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the error if needed
+                        Console.WriteLine($"Error sending email to editors: {ex.Message}");
+                    }
+                });
                 return (true, "Author response submitted successfully");
             }
             catch (Exception ex)

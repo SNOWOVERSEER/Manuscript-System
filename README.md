@@ -11,9 +11,14 @@ You are welcome to access our system via http://ec2-3-106-139-56.ap-southeast-2.
 
 | Version |
 |---|
-| `3.0.0` |
+| `4.0.0` |
 
 # Updates
+*7/6/2024 (Sprint 4)*
+1. add "Forgot passward" and "Reset password".
+2. fix bugs.
+3. add email notifications.
+
 *5/24/2024 (Sprint 3)*
 
 1. the editor now can check/download revision from author and review from reviewer.
@@ -49,10 +54,13 @@ You are welcome to access our system via http://ec2-3-106-139-56.ap-southeast-2.
 2. update the ReadMe file.
 
 # Release 
+- Fourth release[June 7, 2024]:COMP90082_2024_SM1_SI_Wombat_BL_SPRINT4
 - Third release[May 24, 2024]:COMP90082_2024_SM1_SI_Wombat_BL_SPRINT3
 - Second relsease[May 3, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT2
-[![Sprint 2 demonstration video](./docs/images/sprint_2_demonstration.png)](https://youtu.be/m-Q2aA_KJoA?feature=shared)
 - First relsease [March 22, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT1
+
+# Final Demostration Video
+[![Sprint 4 final demonstration video](./docs/images/sprint_4_demonstration.png)](https://youtu.be/xqB19ZQphT4)
 
 # Introduction
 This project aims to develop an Online Manuscript Submission and Peer Review Platform for the Studies in Language Assessment (SiLA) journal, operated by the Association for Language Testing and Assessment of Australia and New Zealand (ALTAANZ). The envisioned platform will replace the current email-based manuscript submission and review process with a comprehensive, streamlined, online system. This initiative seeks to enhance the efficiency of manuscript handling, review assignments, editorial decision-making, and communication among authors, reviewers, and editors.

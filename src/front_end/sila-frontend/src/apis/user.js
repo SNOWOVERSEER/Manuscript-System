@@ -51,3 +51,19 @@ export function get_user_info_API(data_){
       data: data_
   })
 }
+
+export function reset_password(data_){
+  return http({
+      url: '/Auth/forgot-password',
+      method: 'POST',
+      data: data_
+  })
+}
+
+export function reset_password_(data_){
+  return http({
+      url: '/Auth/reset-password',
+      method: 'POST',
+      data: data_
+  })
+}
