@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Amazon.S3;
 using Amazon.S3.Transfer;
 using Amazon.S3.Model;
+using Microsoft.Extensions.Configuration;
 
 
 
@@ -18,8 +19,7 @@ namespace SiLA_Backend.Controllers
     {
         private readonly ISubmissionService _submissionService;
         private readonly IAmazonS3 _amazonS3;
-        private readonly string _bucketName = "sila-storage";
-        private readonly string _region = "ap-southeast-2";
+        private readonly string _bucketName;
         private readonly IConfiguration _configuration;
 
         public ManuscriptsController(ISubmissionService submissionService, IAmazonS3 amazonS3, IConfiguration configuration)
@@ -27,6 +27,8 @@ namespace SiLA_Backend.Controllers
             _submissionService = submissionService;
             _amazonS3 = amazonS3;
             _configuration = configuration;
+            _bucketName = _configuration["AWS:BucketName"];
+
         }
 
         [Authorize(Roles = "Author , Reviewer, Editor")]
@@ -172,6 +174,7 @@ namespace SiLA_Backend.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("GetSubmissionDetailForAuthor/{submissionId}")]
         public async Task<IActionResult> GetSubmissionDetailForAuthor(int submissionId)
         {
@@ -210,6 +213,7 @@ namespace SiLA_Backend.Controllers
             return BadRequest(new { state = "error", message = Message });
         }
 
+        [Authorize]
         [HttpPost("submitrevision")]
         public async Task<IActionResult> SubmitRevision(AuthorResponseDTO model)
         {
@@ -221,6 +225,7 @@ namespace SiLA_Backend.Controllers
             return BadRequest(new { state = "error", message = Message });
         }
 
+        [Authorize]
         [HttpPost("withdraw/{submissionId}")]
         public async Task<IActionResult> Withdraw(int submissionId)
         {
@@ -232,6 +237,7 @@ namespace SiLA_Backend.Controllers
             return BadRequest(new { state = "error", message = Message });
         }
 
+        [Authorize]
         [HttpPost("requestextension/{submissionId}")]
         public async Task<IActionResult> RequestExtension(int submissionId)
         {

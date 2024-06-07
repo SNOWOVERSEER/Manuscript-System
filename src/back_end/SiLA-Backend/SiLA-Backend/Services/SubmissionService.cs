@@ -18,6 +18,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Newtonsoft.Json.Linq;
 using Mailjet.Client.Resources;
+using Microsoft.Extensions.Configuration;
 
 namespace SiLA_Backend.Services
 {
@@ -28,13 +29,12 @@ namespace SiLA_Backend.Services
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAmazonS3 _amazonS3;
-        private readonly string _bucketName = "sila-storage";
-        private readonly string _region = "ap-southeast-2";
+        private readonly string _bucketName;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly MailService _mailService;
 
 
-        public SubmissionService(MailService mailService, IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager, IAmazonS3 amazonS3, IHttpContextAccessor httpContextAccessor)
+        public SubmissionService(IConfiguration configuration, MailService mailService, IWebHostEnvironment hostEnvironment, ApplicationDbContext context, ITokenManager tokenManager, UserManager<ApplicationUser> userManager, IAmazonS3 amazonS3, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _tokenManager = tokenManager;
@@ -43,6 +43,7 @@ namespace SiLA_Backend.Services
             _amazonS3 = amazonS3;
             _httpContextAccessor = httpContextAccessor;
             _mailService = mailService;
+            _bucketName = configuration["AWS:BucketName"];
         }
         public async Task<(bool IsSuccess, string Message)> SubmitAsync(ManuscriptSubmissionModel model)
         {
@@ -786,6 +787,7 @@ namespace SiLA_Backend.Services
                 if (model.Decision == SubmissionStatus.Revised.ToString())
                 {
                     submission.RevisedDeadline = DateTime.Parse(model.RevisedDeadline!);
+                    submission.IsExtensionChanceUsed = false;
                 }
                 else if (model.Decision == SubmissionStatus.Accepted.ToString() || model.Decision == SubmissionStatus.Rejected.ToString())
                 {
