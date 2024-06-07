@@ -238,5 +238,68 @@ namespace SiLA_Backend.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
+        public async Task<(bool IsSuccess, string Message)> ForgotPasswordAsync(string? userId, string? email)
+        {
+            ApplicationUser? user = null;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                user = await _userManager.FindByIdAsync(userId);
+            }
+            else if (!string.IsNullOrEmpty(email))
+            {
+                user = await _userManager.FindByEmailAsync(email);
+            }
+
+            if (user == null)
+            {
+                return (false, "User not found");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var scheme = _httpContextAccessor.HttpContext?.Request.Scheme;
+            var host = _httpContextAccessor.HttpContext?.Request.Host.Value;
+
+            var urlHelper = _urlHelperFactory.GetUrlHelper(_actionContextAccessor.ActionContext);
+            var resetLink = $"http://ec2-3-106-139-56.ap-southeast-2.compute.amazonaws.com/resetpassword?token={token}&email={user.Email}";
+
+            // Send email to user
+            _ = Task.Run(async () =>
+            {
+                await _mailService.SendEmailAsync(new Email_Model
+                {
+                    To = user.Email,
+                    ToName = $"{user.FirstName} {user.LastName}",
+                    Subject = "Please reset your SiLA account password",
+                    TemplateId = 6029750, // Mailjet template ID
+                    Variables = new JObject
+                    {
+                { "name", $"{user.FirstName} {user.LastName}" },
+                { "resetLink", resetLink }
+                    }
+                });
+            });
+
+            return (true, "Password reset link sent successfully");
+        }
+
+        public async Task<(bool IsSuccess, string Message)> ResetPasswordAsync(ResetPasswordModel model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return (false, "User not found");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (result.Succeeded)
+            {
+                return (true, "Password has been reset successfully");
+            }
+
+            var errors = result.Errors.Select(e => e.Description);
+            return (false, $"Password reset failed! Errors: {string.Join(", ", errors)}");
+        }
     }
 }

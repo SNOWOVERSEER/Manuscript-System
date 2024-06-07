@@ -10,6 +10,8 @@ namespace SiLA_Backend.Services
         Task<(bool IsSuccess, string Message)> RegisterReviewerAsync(RegisterModel model);
         Task<(bool IsSuccess, string Message, string? Token, string? Id)> LoginAsync(LoginModel model);
         Task<(bool IsSuccess, string Message)> LogoutAsync(string id, string token);
+        Task<(bool IsSuccess, string Message)> ForgotPasswordAsync(string? userId, string? email);
+        Task<(bool IsSuccess, string Message)> ResetPasswordAsync(ResetPasswordModel model);
 
     }
 }
