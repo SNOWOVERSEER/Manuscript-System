@@ -786,6 +786,7 @@ namespace SiLA_Backend.Services
                 if (model.Decision == SubmissionStatus.Revised.ToString())
                 {
                     submission.RevisedDeadline = DateTime.Parse(model.RevisedDeadline!);
+                    submission.IsExtensionChanceUsed = false;
                 }
                 else if (model.Decision == SubmissionStatus.Accepted.ToString() || model.Decision == SubmissionStatus.Rejected.ToString())
                 {
