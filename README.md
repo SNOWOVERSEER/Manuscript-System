@@ -55,6 +55,7 @@ You are welcome to access our system via http://3.106.139.56/login.
 
 # Release 
 - Fourth release[June 7, 2024]:COMP90082_2024_SM1_SI_Wombat_BL_SPRINT4
+[![Sprint 4 final demonstration video](./docs/images/sprint_4_demonstration.png)](https://youtu.be/xqB19ZQphT4)
 - Third release[May 24, 2024]:COMP90082_2024_SM1_SI_Wombat_BL_SPRINT3
 - Second relsease[May 3, 2024]: COMP90082_2024_SM1_SI_Wombat_BL_SPRINT2
 [![Sprint 2 demonstration video](./docs/images/sprint_2_demonstration.png)](https://youtu.be/m-Q2aA_KJoA?feature=shared)
