@@ -17,6 +17,11 @@ project.sln
 
 SI-Wombat.sln
 
+# ------backend--------
+/src/back_end/SiLA-Backend/SiLA-Backend/appsettings.json
+/src/back_end/SiLA-Backend/SiLA-Backend/appsettings.Development.json
+/src/back_end/SiLA-Backend/SiLA-Backend/appsettings.Production.json
+
 # ------frontend--------
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
